@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @php
+        use Illuminate\Support\Str;
+    @endphp
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, shrink-to-fit=no">
     <meta name="theme-color" content="#4070f4">
@@ -19,8 +22,13 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+    @stack('styles')
 
     <style>
         :root {
@@ -840,6 +848,58 @@
             border: 2px solid var(--bg-navbar);
         }
 
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+        }
+
+        .timeline-item {
+            display: flex;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 30px;
+            height: calc(100% - 10px);
+            width: 2px;
+            background-color: #e9ecef;
+        }
+
+        .timeline-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Reply item styles */
+        .reply-item {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .reply-item:hover {
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .reply-content {
+            margin-top: 8px;
+            white-space: pre-line;
+        }
+
+        .reply-attachment {
+            margin-top: 10px;
+        }
+
         /* Enhanced sidebar responsiveness */
         .sidebar {
             scrollbar-width: thin;
@@ -971,218 +1031,189 @@
             </div>
 
             <div class="sidebar-content">
-                <!-- Shared by All Roles -->
+                <!-- Dashboard - Available to all roles -->
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">Dashboard</div>
                     <ul class="sidebar-nav">
                         <li class="sidebar-nav-item">
                             <a href="{{ url('/home') }}" class="sidebar-nav-link {{ Request::is('home') ? 'active' : '' }}" data-title="Home">
                                 <i class="fas fa-home"></i>
-                                <span>Home</span>
+                                <span>Dashboard</span>
                             </a>
                         </li>
                     </ul>
                 </div>
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Instructions</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="{{ route('instructions.create') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') ? 'active' : '' }}" data-title="Instructions">
-                                <i class="fas fa-clipboard-list"></i>
-                                <span>Instructions</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                @if(Auth::check())
+                    @php
+                        $userRole = Auth::user()->roles;
+                    @endphp
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Feedback</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="My Feedback">
-                                <i class="fas fa-comment"></i>
-                                <span>My Feedback</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="View Feedback">
-                                <i class="fas fa-comments"></i>
-                                <span>View Feedback</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                    <!-- EMPLOYEE Role Menu -->
+                    @if($userRole === \App\Enums\UserRole::EMPLOYEE)
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">Instructions</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Received Instructions">
+                                        <i class="fas fa-inbox"></i>
+                                        <span>Received Instructions</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Forwarding</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Forwarded To Me">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>Forwarded To Me</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Forwarded By Me">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>Forwarded By Me</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                    <!-- SUPERVISOR Role Menu -->
+                    @elseif($userRole === \App\Enums\UserRole::SUPERVISOR)
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">Instructions</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Received Instructions">
+                                        <i class="fas fa-inbox"></i>
+                                        <span>Received Instructions</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Profile / Settings</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="My Profile">
-                                <i class="fas fa-user"></i>
-                                <span>My Profile</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Notification Settings">
-                                <i class="fas fa-bell"></i>
-                                <span>Notification Settings</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                    <!-- ADMIN Role Menu -->
+                    @elseif($userRole === \App\Enums\UserRole::ADMIN)
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">Instructions</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="All Instructions">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <span>All Instructions</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Instruction Monitoring">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Instruction Monitoring</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <!-- SUPERVISOR and Above -->
-                @if(Auth::check() && in_array(Auth::user()->roles, [\App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN, \App\Enums\UserRole::SYSTEM_ADMIN]))
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Team Monitoring</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Team Instructions Overview">
-                                <i class="fas fa-tasks"></i>
-                                <span>Team Instructions Overview</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Pending / Completed Tracker">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Pending / Completed Tracker</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Team Feedback Summary">
-                                <i class="fas fa-clipboard-check"></i>
-                                <span>Team Feedback Summary</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                @endif
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">User Management</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ Request::routeIs('users.index') ? 'active' : '' }}" data-title="Manage Users">
+                                        <i class="fas fa-users-cog"></i>
+                                        <span>Manage Users</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('users.all-activities') }}" class="sidebar-nav-link {{ Request::routeIs('users.all-activities') ? 'active' : '' }}" data-title="User Activity Logs">
+                                        <i class="fas fa-history"></i>
+                                        <span>User Activity Logs</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <!-- ADMIN and SYSTEM ADMIN Only -->
-                @if(Auth::check() && in_array(Auth::user()->roles, [\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::SYSTEM_ADMIN]))
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Reports</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Instruction Reports">
-                                <i class="fas fa-chart-bar"></i>
-                                <span>Instruction Reports</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Feedback Reports">
-                                <i class="fas fa-chart-pie"></i>
-                                <span>Feedback Reports</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Export Logs">
-                                <i class="fas fa-file-export"></i>
-                                <span>Export Logs</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">Reports</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="#" class="sidebar-nav-link" data-title="Instruction Reports">
+                                        <i class="fas fa-chart-bar"></i>
+                                        <span>Instruction Reports</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="#" class="sidebar-nav-link" data-title="Notifications">
+                                        <i class="fas fa-bell"></i>
+                                        <span>Notifications</span>
+                                        <span class="badge bg-danger rounded-pill ms-auto">2</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Monitoring</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="{{ route('users.all-activities') }}" class="sidebar-nav-link {{ Request::routeIs('users.all-activities') ? 'active' : '' }}" data-title="User Activity Logs">
-                                <i class="fas fa-history"></i>
-                                <span>User Activity Logs</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Global Instruction Monitor">
-                                <i class="fas fa-globe"></i>
-                                <span>Global Instruction Monitor</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Deadline Compliance Tracker">
-                                <i class="fas fa-clock"></i>
-                                <span>Deadline Compliance Tracker</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Feedback Logs">
-                                <i class="fas fa-history"></i>
-                                <span>Feedback Logs</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                @endif
+                    <!-- SYSTEM_ADMIN Role Menu -->
+                    @elseif($userRole === \App\Enums\UserRole::SYSTEM_ADMIN)
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">System</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="System Logs">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <span>System Logs</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="#" class="sidebar-nav-link" data-title="Audit Trail">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Audit Trail</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <!-- SYSTEM ADMIN Only -->
-                @if(Auth::check() && Auth::user()->roles === \App\Enums\UserRole::SYSTEM_ADMIN)
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">User Management</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ Request::routeIs('users.*') ? 'active' : '' }}" data-title="Manage Users">
-                                <i class="fas fa-users"></i>
-                                <span>Manage Users</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Roles / Permissions">
-                                <i class="fas fa-user-shield"></i>
-                                <span>Roles / Permissions</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="User Groups">
-                                <i class="fas fa-user-friends"></i>
-                                <span>User Groups</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">User Management</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ Request::routeIs('users.*') && !Request::routeIs('users.all-activities') ? 'active' : '' }}" data-title="Manage Users">
+                                        <i class="fas fa-users"></i>
+                                        <span>Manage Users</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="{{ route('users.all-activities') }}" class="sidebar-nav-link {{ Request::is('activities') ? 'active' : '' }}" data-title="All User Activity">
+                                        <i class="fas fa-history"></i>
+                                        <span>All User Activity</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">System Settings</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Configuration">
-                                <i class="fas fa-cogs"></i>
-                                <span>Configuration</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Email & Notifications">
-                                <i class="fas fa-envelope"></i>
-                                <span>Email & Notifications</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Audit Logs">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>Audit Logs</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                        <div class="sidebar-section">
+                            <div class="sidebar-section-title">Settings</div>
+                            <ul class="sidebar-nav">
+                                <li class="sidebar-nav-item">
+                                    <a href="#" class="sidebar-nav-link" data-title="App Settings">
+                                        <i class="fas fa-cogs"></i>
+                                        <span>App Settings</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-nav-item">
+                                    <a href="#" class="sidebar-nav-link" data-title="Email Configuration">
+                                        <i class="fas fa-envelope-open"></i>
+                                        <span>Email Configuration</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    @endif
+
+                    <!-- User Profile Section - Available to all authenticated users -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">User</div>
+                        <ul class="sidebar-nav">
+                            <li class="sidebar-nav-item">
+                                <a href="{{ route('profile.show') }}" class="sidebar-nav-link {{ Request::routeIs('profile.*') ? 'active' : '' }}" data-title="My Profile">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>My Profile</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-item">
+                                <a href="{{ route('logout') }}"
+                                   onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();"
+                                   class="sidebar-nav-link" data-title="Logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </a>
+                                <form id="sidebar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 @endif
 
                 <!-- Collapse Button for Mobile -->
@@ -1235,22 +1266,12 @@
                     @else
                         <div class="dropdown navbar-user">
                             <div class="navbar-user-avatar dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="https://ui-avatars.com/api/?name={{ Auth::user()->first_name }}+{{ Auth::user()->last_name }}&background=4070f4&color=fff" alt="User Avatar">
+                            @if (Auth::user()->avatar)
+                                <img src="{{ Auth::user()->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px; object-fit: cover;">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ Auth::user()->full_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px;">
+                            @endif
                             </div>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Profile</a></li>
-                                <li><a class="dropdown-item" href="#">Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </li>
-                            </ul>
                         </div>
                     @endguest
                 </div>
@@ -1552,5 +1573,6 @@
             }
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

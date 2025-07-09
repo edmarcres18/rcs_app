@@ -3,13 +3,19 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\InstructionController;
+use App\Http\Controllers\InstructionMonitorController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Auth::routes();
+
+// Broadcasting Authentication for Pusher
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -26,4 +32,37 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/activities', [UserController::class, 'activities'])->name('users.activities');
     Route::get('activities', [UserController::class, 'allActivities'])->name('users.all-activities');
+});
+
+// Profile routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [App\Http\Controllers\UserProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [App\Http\Controllers\UserProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\UserProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/change-password', [App\Http\Controllers\UserProfileController::class, 'changePasswordForm'])->name('profile.change-password');
+    Route::put('/profile/change-password', [App\Http\Controllers\UserProfileController::class, 'updatePassword'])->name('profile.update-password');
+});
+
+// Instruction Routes
+Route::middleware('auth')->group(function () {
+    // General instruction routes
+    Route::get('instructions', [InstructionController::class, 'index'])->name('instructions.index');
+    Route::get('instructions/create', [InstructionController::class, 'create'])->name('instructions.create');
+    Route::post('instructions', [InstructionController::class, 'store'])->name('instructions.store');
+    Route::get('instructions/{instruction}', [InstructionController::class, 'show'])->name('instructions.show');
+
+    // Read, reply, forward
+    Route::post('instructions/{instruction}/mark-as-read', [InstructionController::class, 'markAsRead'])->name('instructions.read');
+    Route::post('instructions/{instruction}/reply', [InstructionController::class, 'reply'])->name('instructions.reply');
+    Route::get('instructions/{instruction}/forward', [InstructionController::class, 'showForward'])->name('instructions.show-forward');
+    Route::post('instructions/{instruction}/forward', [InstructionController::class, 'forward'])->name('instructions.forward');
+
+    // API routes for real-time updates
+    Route::get('api/instructions/{instruction}/updates', [InstructionController::class, 'getUpdates']);
+
+    // Monitor routes (Admin and System Admin only)
+    Route::get('instructions/monitor/dashboard', [InstructionMonitorController::class, 'index'])->name('instructions.monitor');
+    Route::get('instructions/monitor/activities/{instruction}', [InstructionMonitorController::class, 'showActivityLogs'])->name('instructions.monitor.activities');
+    Route::get('instructions/monitor/all-activities', [InstructionMonitorController::class, 'allActivityLogs'])->name('instructions.monitor.all-activities');
+    Route::get('instructions/monitor/reports', [InstructionMonitorController::class, 'reports'])->name('instructions.monitor.reports');
 });

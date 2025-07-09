@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -58,5 +60,33 @@ class User extends Authenticatable
     public function activities()
     {
         return $this->hasMany(UserActivity::class);
+    }
+
+    /**
+     * Get the instructions sent by this user.
+     */
+    public function sentInstructions(): HasMany
+    {
+        return $this->hasMany(Instruction::class, 'sender_id');
+    }
+
+    /**
+     * Get the instructions assigned to this user.
+     */
+    public function receivedInstructions(): BelongsToMany
+    {
+        return $this->belongsToMany(Instruction::class, 'instruction_user')
+            ->withPivot('is_read', 'forwarded_by_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the full name of the user.
+     *
+     * @return string
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 }

@@ -3,7 +3,7 @@
 @section('title', 'Dashboard')
 @section('content')
 <div class="container-fluid">
-    <!-- Dashboard Analytics Cards -->
+    <!-- Role-specific Dashboard Analytics Cards -->
     <div class="row g-3 mb-4">
         <!-- Total Instructions -->
         <div class="col-md-4 col-lg-2">
@@ -15,8 +15,14 @@
                         </div>
                         <h6 class="card-title mb-0">Total Instructions</h6>
                     </div>
-                    <h2 class="mb-2">245</h2>
-                    <p class="small text-muted mb-0"><i class="fas fa-arrow-up text-success me-1"></i> 12% from last month</p>
+                    <h2 class="mb-2">{{ $totalInstructions }}</h2>
+                    <p class="small text-muted mb-0">
+                        @if(isset($isAdmin) || isset($isSystemAdmin))
+                        <i class="fas fa-chart-line text-primary me-1"></i> System Total
+                        @else
+                        <i class="fas fa-user text-primary me-1"></i> Assigned to You
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -31,8 +37,14 @@
                         </div>
                         <h6 class="card-title mb-0">Pending</h6>
                     </div>
-                    <h2 class="mb-2">42</h2>
-                    <p class="small text-muted mb-0"><i class="fas fa-arrow-down text-danger me-1"></i> 3% from last week</p>
+                    <h2 class="mb-2">{{ $pendingInstructions }}</h2>
+                    <p class="small text-muted mb-0">
+                        @if($pendingInstructions > 0)
+                        <i class="fas fa-exclamation-circle text-warning me-1"></i> Awaiting action
+                        @else
+                        <i class="fas fa-check text-success me-1"></i> All clear
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -47,8 +59,15 @@
                         </div>
                         <h6 class="card-title mb-0">Completed</h6>
                     </div>
-                    <h2 class="mb-2">189</h2>
-                    <p class="small text-muted mb-0"><i class="fas fa-arrow-up text-success me-1"></i> 8% from last month</p>
+                    <h2 class="mb-2">{{ $completedInstructions }}</h2>
+                    <p class="small text-muted mb-0">
+                        @if($totalInstructions > 0)
+                        <i class="fas fa-chart-pie text-success me-1"></i>
+                        {{ round(($completedInstructions / $totalInstructions) * 100) }}% completion
+                        @else
+                        <i class="fas fa-chart-pie text-success me-1"></i> 0% completion
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -63,8 +82,16 @@
                         </div>
                         <h6 class="card-title mb-0">Forwarded</h6>
                     </div>
-                    <h2 class="mb-2">37</h2>
-                    <p class="small text-muted mb-0"><i class="fas fa-minus text-muted me-1"></i> Same as last week</p>
+                    <h2 class="mb-2">{{ $forwardedInstructions }}</h2>
+                    <p class="small text-muted mb-0">
+                        @if(isset($isSupervisor))
+                        <i class="fas fa-random text-info me-1"></i> Delegated tasks
+                        @elseif(isset($isAdmin) || isset($isSystemAdmin))
+                        <i class="fas fa-random text-info me-1"></i> System total
+                        @else
+                        <i class="fas fa-arrow-right text-info me-1"></i> Received
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -79,28 +106,121 @@
                         </div>
                         <h6 class="card-title mb-0">Feedback</h6>
                     </div>
-                    <h2 class="mb-2">156</h2>
-                    <p class="small text-muted mb-0"><i class="fas fa-arrow-up text-success me-1"></i> 15% increase</p>
+                    <h2 class="mb-2">{{ $feedbackCount }}</h2>
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-comments text-secondary me-1"></i> Total replies
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Upcoming Deadlines -->
+        <!-- Upcoming Deadlines or System-specific metric -->
         <div class="col-md-4 col-lg-2">
             <div class="card h-100 border-0">
                 <div class="card-body">
+                    @if(isset($isSystemAdmin))
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-circle bg-primary bg-opacity-10 me-3">
+                            <i class="fas fa-users text-primary"></i>
+                        </div>
+                        <h6 class="card-title mb-0">Active Users</h6>
+                    </div>
+                    <h2 class="mb-2">{{ $activeUsers }}</h2>
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-calendar text-primary me-1"></i> Last 7 days
+                    </p>
+                    @else
                     <div class="d-flex align-items-center mb-2">
                         <div class="icon-circle bg-danger bg-opacity-10 me-3">
                             <i class="fas fa-calendar-alt text-danger"></i>
                         </div>
                         <h6 class="card-title mb-0">Deadlines</h6>
                     </div>
-                    <h2 class="mb-2">12</h2>
-                    <p class="small text-muted mb-0">Due in next 3 days</p>
+                    <h2 class="mb-2">{{ $upcomingDeadlines }}</h2>
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-clock text-danger me-1"></i> Due soon
+                    </p>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+
+    @if(isset($isSystemAdmin))
+    <!-- System Admin specific cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">User Distribution</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Employees</span>
+                        <span class="fw-bold">{{ $usersByRole['employees'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Supervisors</span>
+                        <span class="fw-bold">{{ $usersByRole['supervisors'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Admins</span>
+                        <span class="fw-bold">{{ $usersByRole['admins'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">System Admins</span>
+                        <span class="fw-bold">{{ $usersByRole['systemAdmins'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Instruction Activity</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Today</span>
+                        <span class="fw-bold">{{ $systemStats['dailyInstructions'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">This Week</span>
+                        <span class="fw-bold">{{ $systemStats['weeklyInstructions'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">This Month</span>
+                        <span class="fw-bold">{{ $systemStats['monthlyInstructions'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">System Performance</h6>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="text-center">
+                            <h5 class="mb-0">75%</h5>
+                            <small class="text-muted">System Load</small>
+                        </div>
+                        <div class="text-center">
+                            <h5 class="mb-0">3.2s</h5>
+                            <small class="text-muted">Avg Response</small>
+                        </div>
+                        <div class="text-center">
+                            <h5 class="mb-0">99.9%</h5>
+                            <small class="text-muted">Uptime</small>
+                        </div>
+                        <div class="text-center">
+                            <h5 class="mb-0">12</h5>
+                            <small class="text-muted">Active Sessions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Analytics Chart -->
     <div class="row mb-4">
@@ -152,17 +272,17 @@
         <div class="col-12">
             <div class="card border-0">
                 <div class="card-body">
-                    <form class="row g-3 align-items-center">
+                    <form class="row g-3 align-items-center" action="{{ route('instructions.index') }}" method="GET">
                         <div class="col-md-3">
                             <label class="visually-hidden" for="searchQuery">Search</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent"><i class="fas fa-search"></i></span>
-                                <input type="text" class="form-control" id="searchQuery" placeholder="Search instructions...">
+                                <input type="text" class="form-control" id="searchQuery" name="search" placeholder="Search instructions...">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <label class="visually-hidden" for="statusFilter">Status</label>
-                            <select class="form-select" id="statusFilter">
+                            <select class="form-select" id="statusFilter" name="status">
                                 <option selected value="">Status: All</option>
                                 <option value="pending">Pending</option>
                                 <option value="completed">Completed</option>
@@ -173,7 +293,7 @@
                             <label class="visually-hidden" for="dateRange">Date Range</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent"><i class="fas fa-calendar"></i></span>
-                                <input type="text" class="form-control" id="dateRange" placeholder="Date range">
+                                <input type="text" class="form-control" id="dateRange" name="date_range" placeholder="Date range">
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -190,15 +310,25 @@
 
     <!-- Main Content Sections -->
     <div class="row">
-        <!-- My Assigned Instructions -->
+        <!-- My Instructions Section -->
         <div class="col-lg-8">
             <div class="card border-0 mb-4">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="fas fa-tasks me-2 text-primary"></i>
+                        @if(isset($isAdmin) || isset($isSystemAdmin))
+                        Recent Instructions
+                        @else
                         My Assigned Instructions
+                        @endif
                     </h5>
-                    <span class="badge bg-primary rounded-pill">42 Active</span>
+                    <span class="badge bg-primary rounded-pill">
+                        @if(isset($isAdmin) || isset($isSystemAdmin))
+                        {{ $recentInstructions->count() }} Recent
+                        @else
+                        {{ $pendingInstructions }} Active
+                        @endif
+                    </span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -208,149 +338,72 @@
                                     <th scope="col">ID</th>
                                     <th scope="col">From</th>
                                     <th scope="col">Given Date</th>
-                                    <th scope="col">Deadline</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Feedback</th>
                                     <th scope="col" class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($recentInstructions as $instruction)
                                 <tr>
-                                    <td><a href="#" class="fw-bold text-primary">#INS-1094</a></td>
+                                    <td><a href="{{ route('instructions.show', $instruction) }}" class="fw-bold text-primary">#INS-{{ $instruction->id }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                            <span>John Doe</span>
+                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($instruction->sender->full_name) }}&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
+                                            <span>{{ $instruction->sender->full_name }}</span>
                                         </div>
                                     </td>
-                                    <td>May 15, 2023</td>
-                                    <td><span class="text-danger fw-bold">May 29, 2023</span></td>
-                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                    <td><span class="badge bg-light text-dark">2 Comments</span></td>
+                                    <td>{{ $instruction->created_at->format('M d, Y') }}</td>
+                                    <td>
+                                        @php
+                                        $status = 'Pending';
+                                        $badgeClass = 'bg-warning text-dark';
+
+                                        if ($instruction->activities()->where('action', 'completed')->exists()) {
+                                            $status = 'Completed';
+                                            $badgeClass = 'bg-success';
+                                        } elseif ($instruction->replies()->exists()) {
+                                            $status = 'In Progress';
+                                            $badgeClass = 'bg-info';
+                                        }
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }}">{{ $status }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ $instruction->replies()->count() }} {{ Str::plural('Comment', $instruction->replies()->count()) }}
+                                        </span>
+                                    </td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                            <a href="{{ route('instructions.show', $instruction) }}" class="btn btn-sm btn-outline-secondary">
                                                 <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary">
+                                            </a>
+                                            <a href="{{ route('instructions.show', $instruction) }}#reply" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-comment"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info">
+                                            </a>
+                                            <a href="{{ route('instructions.show-forward', $instruction) }}" class="btn btn-sm btn-outline-info">
                                                 <i class="fas fa-share"></i>
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td><a href="#" class="fw-bold text-primary">#INS-1093</a></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                            <span>Jane Smith</span>
-                                        </div>
-                                    </td>
-                                    <td>May 12, 2023</td>
-                                    <td>June 12, 2023</td>
-                                    <td><span class="badge bg-info">In Progress</span></td>
-                                    <td><span class="badge bg-light text-dark">1 Comment</span></td>
-                                    <td class="text-end">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-comment"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-share"></i>
-                                            </button>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <h6 class="fw-light text-muted">No instructions found</h6>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td><a href="#" class="fw-bold text-primary">#INS-1092</a></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=Robert+Johnson&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                            <span>Robert Johnson</span>
-                                        </div>
-                                    </td>
-                                    <td>May 10, 2023</td>
-                                    <td><span class="text-danger fw-bold">May 30, 2023</span></td>
-                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                    <td><span class="badge bg-light text-dark">0 Comments</span></td>
-                                    <td class="text-end">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-comment"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-share"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><a href="#" class="fw-bold text-primary">#INS-1091</a></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=Sarah+Williams&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                            <span>Sarah Williams</span>
-                                        </div>
-                                    </td>
-                                    <td>May 8, 2023</td>
-                                    <td>May 22, 2023</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                    <td><span class="badge bg-light text-dark">5 Comments</span></td>
-                                    <td class="text-end">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-comment"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-share"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><a href="#" class="fw-bold text-primary">#INS-1090</a></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name=Michael+Brown&background=4070f4&color=fff" class="rounded-circle me-2" width="32" height="32">
-                                            <span>Michael Brown</span>
-                                        </div>
-                                    </td>
-                                    <td>May 5, 2023</td>
-                                    <td>May 19, 2023</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                    <td><span class="badge bg-light text-dark">3 Comments</span></td>
-                                    <td class="text-end">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-comment"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-share"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent text-center">
-                    <a href="#" class="btn btn-sm btn-link text-primary text-decoration-none">View All Instructions <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('instructions.index') }}" class="btn btn-sm btn-link text-primary text-decoration-none">View All Instructions <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>
@@ -363,66 +416,36 @@
                         <i class="fas fa-comments me-2 text-info"></i>
                         Recent Feedbacks
                     </h5>
-                    <span class="badge bg-info rounded-pill">12 New</span>
+                    <span class="badge bg-info rounded-pill">{{ $recentFeedbacks->count() }} New</span>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item border-0 px-3 py-3">
+                        @forelse($recentFeedbacks as $feedback)
+                        <li class="list-group-item border-0 px-3 py-3 {{ $loop->even ? 'bg-light bg-opacity-50' : '' }}">
                             <div class="d-flex">
-                                <img src="https://ui-avatars.com/api/?name=John+Doe&background=4070f4&color=fff" class="rounded-circle me-3" width="40" height="40">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($feedback->user->full_name) }}&background=4070f4&color=fff" class="rounded-circle me-3" width="40" height="40">
                                 <div>
                                     <div class="d-flex align-items-center mb-1">
-                                        <h6 class="mb-0 me-2">John Doe</h6>
-                                        <span class="badge bg-light text-dark">#INS-1094</span>
-                                        <small class="text-muted ms-auto">2 hours ago</small>
+                                        <h6 class="mb-0 me-2">{{ $feedback->user->full_name }}</h6>
+                                        <span class="badge bg-light text-dark">#INS-{{ $feedback->instruction_id }}</span>
+                                        <small class="text-muted ms-auto">{{ $feedback->created_at->diffForHumans() }}</small>
                                     </div>
-                                    <p class="mb-0 text-muted">Please review the quarterly compliance report and provide feedback by end of day.</p>
+                                    <p class="mb-0 text-muted">{{ Str::limit($feedback->content, 100) }}</p>
                                 </div>
                             </div>
                         </li>
-                        <li class="list-group-item border-0 px-3 py-3 bg-light bg-opacity-50">
-                            <div class="d-flex">
-                                <img src="https://ui-avatars.com/api/?name=Sarah+Williams&background=4070f4&color=fff" class="rounded-circle me-3" width="40" height="40">
-                                <div>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <h6 class="mb-0 me-2">Sarah Williams</h6>
-                                        <span class="badge bg-light text-dark">#INS-1091</span>
-                                        <small class="text-muted ms-auto">5 hours ago</small>
-                                    </div>
-                                    <p class="mb-0 text-muted">All issues from the previous audit have been addressed. Documentation attached for your review.</p>
-                                </div>
+                        @empty
+                        <li class="list-group-item border-0 px-3 py-4">
+                            <div class="text-center">
+                                <i class="fas fa-comment-slash fa-2x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No feedback messages yet</p>
                             </div>
                         </li>
-                        <li class="list-group-item border-0 px-3 py-3">
-                            <div class="d-flex">
-                                <img src="https://ui-avatars.com/api/?name=Robert+Johnson&background=4070f4&color=fff" class="rounded-circle me-3" width="40" height="40">
-                                <div>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <h6 class="mb-0 me-2">Robert Johnson</h6>
-                                        <span class="badge bg-light text-dark">#INS-1092</span>
-                                        <small class="text-muted ms-auto">Yesterday</small>
-                                    </div>
-                                    <p class="mb-0 text-muted">We need to schedule a meeting to discuss the new regulatory changes that will affect our reporting process.</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item border-0 px-3 py-3 bg-light bg-opacity-50">
-                            <div class="d-flex">
-                                <img src="https://ui-avatars.com/api/?name=Michael+Brown&background=4070f4&color=fff" class="rounded-circle me-3" width="40" height="40">
-                                <div>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <h6 class="mb-0 me-2">Michael Brown</h6>
-                                        <span class="badge bg-light text-dark">#INS-1090</span>
-                                        <small class="text-muted ms-auto">2 days ago</small>
-                                    </div>
-                                    <p class="mb-0 text-muted">The compliance report has been approved. Thank you for addressing all the concerns promptly.</p>
-                                </div>
-                            </div>
-                        </li>
+                        @endforelse
                     </ul>
                 </div>
                 <div class="card-footer bg-transparent text-center">
-                    <a href="#" class="btn btn-sm btn-link text-info text-decoration-none">View All Feedbacks <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('instructions.index') }}" class="btn btn-sm btn-link text-info text-decoration-none">View All Feedbacks <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
 
@@ -436,58 +459,50 @@
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item border-0 px-3 py-3 d-flex align-items-center">
+                        @forelse($forwardedInstructionList as $forwarded)
+                        <li class="list-group-item border-0 px-3 py-3 d-flex align-items-center {{ $loop->even ? 'bg-light bg-opacity-50' : '' }}">
                             <div class="d-flex align-items-center flex-grow-1">
                                 <div class="transfer-icon me-3">
                                     <i class="fas fa-arrow-right text-info"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-1 fw-medium">#INS-1087 → Jane Smith</p>
-                                    <small class="text-muted">Forwarded on May 18, 2023</small>
+                                    <p class="mb-1 fw-medium">#INS-{{ $forwarded->id }}
+                                    @if(isset($isAdmin) || isset($isSystemAdmin) || isset($isSupervisor))
+                                        @php
+                                            $recipient = $forwarded->recipients->first();
+                                        @endphp
+                                        → {{ $recipient ? $recipient->full_name : 'Unknown' }}
+                                    @endif
+                                    </p>
+                                    <small class="text-muted">Forwarded on {{ $forwarded->updated_at->format('M d, Y') }}</small>
                                 </div>
                             </div>
-                            <span class="badge bg-info">In Review</span>
+                            @php
+                                $status = 'Pending';
+                                $badgeClass = 'bg-warning text-dark';
+
+                                if ($forwarded->activities()->where('action', 'completed')->exists()) {
+                                    $status = 'Completed';
+                                    $badgeClass = 'bg-success';
+                                } elseif ($forwarded->replies()->exists()) {
+                                    $status = 'In Review';
+                                    $badgeClass = 'bg-info';
+                                }
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">{{ $status }}</span>
                         </li>
-                        <li class="list-group-item border-0 px-3 py-3 d-flex align-items-center bg-light bg-opacity-50">
-                            <div class="d-flex align-items-center flex-grow-1">
-                                <div class="transfer-icon me-3">
-                                    <i class="fas fa-arrow-right text-info"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-1 fw-medium">#INS-1084 → Robert Johnson</p>
-                                    <small class="text-muted">Forwarded on May 15, 2023</small>
-                                </div>
+                        @empty
+                        <li class="list-group-item border-0 px-3 py-4">
+                            <div class="text-center">
+                                <i class="fas fa-random fa-2x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No forwarded instructions</p>
                             </div>
-                            <span class="badge bg-success">Completed</span>
                         </li>
-                        <li class="list-group-item border-0 px-3 py-3 d-flex align-items-center">
-                            <div class="d-flex align-items-center flex-grow-1">
-                                <div class="transfer-icon me-3">
-                                    <i class="fas fa-arrow-right text-info"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-1 fw-medium">#INS-1079 → Sarah Williams</p>
-                                    <small class="text-muted">Forwarded on May 10, 2023</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        </li>
-                        <li class="list-group-item border-0 px-3 py-3 d-flex align-items-center bg-light bg-opacity-50">
-                            <div class="d-flex align-items-center flex-grow-1">
-                                <div class="transfer-icon me-3">
-                                    <i class="fas fa-arrow-right text-info"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-1 fw-medium">#INS-1075 → Michael Brown</p>
-                                    <small class="text-muted">Forwarded on May 5, 2023</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-success">Completed</span>
-                        </li>
+                        @endforelse
                     </ul>
                 </div>
                 <div class="card-footer bg-transparent text-center">
-                    <a href="#" class="btn btn-sm btn-link text-success text-decoration-none">View All Forwarded <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('instructions.index') }}" class="btn btn-sm btn-link text-success text-decoration-none">View All Forwarded <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>
@@ -503,11 +518,11 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(trendsCtx, {
         type: 'line',
         data: {
-            labels: ['Apr 25', 'Apr 30', 'May 5', 'May 10', 'May 15', 'May 20', 'May 25'],
+            labels: @json($trendData['labels']),
             datasets: [
                 {
                     label: 'Total Instructions',
-                    data: [180, 190, 205, 215, 225, 235, 245],
+                    data: @json($trendData['totalData']),
                     borderColor: '#4070f4',
                     backgroundColor: 'rgba(64, 112, 244, 0.1)',
                     tension: 0.4,
@@ -515,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 {
                     label: 'Completed',
-                    data: [120, 135, 145, 155, 165, 175, 189],
+                    data: @json($trendData['completedData']),
                     borderColor: '#2dce89',
                     backgroundColor: 'transparent',
                     tension: 0.4,
@@ -523,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 {
                     label: 'Pending',
-                    data: [60, 55, 60, 60, 60, 60, 42],
+                    data: @json($trendData['pendingData']),
                     borderColor: '#ffc107',
                     backgroundColor: 'transparent',
                     tension: 0.4,
@@ -563,15 +578,15 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(distributionCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Completed', 'Pending', 'In Progress', 'Forwarded', 'Delayed'],
+            labels: @json($statusDistribution['labels']),
             datasets: [{
-                data: [189, 42, 15, 37, 5],
+                data: @json($statusDistribution['data']),
                 backgroundColor: [
-                    '#2dce89',
-                    '#ffc107',
-                    '#11cdef',
-                    '#5e72e4',
-                    '#fb6340'
+                    '#2dce89', // Completed
+                    '#ffc107', // Pending
+                    '#11cdef', // In Progress
+                    '#5e72e4', // Forwarded
+                    '#fb6340'  // Delayed
                 ],
                 borderWidth: 0
             }]
@@ -597,6 +612,25 @@ document.addEventListener('DOMContentLoaded', function() {
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
+
+    // Initialize date range picker if available
+    if(typeof daterangepicker !== 'undefined' && $('#dateRange').length) {
+        $('#dateRange').daterangepicker({
+            opens: 'left',
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+        });
+
+        $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+        });
+    }
 
     // Style modifications for light/dark mode compatibility
     const updateChartsTheme = () => {
@@ -648,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: var(--bg-hover);
+            background: var(--bg-hover, #f8f9fa);
             display: flex;
             align-items: center;
             justify-content: center;
