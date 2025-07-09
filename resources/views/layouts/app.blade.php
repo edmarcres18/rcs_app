@@ -988,21 +988,9 @@
                     <div class="sidebar-section-title">Instructions</div>
                     <ul class="sidebar-nav">
                         <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="My Assigned Instructions">
+                            <a href="{{ route('instructions.create') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') ? 'active' : '' }}" data-title="Instructions">
                                 <i class="fas fa-clipboard-list"></i>
-                                <span>My Assigned Instructions</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="My Created Instructions">
-                                <i class="fas fa-clipboard"></i>
-                                <span>My Created Instructions</span>
-                            </a>
-                        </li>
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" data-title="Create New Instruction">
-                                <i class="fas fa-plus-circle"></i>
-                                <span>Create New Instruction</span>
+                                <span>Instructions</span>
                             </a>
                         </li>
                     </ul>
