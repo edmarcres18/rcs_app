@@ -3,15 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\Instruction;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class InstructionAssigned extends Notification implements ShouldQueue
+class InstructionAssigned extends Notification
 {
-    use Queueable;
-
     protected $instruction;
 
     /**

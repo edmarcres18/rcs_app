@@ -4,15 +4,11 @@ namespace App\Notifications;
 
 use App\Models\Instruction;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class InstructionForwarded extends Notification implements ShouldQueue
+class InstructionForwarded extends Notification
 {
-    use Queueable;
-
     protected $instruction;
     protected $forwarder;
     protected $message;
