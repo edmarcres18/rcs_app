@@ -1414,7 +1414,22 @@
                 })
                 .catch(error => {
                     console.error('Error fetching notifications:', error);
-                    if (placeholder) placeholder.textContent = 'Could not load notifications.';
+                    if (placeholder) {
+                        let errorMessage = 'Could not load notifications.';
+                        if (error.response) {
+                            // The request was made and the server responded with a status code
+                            // that falls out of the range of 2xx
+                            errorMessage += ` (Error: ${error.response.status} ${error.response.statusText})`;
+                            console.error('Response data:', error.response.data);
+                        } else if (error.request) {
+                            // The request was made but no response was received
+                            errorMessage += ' (Error: No response from server)';
+                        } else {
+                            // Something happened in setting up the request that triggered an Error
+                            errorMessage += ' (Error: Request setup failed)';
+                        }
+                        placeholder.textContent = errorMessage;
+                    }
                 });
         }
 

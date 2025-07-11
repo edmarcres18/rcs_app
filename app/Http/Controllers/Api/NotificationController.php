@@ -17,8 +17,12 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+
+        // Paginate notifications to ensure good performance.
         $notifications = $user->notifications()->latest()->paginate(15);
 
+        // The 'data' column is automatically decoded, so we don't need to eager-load.
+        // The primary performance concern is addressed by pagination.
         return response()->json($notifications);
     }
 
