@@ -718,24 +718,25 @@
             border-radius: 8px;
         }
 
-
-
         /* Add notification sidebar styles */
         .notification-sidebar {
             position: fixed;
             top: 0;
-            right: -320px;
+            right: 0;
             width: 320px;
             height: 100%;
             background: var(--bg-card);
             z-index: 1000;
-            transition: all var(--transition-speed) ease;
+            transition: transform var(--transition-speed) ease;
             box-shadow: -5px 0 15px var(--shadow-color);
             overflow-y: auto;
+            transform: translateX(100%);
+            display: flex;
+            flex-direction: column;
         }
 
         .notification-sidebar.active {
-            right: 0;
+            transform: translateX(0);
         }
 
         .notification-header {
@@ -775,17 +776,33 @@
             padding: 0;
             margin: 0;
             list-style: none;
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
         .notification-item {
             padding: 15px 20px;
             border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s ease;
             cursor: pointer;
+            opacity: 0;
+            animation: fadeInItem 0.4s ease-out forwards;
         }
 
         .notification-item:hover {
             background-color: var(--bg-hover);
+            transform: translateX(4px);
+        }
+
+        @keyframes fadeInItem {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .notification-item.unread {
@@ -868,6 +885,40 @@
             border-radius: 50%;
             background: #ff3e3e;
             border: 2px solid var(--bg-navbar);
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(64, 112, 244, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .empty-notifications-placeholder {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
         }
 
         /* Timeline Styles */
@@ -1089,10 +1140,15 @@
             </div>
             <ul class="notification-list" id="notification-list">
                 <!-- Notifications will be dynamically inserted here -->
-                <li class="notification-item-placeholder p-4 text-center text-muted">
-                    No notifications yet.
-                </li>
             </ul>
+            <div class="loading-spinner-container" id="loading-notifications">
+                <div class="loading-spinner"></div>
+                <span>Loading notifications...</span>
+            </div>
+            <div class="empty-notifications-placeholder" id="empty-notifications">
+                <i class="fas fa-bell-slash fa-2x mb-3 text-light"></i>
+                <p>No notifications yet.</p>
+            </div>
         </div>
         <div class="notification-backdrop"></div>
 
@@ -1304,7 +1360,8 @@
                 toggle: document.getElementById('notification-toggle'),
                 badge: document.getElementById('notification-toggle')?.querySelector('.notification-badge'),
                 markAllAsReadBtn: document.getElementById('mark-all-as-read'),
-                placeholder: document.querySelector('.notification-item-placeholder'),
+                loader: document.getElementById('loading-notifications'),
+                emptyState: document.getElementById('empty-notifications'),
                 toast: new bootstrap.Toast(document.getElementById('notification-toast')),
                 toastTitle: document.getElementById('toast-title'),
                 toastBody: document.getElementById('toast-body'),
@@ -1351,10 +1408,10 @@
              */
             setLoading(isLoading) {
                 this.state.isLoading = isLoading;
+                this.elements.loader.style.display = isLoading ? 'flex' : 'none';
                 if (isLoading) {
-                    this.elements.placeholder.style.display = 'block';
-                    this.elements.placeholder.textContent = 'Loading notifications...';
                     this.elements.list.innerHTML = '';
+                    this.elements.emptyState.style.display = 'none';
                 }
             },
 
@@ -1438,13 +1495,15 @@
             renderNotifications(notifications) {
                 this.elements.list.innerHTML = '';
                 if (notifications && notifications.length > 0) {
-                    this.elements.placeholder.style.display = 'none';
-                    notifications.forEach(notification => {
-                        this.elements.list.appendChild(this.createNotificationItem(notification));
+                    this.elements.emptyState.style.display = 'none';
+                    notifications.forEach((notification, index) => {
+                        const item = this.createNotificationItem(notification);
+                        // Staggered animation
+                        item.style.animationDelay = `${index * 0.05}s`;
+                        this.elements.list.appendChild(item);
                     });
                 } else {
-                    this.elements.placeholder.style.display = 'block';
-                    this.elements.placeholder.textContent = 'No notifications yet.';
+                    this.elements.emptyState.style.display = 'block';
                 }
             },
 
@@ -1461,7 +1520,7 @@
                     await this.fetchUnreadCount();
                 } catch (error) {
                     console.error('Error fetching notifications:', error);
-                    this.elements.placeholder.textContent = 'Could not load notifications.';
+                    this.elements.emptyState.textContent = 'Could not load notifications.';
                 } finally {
                     this.setLoading(false);
                 }
@@ -1536,7 +1595,7 @@
              * @param {object} notification - The new notification to add.
              */
             prependNotification(notification) {
-                this.elements.placeholder.style.display = 'none';
+                this.elements.emptyState.style.display = 'none';
                 const newItem = this.createNotificationItem(notification);
                 this.elements.list.prepend(newItem);
                 this.state.unreadCount++;
