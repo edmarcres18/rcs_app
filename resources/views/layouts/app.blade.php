@@ -1047,7 +1047,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="{{ asset('images/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
+                    <img src="{{ versioned_asset('images/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
                     <span class="logo-name">{{ config('app.name', 'Laravel') }}</span>
                 </div>
             </div>
@@ -1297,233 +1297,300 @@
     @auth
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const userId = {{ Auth::id() }};
-        const notificationList = document.getElementById('notification-list');
-        const notificationToggle = document.getElementById('notification-toggle');
-        const notificationBadge = notificationToggle.querySelector('.notification-badge');
-        const markAllAsReadBtn = document.getElementById('mark-all-as-read');
-        const placeholder = document.querySelector('.notification-item-placeholder');
+        const notificationManager = {
+            // UI Elements
+            elements: {
+                list: document.getElementById('notification-list'),
+                toggle: document.getElementById('notification-toggle'),
+                badge: document.getElementById('notification-toggle')?.querySelector('.notification-badge'),
+                markAllAsReadBtn: document.getElementById('mark-all-as-read'),
+                placeholder: document.querySelector('.notification-item-placeholder'),
+                toast: new bootstrap.Toast(document.getElementById('notification-toast')),
+                toastTitle: document.getElementById('toast-title'),
+                toastBody: document.getElementById('toast-body'),
+            },
 
-        /**
-         * Formats a date string into a human-readable "time ago" format.
-         * @param {string} dateString - The ISO date string to format.
-         * @returns {string} The formatted time ago string.
-         */
-        function formatTimeAgo(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const now = new Date();
-            const seconds = Math.floor((now - date) / 1000);
-            if (seconds < 10) return "just now";
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " years ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " months ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " days ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " hours ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " minutes ago";
-            return Math.floor(seconds) + " seconds ago";
-        }
+            // State
+            state: {
+                userId: {{ Auth::id() }},
+                isLoading: false,
+                unreadCount: 0,
+            },
 
-        /**
-         * Creates a notification list item from a notification object.
-         * Handles missing data gracefully to prevent "undefined" in the UI.
-         * @param {object} notification - The notification object from the API or Echo.
-         * @returns {HTMLElement} The created list item element.
-         */
-        function createNotificationItem(notification) {
-            const item = document.createElement('li');
-            item.classList.add('notification-item');
-            if (!notification.read_at) {
-                item.classList.add('unread');
-            }
-            item.dataset.id = notification.id;
+            // API Endpoints
+            api: {
+                index: '{{ route("api.notifications.index") }}',
+                unread: '{{ route("api.notifications.unread") }}',
+                markAsRead: (id) => `/api/notifications/${id}/mark-as-read`,
+                markAllAsRead: '{{ route("api.notifications.read.all") }}',
+            },
 
-            // Safely access notification data with fallbacks
-            const data = notification.data || {};
-            const url = data.url || '#';
-            const title = data.title || 'Notification';
-            const body = data.body || 'You have a new notification.';
-            const type = data.type || 'default';
+            /**
+             * Initialize the notification system.
+             */
+            init() {
+                if (!this.elements.list) return; // Don't run if notification UI is not present
+                this.addEventListeners();
+                this.fetchNotifications();
+                this.listenForRealTimeNotifications();
+            },
 
-            // Define icons for each notification type
-            const iconMap = {
-                instruction_assigned: 'fa-file-alt',
-                instruction_replied: 'fa-reply',
-                instruction_forwarded: 'fa-share',
-                instruction_deadline_reminder: 'fa-clock',
-                instruction_forwarded_to_sender: 'fa-paper-plane',
-                default: 'fa-bell'
-            };
-            const icon = iconMap[type] || 'fa-bell';
-
-            item.innerHTML = `
-                <div class="notification-content">
-                    <div class="notification-icon"><i class="fas ${icon}"></i></div>
-                    <div class="notification-text">
-                        <h5 class="notification-title">${title}</h5>
-                        <p class="notification-desc">${body}</p>
-                        <span class="notification-time">${formatTimeAgo(notification.created_at)}</span>
-                    </div>
-                </div>
-            `;
-
-            // Make the item clickable only if a valid URL is provided
-            if (url && url !== '#') {
-                item.dataset.url = url;
-                item.style.cursor = 'pointer';
-                item.addEventListener('click', () => markAsRead(notification.id, url));
-            }
-
-            return item;
-        }
-
-        /**
-         * Adds a new notification to the top of the list.
-         * @param {object} notification - The new notification to add.
-         */
-        function prependNotification(notification) {
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-            const newItem = createNotificationItem(notification);
-            notificationList.prepend(newItem);
-            updateUnreadCountBadge(true); // Increment unread count
-        }
-
-        /**
-         * Fetches all notifications from the API and populates the list.
-         */
-        function fetchNotifications() {
-            axios.get('{{ route("api.notifications.index") }}')
-                .then(response => {
-                    const notifications = response.data.data;
-                    notificationList.innerHTML = ''; // Clear current list
-                    if (notifications && notifications.length > 0) {
-                        if (placeholder) placeholder.style.display = 'none';
-                        notifications.forEach(notification => {
-                            notificationList.appendChild(createNotificationItem(notification));
-                        });
-                    } else {
-                        if (placeholder) placeholder.style.display = 'block';
-                    }
-                    fetchUnreadCount();
-                })
-                .catch(error => {
-                    console.error('Error fetching notifications:', error);
-                    if (placeholder) placeholder.textContent = 'Could not load notifications.';
+            /**
+             * Add all necessary event listeners.
+             */
+            addEventListeners() {
+                this.elements.markAllAsReadBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.markAllAsRead();
                 });
-        }
+            },
 
-        /**
-         * Fetches the count of unread notifications and updates the badge.
-         */
-        function fetchUnreadCount() {
-            axios.get('{{ route("api.notifications.unread") }}')
-                .then(response => {
-                    updateUnreadCountBadge(false, response.data.count);
-                })
-                .catch(error => console.error('Error fetching unread count:', error));
-        }
+            /**
+             * Sets the loading state and updates the UI accordingly.
+             * @param {boolean} isLoading - The new loading state.
+             */
+            setLoading(isLoading) {
+                this.state.isLoading = isLoading;
+                if (isLoading) {
+                    this.elements.placeholder.style.display = 'block';
+                    this.elements.placeholder.textContent = 'Loading notifications...';
+                    this.elements.list.innerHTML = '';
+                }
+            },
 
-        /**
-         * Updates the visibility of the unread notification badge.
-         * @param {boolean} isNew - True if this is a new notification, false otherwise.
-         * @param {number} [count=0] - The total number of unread notifications.
-         */
-        function updateUnreadCountBadge(isNew, count = 0) {
-            let showBadge = false;
-            if (isNew) {
-                showBadge = true;
-            } else {
-                showBadge = count > 0;
-            }
-            notificationBadge.style.display = showBadge ? 'block' : 'none';
-        }
+            /**
+             * Formats a date string into a human-readable "time ago" format.
+             * @param {string} dateString - The ISO date string to format.
+             * @returns {string} The formatted time ago string.
+             */
+            formatTimeAgo(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
 
-        /**
-         * Marks a notification as read via API call.
-         * If a redirect URL is provided, it navigates to that URL.
-         * @param {string} notificationId - The ID of the notification to mark as read.
-         * @param {string} redirectUrl - The URL to redirect to after marking as read.
-         */
-        function markAsRead(notificationId, redirectUrl) {
-            axios.post(`/api/notifications/${notificationId}/mark-as-read`)
-                .then(() => {
+                if (seconds < 10) return "just now";
+                const intervals = {
+                    year: 31536000,
+                    month: 2592000,
+                    day: 86400,
+                    hour: 3600,
+                    minute: 60,
+                };
+
+                for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                    const interval = seconds / secondsInUnit;
+                    if (interval > 1) {
+                        return `${Math.floor(interval)} ${unit}${Math.floor(interval) > 1 ? 's' : ''} ago`;
+                    }
+                }
+                return `${Math.floor(seconds)} seconds ago`;
+            },
+
+            /**
+             * Creates a notification list item from a notification object.
+             * @param {object} notification - The notification object.
+             * @returns {HTMLLIElement} The created list item element.
+             */
+            createNotificationItem(notification) {
+                const item = document.createElement('li');
+                item.className = `notification-item ${!notification.read_at ? 'unread' : ''}`;
+                item.dataset.id = notification.id;
+
+                const data = notification.data || {};
+                const url = data.url || '#';
+                const title = data.title || 'Notification';
+                const body = data.body || 'You have a new notification.';
+                const type = data.type || 'default';
+                const iconMap = {
+                    instruction_assigned: 'fa-file-alt',
+                    instruction_replied: 'fa-reply',
+                    instruction_forwarded: 'fa-share',
+                    instruction_deadline_reminder: 'fa-clock',
+                    instruction_forwarded_to_sender: 'fa-paper-plane',
+                    default: 'fa-bell',
+                };
+                const icon = iconMap[type] || 'fa-bell';
+
+                item.innerHTML = `
+                    <div class="notification-content">
+                        <div class="notification-icon"><i class="fas ${icon}"></i></div>
+                        <div class="notification-text">
+                            <h5 class="notification-title">${title}</h5>
+                            <p class="notification-desc">${body}</p>
+                            <span class="notification-time">${this.formatTimeAgo(notification.created_at)}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (url !== '#') {
+                    item.dataset.url = url;
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', () => this.markAsRead(notification.id, url));
+                }
+                return item;
+            },
+
+            /**
+             * Renders the list of notifications in the UI.
+             * @param {Array} notifications - An array of notification objects.
+             */
+            renderNotifications(notifications) {
+                this.elements.list.innerHTML = '';
+                if (notifications.length > 0) {
+                    this.elements.placeholder.style.display = 'none';
+                    notifications.forEach(notification => {
+                        this.elements.list.appendChild(this.createNotificationItem(notification));
+                    });
+                } else {
+                    this.elements.placeholder.style.display = 'block';
+                    this.elements.placeholder.textContent = 'No notifications yet.';
+                }
+            },
+
+            /**
+             * Fetches all notifications from the API and updates the UI.
+             */
+            async fetchNotifications() {
+                if (this.state.isLoading) return;
+                this.setLoading(true);
+
+                try {
+                    const response = await axios.get(this.api.index);
+                    this.renderNotifications(response.data.data);
+                    await this.fetchUnreadCount();
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                    this.elements.placeholder.textContent = 'Could not load notifications.';
+                } finally {
+                    this.setLoading(false);
+                }
+            },
+
+            /**
+             * Fetches the count of unread notifications and updates the badge.
+             */
+            async fetchUnreadCount() {
+                try {
+                    const response = await axios.get(this.api.unread);
+                    this.state.unreadCount = response.data.count;
+                    this.updateUnreadCountBadge();
+                } catch (error) {
+                    console.error('Error fetching unread count:', error);
+                }
+            },
+
+            /**
+             * Updates the visibility and count of the unread notification badge.
+             */
+            updateUnreadCountBadge() {
+                if (this.elements.badge) {
+                    this.elements.badge.style.display = this.state.unreadCount > 0 ? 'block' : 'none';
+                }
+            },
+
+            /**
+             * Marks a specific notification as read.
+             * @param {string} notificationId - The ID of the notification.
+             * @param {string} redirectUrl - The URL to redirect to after marking as read.
+             */
+            async markAsRead(notificationId, redirectUrl) {
+                try {
+                    await axios.post(this.api.markAsRead(notificationId));
                     if (redirectUrl && redirectUrl !== '#') {
                         window.location.href = redirectUrl;
                     } else {
-                        // If no URL, just update the UI locally
-                        const item = notificationList.querySelector(`li[data-id="${notificationId}"]`);
-                        if (item) item.classList.remove('unread');
-                        fetchUnreadCount();
+                        const item = this.elements.list.querySelector(`li[data-id="${notificationId}"]`);
+                        if (item && item.classList.contains('unread')) {
+                            item.classList.remove('unread');
+                            this.state.unreadCount = Math.max(0, this.state.unreadCount - 1);
+                            this.updateUnreadCountBadge();
+                        }
                     }
-                })
-                .catch(error => console.error('Error marking notification as read:', error));
-        }
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                    this.showToast('Error', 'Failed to mark notification as read.');
+                }
+            },
 
-        /**
-         * Attaches a click listener to the "Mark all as read" button.
-         */
-        markAllAsReadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            axios.post('{{ route("api.notifications.read.all") }}')
-                .then(() => {
-                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+            /**
+             * Marks all unread notifications as read.
+             */
+            async markAllAsRead() {
+                try {
+                    await axios.post(this.api.markAllAsRead);
+                    this.elements.list.querySelectorAll('.notification-item.unread').forEach(item => {
                         item.classList.remove('unread');
                     });
-                    updateUnreadCountBadge(false, 0); // All are read
-                })
-                .catch(error => console.error('Error marking all as read:', error));
-        });
+                    this.state.unreadCount = 0;
+                    this.updateUnreadCountBadge();
+                    this.showToast('Success', 'All notifications marked as read.', 'success');
+                } catch (error) {
+                    console.error('Error marking all as read:', error);
+                    this.showToast('Error', 'Failed to mark all notifications as read.');
+                }
+            },
 
-        // --- Initialization ---
+            /**
+             * Adds a new notification to the top of the list.
+             * @param {object} notification - The new notification to add.
+             */
+            prependNotification(notification) {
+                this.elements.placeholder.style.display = 'none';
+                const newItem = this.createNotificationItem(notification);
+                this.elements.list.prepend(newItem);
+                this.state.unreadCount++;
+                this.updateUnreadCountBadge();
+            },
 
-        // Initial fetch of notifications when the page loads
-        fetchNotifications();
+            /**
+             * Shows a toast notification.
+             * @param {string} title - The title of the toast.
+             * @param {string} body - The body content of the toast.
+             * @param {string} type - The type of toast (e.g., 'success').
+             */
+            showToast(title, body, type = 'default') {
+                this.elements.toastTitle.textContent = title;
+                this.elements.toastBody.textContent = body;
+                // You can add logic here to change toast icon/color based on type
+                this.elements.toast.show();
+            },
 
-        // Listen for real-time notifications via Laravel Echo
-        if (window.Echo) {
-            const toastElement = document.getElementById('notification-toast');
-            const toast = new bootstrap.Toast(toastElement);
+            /**
+             * Listens for real-time notifications via Laravel Echo.
+             */
+            listenForRealTimeNotifications() {
+                if (window.Echo) {
+                    window.Echo.private(`App.Models.User.${this.state.userId}`)
+                        .notification((notification) => {
+                            console.log('New notification received:', notification);
 
-            window.Echo.private(`App.Models.User.${userId}`)
-                .notification((notification) => {
-                    console.log('New notification received:', notification);
+                            const newNotificationData = {
+                                id: notification.id,
+                                data: notification.data || {},
+                                read_at: null,
+                                created_at: new Date().toISOString(),
+                            };
 
-                    // Prepend the new notification to the sidebar list
-                    prependNotification({
-                        id: notification.id,
-                        data: notification.data || {},
-                        read_at: null, // New notifications are always unread
-                        created_at: new Date().toISOString()
-                    });
+                            this.prependNotification(newNotificationData);
 
-                    // --- Show a toast for the new notification ---
-                    const toastTitle = document.getElementById('toast-title');
-                    const toastBody = document.getElementById('toast-body');
+                            const data = notification.data || {};
+                            const url = data.url || '#';
+                            this.showToast(data.title || 'New Notification', data.body || 'You have a new message.');
 
-                    // Safely access data
-                    const data = notification.data || {};
-                    toastTitle.textContent = data.title || 'New Notification';
-                    toastBody.textContent = data.body || 'You have a new notification.';
+                            const toastElement = this.elements.toast._element;
+                            toastElement.style.cursor = 'default';
+                            toastElement.onclick = null;
+                            if (url !== '#') {
+                                toastElement.style.cursor = 'pointer';
+                                toastElement.onclick = () => this.markAsRead(notification.id, url);
+                            }
+                        });
+                }
+            },
+        };
 
-                    // Make the toast clickable if there is a URL
-                    toastBody.style.cursor = 'default';
-                    toastElement.onclick = null; // Clear previous listener
-                    if (data.url && data.url !== '#') {
-                        toastBody.style.cursor = 'pointer';
-                        toastElement.onclick = () => {
-                            markAsRead(notification.id, data.url);
-                        };
-                    }
-
-                    toast.show();
-                });
-        }
+        notificationManager.init();
     });
     </script>
     @endauth

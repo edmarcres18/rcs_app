@@ -9,7 +9,7 @@
             <div class="card shadow-lg auth-card">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <img src="{{ asset('images/app_logo/logo.png') }}" alt="logo" style="width: 80px;">
+                        @include('auth.partials._logo')
                         <h4 class="mt-3 mb-0">Forgot Your Password?</h4>
                         <p class="text-muted">No problem. Enter your email address and we'll send you a link to reset it.</p>
                     </div>

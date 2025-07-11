@@ -6,6 +6,7 @@ use App\Http\Controllers\PendingUpdateController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InstructionController;
 use App\Http\Controllers\InstructionMonitorController;
+use App\Http\Controllers\SystemSettingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\NotificationController;
@@ -41,6 +42,12 @@ Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.'
     Route::get('pending-updates', [PendingUpdateController::class, 'index'])->name('pending-updates.index');
     Route::post('pending-updates/{pendingUpdate}/approve', [PendingUpdateController::class, 'approve'])->name('pending-updates.approve');
     Route::post('pending-updates/{pendingUpdate}/reject', [PendingUpdateController::class, 'reject'])->name('pending-updates.reject');
+
+    // System Settings
+    Route::get('system-settings', [SystemSettingController::class, 'index'])->name('system-settings.index');
+    Route::post('system-settings', [SystemSettingController::class, 'store'])->name('system-settings.store');
+    Route::get('system-settings/mail', [SystemSettingController::class, 'mail'])->name('system-settings.mail');
+    Route::post('system-settings/mail', [SystemSettingController::class, 'updateMail'])->name('system-settings.mail.update');
 });
 
 // Profile routes

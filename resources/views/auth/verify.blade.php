@@ -8,7 +8,7 @@
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-lg auth-card">
                 <div class="card-body p-4 p-md-5 text-center">
-                    <img src="{{ asset('images/app_logo/logo.png') }}" alt="logo" style="width: 80px;">
+                    @include('auth.partials._logo')
                     <h4 class="mt-3 mb-2">{{ __('Verify Your Email Address') }}</h4>
 
                     <p class="text-muted mb-4">

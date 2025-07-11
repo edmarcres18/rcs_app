@@ -163,3 +163,20 @@ if (!function_exists('format_recipients')) {
         return implode(', ', $recipientStrings);
     }
 }
+
+if (!function_exists('versioned_asset')) {
+    /**
+     * Generates a versioned asset path with a cache-busting query string.
+     *
+     * @param string $path
+     * @return string
+     */
+    function versioned_asset(string $path): string
+    {
+        $fullPath = public_path($path);
+        if (file_exists($fullPath)) {
+            return asset($path) . '?v=' . filemtime($fullPath);
+        }
+        return asset($path);
+    }
+}

@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class NotificationController extends Controller
 {
@@ -16,13 +18,22 @@ class NotificationController extends Controller
      * Get all notifications for the authenticated user.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request)
     {
-        $notifications = Auth::user()->notifications()->latest()->paginate(15);
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
 
-        return NotificationResource::collection($notifications);
+            $notifications = $user->notifications()->latest()->paginate(15);
+            return NotificationResource::collection($notifications);
+        } catch (Throwable $e) {
+            Log::error('Error fetching notifications: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while fetching notifications.'], 500);
+        }
     }
 
     /**
@@ -34,11 +45,16 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, DatabaseNotification $notification): JsonResponse
     {
-        $this->authorize('update', $notification);
+        try {
+            $this->authorize('update', $notification);
 
-        $notification->markAsRead();
+            $notification->markAsRead();
 
-        return response()->json(['success' => true, 'message' => 'Notification marked as read.']);
+            return response()->json(['success' => true, 'message' => 'Notification marked as read.']);
+        } catch (Throwable $e) {
+            Log::error('Error marking notification as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while marking the notification as read.'], 500);
+        }
     }
 
     /**
@@ -49,9 +65,19 @@ class NotificationController extends Controller
      */
     public function markAllAsRead(Request $request): JsonResponse
     {
-        Auth::user()->unreadNotifications->markAsRead();
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
 
-        return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
+            $user->unreadNotifications->markAsRead();
+
+            return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
+        } catch (Throwable $e) {
+            Log::error('Error marking all notifications as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while marking all notifications as read.'], 500);
+        }
     }
 
     /**
@@ -62,12 +88,22 @@ class NotificationController extends Controller
      */
     public function unread(Request $request): JsonResponse
     {
-        $unreadNotifications = Auth::user()->unreadNotifications;
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
 
-        return response()->json([
-            'success' => true,
-            'count' => $unreadNotifications->count(),
-            'notifications' => NotificationResource::collection($unreadNotifications)
-        ]);
+            $unreadNotifications = $user->unreadNotifications;
+
+            return response()->json([
+                'success' => true,
+                'count' => $unreadNotifications->count(),
+                'notifications' => NotificationResource::collection($unreadNotifications)
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Error fetching unread notifications: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while fetching unread notifications.'], 500);
+        }
     }
 }

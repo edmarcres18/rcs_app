@@ -9,7 +9,7 @@
             <div class="card shadow-lg auth-card">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <img src="{{ asset('images/app_logo/logo.png') }}" alt="logo" style="width: 80px;">
+                        @include('auth.partials._logo')
                         <h4 class="mt-3 mb-0">Verify Your Account</h4>
                         <p class="text-muted">An OTP has been sent to your email. Please enter it below.</p>
                     </div>

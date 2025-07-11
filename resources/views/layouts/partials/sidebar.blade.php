@@ -113,12 +113,6 @@
                             <span>System Logs</span>
                         </a>
                     </li>
-                    <li class="sidebar-nav-item">
-                        <a href="#" class="sidebar-nav-link" data-title="Audit Trail">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Audit Trail</span>
-                        </a>
-                    </li>
                 </ul>
             </div>
 
@@ -153,15 +147,9 @@
                 <div class="sidebar-section-title">Settings</div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
-                        <a href="#" class="sidebar-nav-link" data-title="App Settings">
+                        <a href="{{ route('admin.system-settings.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.system-settings.index') || Request::routeIs('admin.system-settings.mail') ? 'active' : '' }}" data-title="System Settings">
                             <i class="fas fa-cogs"></i>
-                            <span>App Settings</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-nav-item">
-                        <a href="#" class="sidebar-nav-link" data-title="Email Configuration">
-                            <i class="fas fa-envelope-open"></i>
-                            <span>Email Configuration</span>
+                            <span>System Settings</span>
                         </a>
                     </li>
                 </ul>
