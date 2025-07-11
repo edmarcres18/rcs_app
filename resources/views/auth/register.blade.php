@@ -3,7 +3,7 @@
 @section('title', 'Register')
 
 @section('content')
-<div class="container auth-form-container">
+<div class="container">
     <div class="row justify-content-center w-100">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-lg auth-card">

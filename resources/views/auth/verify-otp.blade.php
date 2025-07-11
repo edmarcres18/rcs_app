@@ -3,7 +3,7 @@
 @section('title', 'Verify OTP')
 
 @section('content')
-<div class="container auth-form-container">
+<div class="container">
     <div class="row justify-content-center w-100">
         <div class="col-md-6 col-lg-5">
             <div class="card shadow-lg auth-card">

@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.2",
         "jenssegers/agent": "^2.6",
+        "ladumor/laravel-pwa": "^0.0.5",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.1",
         "laravel/tinker": "^2.9",

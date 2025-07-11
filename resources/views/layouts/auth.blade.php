@@ -14,7 +14,15 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#317EFB"/>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('{{ asset('serviceworker.js') }}', { scope: '/' });
+        }
+    </script>
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
@@ -23,78 +31,60 @@
 
     <style>
         .auth-form-container {
-            min-height: calc(100vh - 56px - 3rem); /* 56px for navbar, 3rem for py-4 on main */
+            min-height: 100vh;
             display: flex;
             align-items: center;
+            padding: 1.5rem 0;
         }
         .auth-card {
             border-radius: 1rem;
+        }
+        /* On small screens, make the card take up more space and feel more integrated */
+        @media (max-width: 575.98px) {
+            .auth-form-container {
+                align-items: stretch; /* Stretch card to full height */
+                padding: 0;
+            }
+            .auth-card {
+                border: 0;
+                border-radius: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .card.auth-card {
+                box-shadow: none !important;
+            }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('images/app_logo/logo.png') }}" alt="{{ config('app.name', 'Laravel') }}" style="height: 35px;">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
-
-                    </ul>
-
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('register') ? 'active' : '' }}" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <main class="py-4 bg-light">
+        <main class="bg-light auth-form-container">
             @yield('content')
         </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+
             let successMessage = '';
             @if (session('success'))
                 successMessage = '{{ session('success') }}';
@@ -105,26 +95,16 @@
             @endif
 
             if (successMessage) {
-                 Swal.fire({
-                    toast: true,
-                    position: 'top-end',
+                 Toast.fire({
                     icon: 'success',
-                    title: successMessage,
-                    showConfirmButton: false,
-                    timer: 3500,
-                    timerProgressBar: true,
+                    title: successMessage
                 });
             }
 
             @if (session('error'))
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
+                Toast.fire({
                     icon: 'error',
-                    title: '{{ session('error') }}',
-                    showConfirmButton: false,
-                    timer: 3500,
-                    timerProgressBar: true,
+                    title: '{{ session('error') }}'
                 });
             @endif
             @if ($errors->any())
