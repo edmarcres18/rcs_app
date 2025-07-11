@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\PendingUpdate;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('*', function ($view) {
+            if (Auth::check() && Auth::user()->roles === \App\Enums\UserRole::SYSTEM_ADMIN) {
+                $pendingUpdatesCount = PendingUpdate::where('status', 'pending')->count();
+                $view->with('pendingUpdatesCount', $pendingUpdatesCount);
+            } else {
+                $view->with('pendingUpdatesCount', 0);
+            }
+        });
     }
 }
