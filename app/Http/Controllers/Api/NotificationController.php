@@ -16,8 +16,10 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $notifications = $user->notifications()->latest()->take(15)->get();
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+        $notifications = $request->user()->notifications()->latest()->take(15)->get();
 
         return response()->json($notifications);
     }
@@ -31,8 +33,10 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, $id)
     {
-        $user = Auth::user();
-        $notification = $user->notifications()->where('id', $id)->first();
+        $notification = $request->user()
+                                ->notifications()
+                                ->where('id', $id)
+                                ->first();
 
         if ($notification) {
             $notification->markAsRead();
