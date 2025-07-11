@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\PendingUpdateController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InstructionController;
 use App\Http\Controllers\InstructionMonitorController;
@@ -33,6 +34,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/activities', [UserController::class, 'activities'])->name('users.activities');
     Route::get('activities', [UserController::class, 'allActivities'])->name('users.all-activities');
+});
+
+// Pending Updates Routes for SYSTEM_ADMIN
+Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('pending-updates', [PendingUpdateController::class, 'index'])->name('pending-updates.index');
+    Route::post('pending-updates/{pendingUpdate}/approve', [PendingUpdateController::class, 'approve'])->name('pending-updates.approve');
+    Route::post('pending-updates/{pendingUpdate}/reject', [PendingUpdateController::class, 'reject'])->name('pending-updates.reject');
 });
 
 // Profile routes

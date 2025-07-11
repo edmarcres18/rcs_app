@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Requests\UserRequest;
+use App\Models\PendingUpdate;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\UserActivityService;
@@ -27,14 +28,6 @@ class UserController extends Controller
             }
             return $next($request);
         });
-
-        // Only SYSTEM_ADMIN can delete users
-        $this->middleware(function ($request, $next) {
-            if (!Auth::check() || Auth::user()->roles !== UserRole::SYSTEM_ADMIN) {
-                abort(403, 'Only System Administrators can delete users.');
-            }
-            return $next($request);
-        })->only(['destroy']);
     }
 
     /**
@@ -43,6 +36,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $users = User::query()
+            ->where('roles', '!=', UserRole::SYSTEM_ADMIN)
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
@@ -109,6 +103,9 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        if (Auth::user()->roles !== UserRole::SYSTEM_ADMIN) {
+            abort(403, 'Only System Administrators can edit user details directly.');
+        }
         return view('users.edit', compact('user'));
     }
 
@@ -118,63 +115,104 @@ class UserController extends Controller
     public function update(UserRequest $request, User $user)
     {
         $validated = $request->validated();
+        $currentUser = Auth::user();
 
-        // Store old data for activity logging
-        $oldData = $user->toArray();
+        if ($currentUser->roles === UserRole::SYSTEM_ADMIN) {
+            // Store old data for activity logging
+            $oldData = $user->toArray();
 
-        if (isset($validated['password']) && $validated['password'] !== null) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        // Handle avatar upload
-        if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
-            if ($user->avatar && file_exists(public_path($user->avatar))) {
-                unlink(public_path($user->avatar));
+            if (isset($validated['password']) && $validated['password'] !== null) {
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                unset($validated['password']);
             }
 
-            $avatar = $request->file('avatar');
-            $filename = time() . '_' . Str::slug($validated['first_name']) . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('uploads/avatars'), $filename);
-            $validated['avatar'] = 'uploads/avatars/' . $filename;
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                // Delete old avatar if exists
+                if ($user->avatar && file_exists(public_path($user->avatar))) {
+                    unlink(public_path($user->avatar));
+                }
+
+                $avatar = $request->file('avatar');
+                $filename = time() . '_' . Str::slug($validated['first_name']) . '.' . $avatar->getClientOriginalExtension();
+                $avatar->move(public_path('uploads/avatars'), $filename);
+                $validated['avatar'] = 'uploads/avatars/' . $filename;
+            }
+
+            $user->update($validated);
+
+            // Log the activity
+            UserActivityService::logUserUpdated($currentUser, $user, $oldData);
+
+            return redirect()->route('users.show', $user)
+                ->with('success', 'User updated successfully!');
         }
 
-        $user->update($validated);
+        if ($currentUser->roles === UserRole::ADMIN) {
+            // Admins cannot update passwords or avatars directly.
+            unset($validated['password']);
+            if ($request->hasFile('avatar')) {
+                return redirect()->back()
+                    ->with('error', 'Admins cannot update avatars. Please ask a System Administrator.');
+            }
 
-        // Log the activity
-        if (Auth::check()) {
-            UserActivityService::logUserUpdated(Auth::user(), $user, $oldData);
+            PendingUpdate::create([
+                'user_id' => $user->id,
+                'requester_id' => $currentUser->id,
+                'type' => 'update',
+                'data' => $validated,
+            ]);
+
+            return redirect()->route('users.show', $user)
+                ->with('success', 'User update request submitted for approval.');
         }
 
-        return redirect()->route('users.show', $user)
-            ->with('success', 'User updated successfully!');
+        abort(403, 'Unauthorized action.');
     }
 
     /**
      * Remove the specified user from storage.
-     * Only SYSTEM_ADMIN can access this method.
      */
     public function destroy(User $user)
     {
-        // Store user data for activity logging
-        $deletedUser = clone $user;
+        $currentUser = Auth::user();
 
-        // Delete avatar if exists
-        if ($user->avatar && file_exists(public_path($user->avatar))) {
-            unlink(public_path($user->avatar));
+        if ($user->id === $currentUser->id) {
+            return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
 
-        $user->delete();
+        if ($currentUser->roles === UserRole::SYSTEM_ADMIN) {
+            // Store user data for activity logging
+            $deletedUser = clone $user;
 
-        // Log the activity
-        if (Auth::check()) {
-            UserActivityService::logUserDeleted(Auth::user(), $deletedUser);
+            // Delete avatar if exists
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
+            }
+
+            // To ensure a hard delete, we can use forceDelete()
+            $user->forceDelete();
+
+            // Log the activity
+            UserActivityService::logUserDeleted($currentUser, $deletedUser);
+
+            return redirect()->route('users.index')
+                ->with('success', 'User permanently deleted successfully!');
         }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully!');
+        if ($currentUser->roles === UserRole::ADMIN) {
+            PendingUpdate::create([
+                'user_id' => $user->id,
+                'requester_id' => $currentUser->id,
+                'type' => 'delete',
+            ]);
+
+            return redirect()->route('users.index')
+                ->with('success', 'Request to delete user has been submitted for approval.');
+        }
+
+        abort(403, 'Unauthorized action.');
     }
 
     /**

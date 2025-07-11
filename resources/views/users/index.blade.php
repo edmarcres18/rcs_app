@@ -86,9 +86,11 @@
                                         <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @if(Auth::user()->roles === \App\Enums\UserRole::SYSTEM_ADMIN)
                                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        @endif
                                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                             @csrf
                                             @method('DELETE')

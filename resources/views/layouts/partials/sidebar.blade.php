@@ -137,6 +137,12 @@
                             <span>All User Activity</span>
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.pending-updates.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.pending-updates.index') ? 'active' : '' }}" data-title="Pending Approvals">
+                            <i class="fas fa-tasks"></i>
+                            <span>Pending Approvals</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
 
