@@ -1,132 +1,101 @@
 @extends('layouts.auth')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Register') }}</div>
+@section('title', 'Register')
 
-                <div class="card-body">
+@section('content')
+<div class="container auth-form-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg auth-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ asset('images/app_logo/logo.png') }}" alt="logo" style="width: 80px;">
+                        <h4 class="mt-3 mb-0">Create an Account</h4>
+                        <p class="text-muted">Get started with your free account.</p>
+                    </div>
+
                     <form method="POST" action="{{ route('register') }}">
                         @csrf
-
-                        <div class="row mb-3">
-                            <label for="first_name" class="col-md-4 col-form-label text-md-end">{{ __('First Name') }}</label>
-
+                        <div class="row">
                             <div class="col-md-6">
-                                <input id="first_name" type="text" class="form-control @error('first_name') is-invalid @enderror" name="first_name" value="{{ old('first_name') }}" required autocomplete="first_name" autofocus>
-
-                                @error('first_name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="form-group mb-3">
+                                    <label for="first_name" class="form-label">{{ __('First Name') }} <span class="text-danger">*</span></label>
+                                    <input id="first_name" type="text" class="form-control" name="first_name" value="{{ old('first_name') }}" required autocomplete="first_name" autofocus placeholder="e.g. John">
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="middle_name" class="col-md-4 col-form-label text-md-end">{{ __('Middle Name') }}</label>
-
                             <div class="col-md-6">
-                                <input id="middle_name" type="text" class="form-control @error('middle_name') is-invalid @enderror" name="middle_name" value="{{ old('middle_name') }}" autocomplete="middle_name">
-
-                                @error('middle_name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="form-group mb-3">
+                                    <label for="last_name" class="form-label">{{ __('Last Name') }} <span class="text-danger">*</span></label>
+                                    <input id="last_name" type="text" class="form-control" name="last_name" value="{{ old('last_name') }}" required autocomplete="last_name" placeholder="e.g. Doe">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="last_name" class="col-md-4 col-form-label text-md-end">{{ __('Last Name') }}</label>
-
+                        <div class="row">
                             <div class="col-md-6">
-                                <input id="last_name" type="text" class="form-control @error('last_name') is-invalid @enderror" name="last_name" value="{{ old('last_name') }}" required autocomplete="last_name">
-
-                                @error('last_name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="form-group mb-3">
+                                    <label for="middle_name" class="form-label">{{ __('Middle Name') }}</label>
+                                    <input id="middle_name" type="text" class="form-control" name="middle_name" value="{{ old('middle_name') }}" autocomplete="middle_name" placeholder="Optional">
+                                </div>
+                            </div>
+                             <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="nickname" class="form-label">{{ __('Nickname') }} <span class="text-danger">*</span></label>
+                                    <input id="nickname" type="text" class="form-control" name="nickname" value="{{ old('nickname') }}" required autocomplete="nickname" placeholder="e.g. johndoe">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="nickname" class="col-md-4 col-form-label text-md-end">{{ __('Nickname') }}</label>
+                        <div class="form-group mb-3">
+                            <label for="email" class="form-label">{{ __('Email Address') }} <span class="text-danger">*</span></label>
+                            <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="e.g. john.doe@example.com">
+                        </div>
 
+                        <div class="form-group mb-3">
+                            <label for="roles" class="form-label">{{ __('Role') }} <span class="text-danger">*</span></label>
+                            <select id="roles" class="form-select" name="roles" required>
+                                <option value="" disabled selected>Select your role</option>
+                                <option value="EMPLOYEE" {{ old('roles') == 'EMPLOYEE' ? 'selected' : '' }}>Employee</option>
+                                <option value="SUPERVISOR" {{ old('roles') == 'SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
-                                <input id="nickname" type="text" class="form-control @error('nickname') is-invalid @enderror" name="nickname" value="{{ old('nickname') }}" required autocomplete="nickname">
-
-                                @error('nickname')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="form-group mb-3">
+                                    <label for="password" class="form-label">{{ __('Password') }} <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input id="password" type="password" class="form-control" name="password" required autocomplete="new-password" placeholder="Create a password">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="fa fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
                             <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="form-group mb-3">
+                                    <label for="password-confirm" class="form-label">{{ __('Confirm Password') }} <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm password">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirm">
+                                            <i class="fa fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="roles" class="col-md-4 col-form-label text-md-end">{{ __('Role') }}</label>
-
-                            <div class="col-md-6">
-                                <select id="roles" class="form-select @error('roles') is-invalid @enderror" name="roles" required>
-                                    <option value="EMPLOYEE" {{ old('roles') == 'EMPLOYEE' ? 'selected' : '' }}>Employee</option>
-                                    <option value="SUPERVISOR" {{ old('roles') == 'SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
-                                </select>
-
-                                @error('roles')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {{ __('Register') }}
+                            </button>
                         </div>
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                        @if (Route::has('login'))
+                        <div class="text-center mt-4">
+                            <p class="text-muted">Already have an account? <a href="{{ route('login') }}" class="text-decoration-none fw-medium">Sign In</a></p>
                         </div>
-
-                        <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Register') }}
-                                </button>
-                            </div>
-                        </div>
+                        @endif
                     </form>
                 </div>
             </div>
@@ -134,3 +103,27 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function togglePasswordVisibility(toggleBtnId, passwordInputId) {
+        const toggleBtn = document.querySelector(`#${toggleBtnId}`);
+        const passwordInput = document.querySelector(`#${passwordInputId}`);
+
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        }
+    }
+
+    togglePasswordVisibility('togglePassword', 'password');
+    togglePasswordVisibility('togglePasswordConfirm', 'password-confirm');
+});
+</script>
+@endpush

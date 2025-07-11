@@ -1,0 +1,140 @@
+.instruction-paper-container {
+    width: 21.59cm; /* 8.5 inches - US Letter width */
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.instruction-paper {
+    background: white;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    color: black;
+    padding: 0 2.54cm 2.54cm; /* Remove top padding */
+    border: 1px solid #d1d1d1;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    width: 100%;
+    min-height: 27.94cm; /* 11 inches - US Letter height */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.instruction-paper-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    /* border-bottom: 3px solid black; */
+    padding-bottom: 0;
+    margin-bottom: 1rem; /* Reduced space */
+    flex-shrink: 0;
+}
+
+.instruction-paper-header .logo {
+    max-width: 150px;
+    height: auto;
+}
+
+.instruction-paper-details {
+    width: 100%;
+}
+
+.instruction-paper-details table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.instruction-paper-details td {
+    padding: 5px 0;
+    vertical-align: top;
+}
+
+.instruction-paper-details td:last-child {
+    text-align: justify;
+}
+
+.instruction-paper-details .detail-label {
+    font-weight: bold;
+    padding-right: 1rem;
+    white-space: nowrap;
+    width: auto;
+}
+
+.instruction-paper-body {
+    flex-grow: 1;
+    margin-top: 1rem;
+    margin-bottom: 4rem;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.instruction-paper-footer {
+    margin-top: 5rem;
+    flex-shrink: 0;
+}
+
+.instruction-paper-footer .prepared-by {
+    font-weight: bold;
+    margin-bottom: 3rem;
+}
+
+.instruction-paper-footer .sender-signature {
+    display: flex;
+    flex-direction: column;
+}
+
+.instruction-paper-footer .sender-name {
+    font-weight: bold;
+    text-transform: uppercase;
+    /* border-top: 1px solid #555; */
+    /* padding-top: 0.5rem; */
+    display: inline-block;
+}
+
+.instruction-paper-footer .sender-role {
+    font-size: 11pt;
+    color: #333;
+}
+
+@media print {
+    @page {
+        size: letter;
+        margin: 2.54cm;
+        margin-top: 0;
+    }
+
+    body, .modal, .modal-dialog, .modal-content, .modal-body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .modal-header, .modal-footer, .btn, .card, .col-lg-4, .row.mb-4, .replies-list, #reply-form {
+        display: none !important;
+    }
+
+    .instruction-paper-container, .col-lg-8 {
+        width: 100% !important;
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .instruction-paper {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        min-height: auto;
+        box-sizing: border-box;
+    }
+
+    .instruction-paper-header,
+    .instruction-paper-details,
+    .instruction-paper-footer {
+        page-break-inside: avoid;
+    }
+}

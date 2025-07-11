@@ -24,13 +24,16 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
+const isTls = import.meta.env.VITE_PUSHER_SCHEME === 'https';
+
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY || 'local',
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'mt1',
     wsHost: import.meta.env.VITE_PUSHER_HOST || window.location.hostname,
     wsPort: import.meta.env.VITE_PUSHER_PORT || 6001,
-    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME || 'https') === 'https',
+    wssPort: import.meta.env.VITE_PUSHER_PORT || 443,
+    forceTLS: isTls,
     enabledTransports: ['ws', 'wss'],
     disableStats: true,
 });

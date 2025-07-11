@@ -7,8 +7,9 @@ use App\Models\InstructionReply;
 use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class InstructionReplied extends Notification
+class InstructionReplied extends Notification implements ShouldBroadcast
 {
     protected $instruction;
     protected $replier;
@@ -31,7 +32,7 @@ class InstructionReplied extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -50,6 +51,20 @@ class InstructionReplied extends Notification
     }
 
     /**
+     * Get the broadcastable representation of the notification.
+     *
+     * @param  object  $notifiable
+     * @return \Illuminate\Notifications\Messages\BroadcastMessage
+     */
+    public function toBroadcast(object $notifiable): \Illuminate\Notifications\Messages\BroadcastMessage
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'id' => $this->id,
+            'data' => $this->toArray($notifiable)
+        ]);
+    }
+
+    /**
      * Get the array representation of the notification.
      *
      * @return array<string, mixed>
@@ -58,7 +73,9 @@ class InstructionReplied extends Notification
     {
         return [
             'instruction_id' => $this->instruction->id,
-            'title' => $this->instruction->title,
+            'title' => 'New Reply: ' . $this->instruction->title,
+            'body' => $this->replier->full_name . ' has replied to the instruction: ' . $this->instruction->title,
+            'url' => route('instructions.show', $this->instruction->id),
             'reply_id' => $this->reply->id,
             'replier_id' => $this->replier->id,
             'replier_name' => $this->replier->full_name,

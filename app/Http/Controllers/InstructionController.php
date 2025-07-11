@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\InstructionForwardedToSender;
 
 class InstructionController extends Controller
 {
@@ -524,8 +525,13 @@ class InstructionController extends Controller
                 'content' => $request->forward_message,
             ]);
 
-            // Send notifications and email to all recipients
+            // Send notifications and email to all new recipients
             Notification::send($recipientUsers, new InstructionForwarded($instruction, $user, $request->forward_message));
+
+            // Notify the original sender that the instruction was forwarded
+            if ($instruction->sender_id !== $user->id) {
+                $instruction->sender->notify(new InstructionForwardedToSender($instruction, $user, $recipientUsers));
+            }
 
             // Log system activity
             UserActivityService::log(

@@ -7,9 +7,10 @@ use App\Http\Controllers\InstructionController;
 use App\Http\Controllers\InstructionMonitorController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Auth::routes();
@@ -65,4 +66,12 @@ Route::middleware('auth')->group(function () {
     Route::get('instructions/monitor/activities/{instruction}', [InstructionMonitorController::class, 'showActivityLogs'])->name('instructions.monitor.activities');
     Route::get('instructions/monitor/all-activities', [InstructionMonitorController::class, 'allActivityLogs'])->name('instructions.monitor.all-activities');
     Route::get('instructions/monitor/reports', [InstructionMonitorController::class, 'reports'])->name('instructions.monitor.reports');
+});
+
+// Notification API routes
+Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
+    Route::post('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
 });

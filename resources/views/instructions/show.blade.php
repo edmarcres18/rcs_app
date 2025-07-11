@@ -2,6 +2,10 @@
 
 @section('title', $instruction->title)
 
+@push('styles')
+    @vite('resources/css/instruction-paper.css')
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row mb-4">
@@ -29,11 +33,130 @@
     <div class="row">
         <!-- Instruction Content -->
         <div class="col-lg-8">
-            <!-- Instruction Card -->
+            <!-- Instruction View Button -->
             <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="instruction-content">
-                        {!! nl2br(e($instruction->body)) !!}
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-1">Instruction Memo</h5>
+                        <p class="card-text text-muted mb-0">Click to view the full instruction document.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#instructionModal">
+                        <i class="fas fa-expand-arrows-alt me-1"></i> View Fullscreen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Instruction Modal -->
+            <div class="modal fade" id="instructionModal" tabindex="-1" aria-labelledby="instructionModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-fullscreen">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="instructionModalLabel">{{ $instruction->title }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body bg-light py-5" style="overflow-y: auto;">
+                            <div class="instruction-paper-container mx-auto">
+                                <div class="instruction-paper">
+                                    <div class="instruction-paper-header">
+                                        <img src="{{ asset('images/instructions_logo/inslogo.png') }}" alt="Logo" class="logo">
+                                    </div>
+                                    <div class="instruction-paper-details">
+                                        <table>
+                                            <tr>
+                                                <td class="detail-label" style="width: 15%;">TO</td>
+                                                <td class="detail-label" style="width: 1%;">:</td>
+                                                <td>
+                                                    @php
+                                                        $originalRecipients = $instruction->recipients->where('pivot.forwarded_by_id', null);
+                                                        $forwardedRecipients = $instruction->recipients->where('pivot.forwarded_by_id', '!=', null);
+
+                                                        $totalOriginalRecipients = $originalRecipients->count();
+                                                        $isAllEmployees = $totalOriginalRecipients > 0 && $originalRecipients->where('roles', \App\Enums\UserRole::EMPLOYEE)->count() === $totalOriginalRecipients;
+                                                        $isAllSupervisors = $totalOriginalRecipients > 0 && $originalRecipients->where('roles', \App\Enums\UserRole::SUPERVISOR)->count() === $totalOriginalRecipients;
+                                                        $isAllAdmins = $totalOriginalRecipients > 0 && $originalRecipients->where('roles', \App\Enums\UserRole::ADMIN)->count() === $totalOriginalRecipients;
+                                                    @endphp
+
+                                                    @if($isAllEmployees)
+                                                        All Employees
+                                                    @elseif($isAllSupervisors)
+                                                        All Supervisors
+                                                    @elseif($isAllAdmins)
+                                                        All Admins
+                                                    @else
+                                                        @foreach($originalRecipients as $recipient)
+                                                            @if(in_array(optional($recipient)->roles, [\App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN]))
+                                                                @php
+                                                                    $initials = collect(explode(' ', $recipient->full_name))
+                                                                        ->map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)))
+                                                                        ->implode('');
+                                                                @endphp
+                                                                {{ $initials }}
+                                                            @else
+                                                                {{ $recipient->full_name }}
+                                                            @endif
+                                                            @if(!$loop->last),&nbsp;@endif
+                                                        @endforeach
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="detail-label">R E</td>
+                                                <td class="detail-label">:</td>
+                                                <td>{{ $instruction->title }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="detail-label">DATE</td>
+                                                <td class="detail-label">:</td>
+                                                <td>{{ $instruction->created_at->format('F d, Y') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="detail-label">DEADLINE</td>
+                                                <td class="detail-label">:</td>
+                                                <td>{{ $instruction->target_deadline ? \Carbon\Carbon::parse($instruction->target_deadline)->format('F d, Y') : 'N/A' }}</td>
+                                            </tr>
+                                            @if($forwardedRecipients->isNotEmpty())
+                                                <tr>
+                                                    <td class="detail-label">FORWARDED TO</td>
+                                                    <td class="detail-label">:</td>
+                                                    <td>
+                                                        @foreach($forwardedRecipients as $recipient)
+                                                            @if(in_array(optional($recipient)->roles, [\App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN]))
+                                                                @php
+                                                                    $initials = collect(explode(' ', $recipient->full_name))
+                                                                        ->map(fn($name) => mb_strtoupper(mb_substr($name, 0, 1)))
+                                                                        ->implode('');
+                                                                @endphp
+                                                                {{ $initials }}
+                                                            @else
+                                                                {{ $recipient->full_name }}
+                                                            @endif
+                                                            @if(!$loop->last),&nbsp;@endif
+                                                        @endforeach
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        </table>
+                                    </div>
+                                    <div class="instruction-paper-body">
+                                        {!! nl2br(e($instruction->body)) !!}
+                                    </div>
+
+                                    <div class="instruction-paper-footer">
+                                        <div class="prepared-by">Prepared By:</div>
+                                        <div class="sender-signature">
+                                            <div class="sender-name">{{ $instruction->sender->full_name }}</div>
+                                            <div class="sender-role">{{ optional($instruction->sender->roles)->value }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

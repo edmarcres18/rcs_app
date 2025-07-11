@@ -6,8 +6,9 @@ use App\Models\Instruction;
 use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class InstructionForwarded extends Notification
+class InstructionForwarded extends Notification implements ShouldBroadcast
 {
     protected $instruction;
     protected $forwarder;
@@ -30,7 +31,7 @@ class InstructionForwarded extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -55,15 +56,36 @@ class InstructionForwarded extends Notification
     }
 
     /**
+     * Get the broadcastable representation of the notification.
+     *
+     * @param  object  $notifiable
+     * @return \Illuminate\Notifications\Messages\BroadcastMessage
+     */
+    public function toBroadcast(object $notifiable): \Illuminate\Notifications\Messages\BroadcastMessage
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'id' => $this->id,
+            'data' => $this->toArray($notifiable)
+        ]);
+    }
+
+    /**
      * Get the array representation of the notification.
      *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
+        $body = $this->forwarder->full_name . ' has forwarded an instruction to you: ' . $this->instruction->title;
+        if ($this->message) {
+            $body .= ' with the message: "' . $this->message . '"';
+        }
+
         return [
             'instruction_id' => $this->instruction->id,
-            'title' => $this->instruction->title,
+            'title' => 'Instruction Forwarded: ' . $this->instruction->title,
+            'body' => $body,
+            'url' => route('instructions.show', $this->instruction->id),
             'forwarder_id' => $this->forwarder->id,
             'forwarder_name' => $this->forwarder->full_name,
             'sender_id' => $this->instruction->sender_id,

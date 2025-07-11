@@ -136,13 +136,21 @@
             align-items: center;
         }
 
-        .sidebar-logo i {
-            font-size: 24px;
-            min-width: 50px;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
+        .logo-image {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            margin-right: 10px;
+            transition: height var(--transition-speed) ease;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
             justify-content: center;
+        }
+
+        .sidebar.collapsed .logo-image {
+            height: 35px;
+            margin-right: 0;
         }
 
         .sidebar-logo .logo-name {
@@ -1025,281 +1033,32 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <i class="fas fa-code"></i>
+                    <img src="{{ asset('images/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
                     <span class="logo-name">{{ config('app.name', 'Laravel') }}</span>
                 </div>
             </div>
-
-            <div class="sidebar-content">
-                <!-- Dashboard - Available to all roles -->
-                <div class="sidebar-section">
-                    <div class="sidebar-section-title">Dashboard</div>
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="{{ url('/home') }}" class="sidebar-nav-link {{ Request::is('home') ? 'active' : '' }}" data-title="Home">
-                                <i class="fas fa-home"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                @if(Auth::check())
-                    @php
-                        $userRole = Auth::user()->roles;
-                    @endphp
-
-                    <!-- EMPLOYEE Role Menu -->
-                    @if($userRole === \App\Enums\UserRole::EMPLOYEE)
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">Instructions</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Received Instructions">
-                                        <i class="fas fa-inbox"></i>
-                                        <span>Received Instructions</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    <!-- SUPERVISOR Role Menu -->
-                    @elseif($userRole === \App\Enums\UserRole::SUPERVISOR)
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">Instructions</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Received Instructions">
-                                        <i class="fas fa-inbox"></i>
-                                        <span>Received Instructions</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    <!-- ADMIN Role Menu -->
-                    @elseif($userRole === \App\Enums\UserRole::ADMIN)
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">Instructions</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="All Instructions">
-                                        <i class="fas fa-clipboard-list"></i>
-                                        <span>All Instructions</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Instruction Monitoring">
-                                        <i class="fas fa-eye"></i>
-                                        <span>Instruction Monitoring</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">User Management</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ Request::routeIs('users.index') ? 'active' : '' }}" data-title="Manage Users">
-                                        <i class="fas fa-users-cog"></i>
-                                        <span>Manage Users</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('users.all-activities') }}" class="sidebar-nav-link {{ Request::routeIs('users.all-activities') ? 'active' : '' }}" data-title="User Activity Logs">
-                                        <i class="fas fa-history"></i>
-                                        <span>User Activity Logs</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">Reports</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="#" class="sidebar-nav-link" data-title="Instruction Reports">
-                                        <i class="fas fa-chart-bar"></i>
-                                        <span>Instruction Reports</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="#" class="sidebar-nav-link" data-title="Notifications">
-                                        <i class="fas fa-bell"></i>
-                                        <span>Notifications</span>
-                                        <span class="badge bg-danger rounded-pill ms-auto">2</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    <!-- SYSTEM_ADMIN Role Menu -->
-                    @elseif($userRole === \App\Enums\UserRole::SYSTEM_ADMIN)
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">System</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="System Logs">
-                                        <i class="fas fa-clipboard-list"></i>
-                                        <span>System Logs</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="#" class="sidebar-nav-link" data-title="Audit Trail">
-                                        <i class="fas fa-shield-alt"></i>
-                                        <span>Audit Trail</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">User Management</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('users.index') }}" class="sidebar-nav-link {{ Request::routeIs('users.*') && !Request::routeIs('users.all-activities') ? 'active' : '' }}" data-title="Manage Users">
-                                        <i class="fas fa-users"></i>
-                                        <span>Manage Users</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="{{ route('users.all-activities') }}" class="sidebar-nav-link {{ Request::is('activities') ? 'active' : '' }}" data-title="All User Activity">
-                                        <i class="fas fa-history"></i>
-                                        <span>All User Activity</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <div class="sidebar-section-title">Settings</div>
-                            <ul class="sidebar-nav">
-                                <li class="sidebar-nav-item">
-                                    <a href="#" class="sidebar-nav-link" data-title="App Settings">
-                                        <i class="fas fa-cogs"></i>
-                                        <span>App Settings</span>
-                                    </a>
-                                </li>
-                                <li class="sidebar-nav-item">
-                                    <a href="#" class="sidebar-nav-link" data-title="Email Configuration">
-                                        <i class="fas fa-envelope-open"></i>
-                                        <span>Email Configuration</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    @endif
-
-                    <!-- User Profile Section - Available to all authenticated users -->
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-title">User</div>
-                        <ul class="sidebar-nav">
-                            <li class="sidebar-nav-item">
-                                <a href="{{ route('profile.show') }}" class="sidebar-nav-link {{ Request::routeIs('profile.*') ? 'active' : '' }}" data-title="My Profile">
-                                    <i class="fas fa-user-circle"></i>
-                                    <span>My Profile</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-nav-item">
-                                <a href="{{ route('logout') }}"
-                                   onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();"
-                                   class="sidebar-nav-link" data-title="Logout">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    <span>Logout</span>
-                                </a>
-                                <form id="sidebar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                @endif
-
-                <!-- Collapse Button for Mobile -->
-                <div class="sidebar-section">
-                    <ul class="sidebar-nav">
-                        <li class="sidebar-nav-item">
-                            <a href="#" class="sidebar-nav-link" id="collapse-btn" data-title="Collapse">
-                                <i class="fas fa-chevron-left"></i>
-                                <span>Collapse</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            <!-- Sidebar -->
+            @include('layouts.partials.sidebar')
         </div>
 
         <!-- Sidebar Backdrop for mobile -->
         <div class="sidebar-backdrop"></div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="main-navbar">
-                <button class="navbar-toggler" id="sidebar-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
+        <!-- Navbar -->
+        @include('layouts.partials.navbar')
 
-                <h1 class="page-title">@yield('title', config('app.name'))</h1>
-
-                <div class="navbar-menu">
-
-                    <div class="navbar-menu-item has-badge notification-toggle" id="notification-toggle">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge"></span>
-                    </div>
-
-                    @guest
-                        <div class="navbar-menu">
-                            @if (Route::has('login'))
-                                <a href="{{ route('login') }}" class="navbar-menu-item">
-                                    <i class="fas fa-sign-in-alt"></i>
-                                </a>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="navbar-menu-item">
-                                    <i class="fas fa-user-plus"></i>
-                                </a>
-                            @endif
-                        </div>
-                    @else
-                        <div class="dropdown navbar-user">
-                            <div class="navbar-user-avatar dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            @if (Auth::user()->avatar)
-                                <img src="{{ Auth::user()->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px; object-fit: cover;">
-                            @else
-                                <img src="https://ui-avatars.com/api/?name={{ Auth::user()->full_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px;">
-                            @endif
-                            </div>
-                        </div>
-                    @endguest
+        <!-- Toast Container for Notifications -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+            <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="fas fa-bell me-2 text-primary"></i>
+                    <strong class="me-auto" id="toast-title">New Notification</strong>
+                    <small id="toast-time">just now</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-            </div>
-
-            <div class="page-content">
-                @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="toast-body" id="toast-body">
+                    You have a new notification.
                 </div>
-                @endif
-
-                @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @endif
-
-                @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Please check the form for errors.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @endif
-
-                @yield('content')
             </div>
         </div>
 
@@ -1311,66 +1070,13 @@
                     <i class="fas fa-times"></i>
                 </div>
             </div>
-            <ul class="notification-list">
-                <li class="notification-item unread">
-                    <div class="notification-content">
-                        <div class="notification-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">Your account has been verified</h5>
-                            <p class="notification-desc">Your email has been successfully verified. You now have full access to all features.</p>
-                            <span class="notification-time">3 minutes ago</span>
-                        </div>
-                    </div>
-                </li>
-                <li class="notification-item unread">
-                    <div class="notification-content">
-                        <div class="notification-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">New user registered</h5>
-                            <p class="notification-desc">A new user has registered and may need approval.</p>
-                            <span class="notification-time">1 hour ago</span>
-                        </div>
-                    </div>
-                </li>
-                <li class="notification-item">
-                    <div class="notification-content">
-                        <div class="notification-icon">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">File upload complete</h5>
-                            <p class="notification-desc">Your document has been successfully uploaded and is ready for review.</p>
-                            <span class="notification-time">3 hours ago</span>
-                        </div>
-                    </div>
-                </li>
-                <li class="notification-item">
-                    <div class="notification-content">
-                        <div class="notification-icon">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">System update</h5>
-                            <p class="notification-desc">The system has been updated to the latest version. Some features may have changed.</p>
-                            <span class="notification-time">Yesterday</span>
-                        </div>
-                    </div>
-                </li>
-                <li class="notification-item">
-                    <div class="notification-content">
-                        <div class="notification-icon">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">Reminder</h5>
-                            <p class="notification-desc">You have a scheduled meeting tomorrow at 10:00 AM.</p>
-                            <span class="notification-time">Yesterday</span>
-                        </div>
-                    </div>
+            <div class="d-flex justify-content-end p-2 border-bottom">
+                <a href="#" id="mark-all-as-read" class="btn btn-sm btn-link">Mark all as read</a>
+            </div>
+            <ul class="notification-list" id="notification-list">
+                <!-- Notifications will be dynamically inserted here -->
+                <li class="notification-item-placeholder p-4 text-center text-muted">
+                    No notifications yet.
                 </li>
             </ul>
         </div>
@@ -1573,6 +1279,240 @@
             }
         });
     </script>
+
+    @auth
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const userId = {{ Auth::id() }};
+        const notificationList = document.getElementById('notification-list');
+        const notificationToggle = document.getElementById('notification-toggle');
+        const notificationBadge = notificationToggle.querySelector('.notification-badge');
+        const markAllAsReadBtn = document.getElementById('mark-all-as-read');
+        const placeholder = document.querySelector('.notification-item-placeholder');
+
+        /**
+         * Formats a date string into a human-readable "time ago" format.
+         * @param {string} dateString - The ISO date string to format.
+         * @returns {string} The formatted time ago string.
+         */
+        function formatTimeAgo(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 10) return "just now";
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return Math.floor(seconds) + " seconds ago";
+        }
+
+        /**
+         * Creates a notification list item from a notification object.
+         * Handles missing data gracefully to prevent "undefined" in the UI.
+         * @param {object} notification - The notification object from the API or Echo.
+         * @returns {HTMLElement} The created list item element.
+         */
+        function createNotificationItem(notification) {
+            const item = document.createElement('li');
+            item.classList.add('notification-item');
+            if (!notification.read_at) {
+                item.classList.add('unread');
+            }
+            item.dataset.id = notification.id;
+
+            // Safely access notification data with fallbacks
+            const data = notification.data || {};
+            const url = data.url || '#';
+            const title = data.title || 'Notification';
+            const body = data.body || 'You have a new notification.';
+            const type = data.type || 'default';
+
+            // Define icons for each notification type
+            const iconMap = {
+                instruction_assigned: 'fa-file-alt',
+                instruction_replied: 'fa-reply',
+                instruction_forwarded: 'fa-share',
+                instruction_deadline_reminder: 'fa-clock',
+                instruction_forwarded_to_sender: 'fa-paper-plane',
+                default: 'fa-bell'
+            };
+            const icon = iconMap[type] || 'fa-bell';
+
+            item.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon"><i class="fas ${icon}"></i></div>
+                    <div class="notification-text">
+                        <h5 class="notification-title">${title}</h5>
+                        <p class="notification-desc">${body}</p>
+                        <span class="notification-time">${formatTimeAgo(notification.created_at)}</span>
+                    </div>
+                </div>
+            `;
+
+            // Make the item clickable only if a valid URL is provided
+            if (url && url !== '#') {
+                item.dataset.url = url;
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', () => markAsRead(notification.id, url));
+            }
+
+            return item;
+        }
+
+        /**
+         * Adds a new notification to the top of the list.
+         * @param {object} notification - The new notification to add.
+         */
+        function prependNotification(notification) {
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            const newItem = createNotificationItem(notification);
+            notificationList.prepend(newItem);
+            updateUnreadCountBadge(true); // Increment unread count
+        }
+
+        /**
+         * Fetches all notifications from the API and populates the list.
+         */
+        function fetchNotifications() {
+            axios.get('{{ route("api.notifications.index") }}')
+                .then(response => {
+                    const notifications = response.data.data;
+                    notificationList.innerHTML = ''; // Clear current list
+                    if (notifications && notifications.length > 0) {
+                        if (placeholder) placeholder.style.display = 'none';
+                        notifications.forEach(notification => {
+                            notificationList.appendChild(createNotificationItem(notification));
+                        });
+                    } else {
+                        if (placeholder) placeholder.style.display = 'block';
+                    }
+                    fetchUnreadCount();
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                    if (placeholder) placeholder.textContent = 'Could not load notifications.';
+                });
+        }
+
+        /**
+         * Fetches the count of unread notifications and updates the badge.
+         */
+        function fetchUnreadCount() {
+            axios.get('{{ route("api.notifications.unread") }}')
+                .then(response => {
+                    updateUnreadCountBadge(false, response.data.count);
+                })
+                .catch(error => console.error('Error fetching unread count:', error));
+        }
+
+        /**
+         * Updates the visibility of the unread notification badge.
+         * @param {boolean} isNew - True if this is a new notification, false otherwise.
+         * @param {number} [count=0] - The total number of unread notifications.
+         */
+        function updateUnreadCountBadge(isNew, count = 0) {
+            let showBadge = false;
+            if (isNew) {
+                showBadge = true;
+            } else {
+                showBadge = count > 0;
+            }
+            notificationBadge.style.display = showBadge ? 'block' : 'none';
+        }
+
+        /**
+         * Marks a notification as read via API call.
+         * If a redirect URL is provided, it navigates to that URL.
+         * @param {string} notificationId - The ID of the notification to mark as read.
+         * @param {string} redirectUrl - The URL to redirect to after marking as read.
+         */
+        function markAsRead(notificationId, redirectUrl) {
+            axios.post(`/api/notifications/${notificationId}/mark-as-read`)
+                .then(() => {
+                    if (redirectUrl && redirectUrl !== '#') {
+                        window.location.href = redirectUrl;
+                    } else {
+                        // If no URL, just update the UI locally
+                        const item = notificationList.querySelector(`li[data-id="${notificationId}"]`);
+                        if (item) item.classList.remove('unread');
+                        fetchUnreadCount();
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        /**
+         * Attaches a click listener to the "Mark all as read" button.
+         */
+        markAllAsReadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            axios.post('{{ route("api.notifications.read.all") }}')
+                .then(() => {
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    updateUnreadCountBadge(false, 0); // All are read
+                })
+                .catch(error => console.error('Error marking all as read:', error));
+        });
+
+        // --- Initialization ---
+
+        // Initial fetch of notifications when the page loads
+        fetchNotifications();
+
+        // Listen for real-time notifications via Laravel Echo
+        if (window.Echo) {
+            const toastElement = document.getElementById('notification-toast');
+            const toast = new bootstrap.Toast(toastElement);
+
+            window.Echo.private(`App.Models.User.${userId}`)
+                .notification((notification) => {
+                    console.log('New notification received:', notification);
+
+                    // Prepend the new notification to the sidebar list
+                    prependNotification({
+                        id: notification.id,
+                        data: notification.data || {},
+                        read_at: null, // New notifications are always unread
+                        created_at: new Date().toISOString()
+                    });
+
+                    // --- Show a toast for the new notification ---
+                    const toastTitle = document.getElementById('toast-title');
+                    const toastBody = document.getElementById('toast-body');
+
+                    // Safely access data
+                    const data = notification.data || {};
+                    toastTitle.textContent = data.title || 'New Notification';
+                    toastBody.textContent = data.body || 'You have a new notification.';
+
+                    // Make the toast clickable if there is a URL
+                    toastBody.style.cursor = 'default';
+                    toastElement.onclick = null; // Clear previous listener
+                    if (data.url && data.url !== '#') {
+                        toastBody.style.cursor = 'pointer';
+                        toastElement.onclick = () => {
+                            markAsRead(notification.id, data.url);
+                        };
+                    }
+
+                    toast.show();
+                });
+        }
+    });
+    </script>
+    @endauth
     @stack('scripts')
 </body>
 </html>
