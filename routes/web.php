@@ -16,7 +16,7 @@ Route::get('/', function () {
 Auth::routes();
 
 // Broadcasting Authentication for Pusher
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
+Broadcast::routes(['middleware' => ['web']]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -69,7 +69,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Notification API routes
-Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+Route::middleware(['auth:sanctum', 'auth'])->prefix('api')->name('api.')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::post('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.read');

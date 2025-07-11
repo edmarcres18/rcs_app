@@ -1413,22 +1413,15 @@
                     fetchUnreadCount();
                 })
                 .catch(error => {
-                    console.error('Error fetching notifications:', error);
+                    console.error('Error fetching notifications:', {
+                        message: error.message,
+                        status: error.response ? error.response.status : 'N/A',
+                        url: error.config ? error.config.url : 'N/A',
+                        response: error.response ? error.response.data : 'N/A'
+                    });
                     if (placeholder) {
-                        let errorMessage = 'Could not load notifications.';
-                        if (error.response) {
-                            // The request was made and the server responded with a status code
-                            // that falls out of the range of 2xx
-                            errorMessage += ` (Error: ${error.response.status} ${error.response.statusText})`;
-                            console.error('Response data:', error.response.data);
-                        } else if (error.request) {
-                            // The request was made but no response was received
-                            errorMessage += ' (Error: No response from server)';
-                        } else {
-                            // Something happened in setting up the request that triggered an Error
-                            errorMessage += ' (Error: Request setup failed)';
-                        }
-                        placeholder.textContent = errorMessage;
+                        placeholder.textContent = 'Could not load notifications.';
+                        placeholder.style.display = 'block';
                     }
                 });
         }
@@ -1507,7 +1500,7 @@
 
             window.Echo.private(`App.Models.User.${userId}`)
                 .notification((notification) => {
-                    console.log('New notification received:', notification);
+                    console.log('New notification received via Pusher:', notification);
 
                     // Prepend the new notification to the sidebar list
                     prependNotification({
@@ -1538,6 +1531,13 @@
 
                     toast.show();
                 });
+
+            window.Echo.connector.pusher.connection.bind('error', function(err) {
+                console.error('Pusher connection error:', err);
+                if (err.error && err.error.data && err.error.data.code === 4004) {
+                    console.error('Pusher connection failed. App key may be misconfigured or the app is over its message quota.');
+                }
+            });
         }
     });
     </script>
