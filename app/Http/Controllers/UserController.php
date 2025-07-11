@@ -36,7 +36,6 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $users = User::query()
-            ->where('roles', '!=', UserRole::SYSTEM_ADMIN)
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
