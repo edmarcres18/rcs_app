@@ -11,7 +11,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class InstructionForwardedToSender extends Notification implements ShouldBroadcast
+class InstructionForwardedToSender extends Notification implements ShouldBroadcast, \Illuminate\Contracts\Queue\ShouldQueue
 {
     use Queueable;
 

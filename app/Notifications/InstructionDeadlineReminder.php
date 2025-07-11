@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class InstructionDeadlineReminder extends Notification implements ShouldBroadcast
+class InstructionDeadlineReminder extends Notification implements ShouldBroadcast, ShouldQueue
 {
     use Queueable;
 

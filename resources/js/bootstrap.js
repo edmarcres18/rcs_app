@@ -24,16 +24,23 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
-const isTls = import.meta.env.VITE_PUSHER_SCHEME === 'https';
+const forceTLS = import.meta.env.VITE_PUSHER_SCHEME === 'https';
 
-window.Echo = new Echo({
+const echoConfig = {
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY || 'local',
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'mt1',
-    wsHost: import.meta.env.VITE_PUSHER_HOST || window.location.hostname,
-    wsPort: import.meta.env.VITE_PUSHER_PORT || 6001,
-    wssPort: import.meta.env.VITE_PUSHER_PORT || 443,
-    forceTLS: isTls,
-    enabledTransports: ['ws', 'wss'],
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: forceTLS,
     disableStats: true,
-});
+    enabledTransports: ['ws', 'wss']
+};
+
+// If you are using a self-hosted Laravel Websockets server,
+// you must define VITE_PUSHER_HOST and VITE_PUSHER_PORT.
+// For the cloud-based Pusher service, these should be undefined.
+if (import.meta.env.VITE_PUSHER_HOST) {
+    echoConfig.wsHost = import.meta.env.VITE_PUSHER_HOST;
+    echoConfig.wsPort = import.meta.env.VITE_PUSHER_PORT;
+}
+
+window.Echo = new Echo(echoConfig);

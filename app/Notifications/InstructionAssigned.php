@@ -6,9 +6,13 @@ use App\Models\Instruction;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 
-class InstructionAssigned extends Notification implements ShouldBroadcast
+class InstructionAssigned extends Notification implements ShouldBroadcast, ShouldQueue
 {
+    use Queueable;
+
     protected $instruction;
 
     /**

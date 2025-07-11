@@ -204,6 +204,9 @@ class InstructionController extends Controller
                 'target_deadline' => $request->target_deadline,
             ]);
 
+            // Manually set the sender relationship to prevent an extra query in the notification job
+            $instruction->setRelation('sender', $user);
+
             // Attach recipients
             $instruction->recipients()->attach($recipientIds, ['is_read' => false]);
 
@@ -316,10 +319,13 @@ class InstructionController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access to this instruction
+        // Ensure user can access this instruction
         if (!$instruction->canBeAccessedBy($user)) {
             abort(403, 'You do not have permission to reply to this instruction.');
         }
+
+        // Eager-load relationships to prevent N+1 issues
+        $instruction->load(['sender', 'recipients']);
 
         // System admin can't reply
         if ($user->roles === UserRole::SYSTEM_ADMIN) {
@@ -368,16 +374,16 @@ class InstructionController extends Controller
 
             // Notify sender if the replier is not the sender
             if ($user->id !== $instruction->sender_id) {
-                $instruction->sender->notify(new InstructionReplied($instruction, $user, $reply));
+                Notification::send($instruction->sender, new InstructionReplied($instruction, $user, $reply));
             }
 
-            // Notify all other recipients
-            $recipients = $instruction->recipients()
-                            ->where('user_id', '!=', $user->id)
-                            ->get();
+            // Notify all other recipients in a single batch
+            $otherRecipients = $instruction->recipients->filter(function ($recipient) use ($user) {
+                return $recipient->id != $user->id;
+            });
 
-            foreach ($recipients as $recipient) {
-                $recipient->notify(new InstructionReplied($instruction, $user, $reply));
+            if ($otherRecipients->isNotEmpty()) {
+                Notification::send($otherRecipients, new InstructionReplied($instruction, $user, $reply));
             }
 
             // Log system activity
@@ -470,6 +476,9 @@ class InstructionController extends Controller
         if (!$instruction->canBeAccessedBy($user)) {
             abort(403, 'You do not have permission to forward this instruction.');
         }
+
+        // Eager-load sender to prevent N+1 issues in notifications
+        $instruction->load('sender');
 
         // Check if user is eligible to forward
         if ($user->roles === UserRole::SYSTEM_ADMIN) {
