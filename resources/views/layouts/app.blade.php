@@ -1437,7 +1437,7 @@
              */
             renderNotifications(notifications) {
                 this.elements.list.innerHTML = '';
-                if (notifications.length > 0) {
+                if (notifications && notifications.length > 0) {
                     this.elements.placeholder.style.display = 'none';
                     notifications.forEach(notification => {
                         this.elements.list.appendChild(this.createNotificationItem(notification));
