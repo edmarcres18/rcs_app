@@ -1400,7 +1400,7 @@
         function fetchNotifications() {
             axios.get('{{ route("api.notifications.index") }}')
                 .then(response => {
-                    const notifications = response.data.data; // Note: our resource call wraps in 'data'
+                    const notifications = response.data.data;
                     notificationList.innerHTML = ''; // Clear current list
                     if (notifications && notifications.length > 0) {
                         if (placeholder) placeholder.style.display = 'none';
@@ -1413,7 +1413,7 @@
                     fetchUnreadCount();
                 })
                 .catch(error => {
-                    console.error('Error fetching notifications:', error.response ? error.response.data : error.message);
+                    console.error('Error fetching notifications:', error);
                     if (placeholder) placeholder.textContent = 'Could not load notifications.';
                 });
         }
@@ -1451,7 +1451,7 @@
          * @param {string} redirectUrl - The URL to redirect to after marking as read.
          */
         function markAsRead(notificationId, redirectUrl) {
-            axios.post(`/api/notifications/${notificationId}/mark-as-read`) // Note: This route should be named for consistency
+            axios.post(`/api/notifications/${notificationId}/mark-as-read`)
                 .then(() => {
                     if (redirectUrl && redirectUrl !== '#') {
                         window.location.href = redirectUrl;
@@ -1462,11 +1462,7 @@
                         fetchUnreadCount();
                     }
                 })
-                .catch(error => {
-                    console.error('Error marking notification as read:', error.response ? error.response.data : error.message);
-                    // Optionally, show a toast to the user
-                    // toast.fire({ icon: 'error', title: 'Could not update notification.' });
-                });
+                .catch(error => console.error('Error marking notification as read:', error));
         }
 
         /**
@@ -1481,10 +1477,7 @@
                     });
                     updateUnreadCountBadge(false, 0); // All are read
                 })
-                .catch(error => {
-                    console.error('Error marking all as read:', error.response ? error.response.data : error.message);
-                    // toast.fire({ icon: 'error', title: 'Could not mark all as read.' });
-                });
+                .catch(error => console.error('Error marking all as read:', error));
         });
 
         // --- Initialization ---

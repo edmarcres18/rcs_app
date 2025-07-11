@@ -8,13 +8,9 @@ use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Bus\Queueable;
 
-class InstructionReplied extends Notification implements ShouldBroadcast, ShouldQueue
+class InstructionReplied extends Notification implements ShouldBroadcast
 {
-    use Queueable;
-
     protected $instruction;
     protected $replier;
     protected $reply;
