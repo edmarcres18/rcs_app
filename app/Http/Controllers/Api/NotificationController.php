@@ -16,7 +16,6 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $notifications = $user->notifications()->latest()->paginate(15);
 
@@ -32,7 +31,6 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, $id)
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $notification = $user->notifications()->where('id', $id)->first();
 
@@ -52,7 +50,6 @@ class NotificationController extends Controller
      */
     public function markAllAsRead(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->unreadNotifications->markAsRead();
 
@@ -67,14 +64,12 @@ class NotificationController extends Controller
      */
     public function unread(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
-        $unreadNotifications = $user->unreadNotifications;
+        $count = $user->unreadNotifications->count();
 
         return response()->json([
             'success' => true,
-            'count' => $unreadNotifications->count(),
-            'notifications' => $unreadNotifications
+            'count' => $count,
         ]);
     }
 }

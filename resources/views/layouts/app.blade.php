@@ -1031,55 +1031,6 @@
             }
         }
 
-        /* Notification Loader */
-        .notification-loader {
-            display: none; /* Hidden by default */
-            padding: 40px 20px;
-            text-align: center;
-        }
-        .notification-loader .spinner-border {
-            width: 3rem;
-            height: 3rem;
-            color: var(--primary-color);
-        }
-
-        /* Notification Empty State */
-        .notification-empty-state {
-            display: none; /* Hidden by default */
-            padding: 40px 20px;
-            text-align: center;
-            color: var(--text-muted);
-        }
-        .notification-empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: var(--text-light);
-        }
-        .notification-empty-state h5 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 5px;
-        }
-        .notification-empty-state span {
-            font-size: 14px;
-        }
-
-        /* New notification animation */
-        .notification-item.new-notification {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* Toggle button animation */
         .navbar-menu-item.has-badge {
             position: relative;
@@ -1137,23 +1088,9 @@
                 <a href="#" id="mark-all-as-read" class="btn btn-sm btn-link">Mark all as read</a>
             </div>
             <ul class="notification-list" id="notification-list">
-                <!-- Loader -->
-                <li id="notification-loader" class="notification-loader">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </li>
-                <!-- Empty State -->
-                <li id="notification-empty-state" class="notification-empty-state">
-                    <i class="fas fa-bell-slash"></i>
-                    <h5>No notifications yet</h5>
-                    <span>When you get a notification, it'll show up here.</span>
-                </li>
-                <!-- Error State -->
-                <li id="notification-error-state" class="notification-empty-state">
-                    <i class="fas fa-exclamation-triangle text-danger"></i>
-                    <h5>Something went wrong</h5>
-                    <span>We couldn't load your notifications. Please try again later.</span>
+                <!-- Notifications will be dynamically inserted here -->
+                <li class="notification-item-placeholder p-4 text-center text-muted">
+                    No notifications yet.
                 </li>
             </ul>
         </div>
@@ -1167,498 +1104,316 @@
 
     <!-- Add Application JS -->
     <script>
-        // Prevent scrolling when mobile navigation is open
-        function preventScroll(prevent) {
-            document.body.style.overflow = prevent ? 'hidden' : '';
+        // --- UTILITY FUNCTIONS ---
+        function isTouchDevice() {
+            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         }
 
-        // Helper function to detect touch-enabled devices
-        function isTouchDevice() {
-            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        function preventBodyScroll(shouldPrevent) {
+            document.body.style.overflow = shouldPrevent ? 'hidden' : '';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Add touch class to body if on touch device
             if (isTouchDevice()) {
                 document.body.classList.add('touch-device');
             }
 
-            // Sidebar functionality
             const sidebar = document.querySelector('.sidebar');
-            const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
-            const collapseBtn = document.getElementById('collapse-btn');
             const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+            const sidebarToggleBtn = document.getElementById('sidebar-toggle'); // Mobile toggle
+            const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn'); // Desktop collapse
 
-            // Add passive event listeners for better scroll performance
-            const passiveIfSupported = {
-                passive: true,
-                capture: false
-            };
+            // --- SIDEBAR LOGIC ---
+            function setupSidebar() {
+                // Mobile: Toggle sidebar with backdrop
+                sidebarToggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    sidebarBackdrop.classList.toggle('active');
+                    preventBodyScroll(sidebar.classList.contains('active'));
+                });
 
-            // Debounce function for performance optimization
-            function debounce(func, wait) {
-                let timeout;
-                return function() {
-                    const context = this;
-                    const args = arguments;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(context, args), wait);
-                };
-            }
-
-            // Optimize resize event with debounce
-            const handleResize = debounce(() => {
-                if (!isMobile() && sidebar.classList.contains('active')) {
+                sidebarBackdrop.addEventListener('click', () => {
                     sidebar.classList.remove('active');
                     sidebarBackdrop.classList.remove('active');
-                    preventScroll(false);
-                }
+                    preventBodyScroll(false);
+                });
 
-                // Remove collapsed class on desktop
-                if (!isMobile()) {
-                    sidebar.classList.remove('collapsed');
-                }
-            }, 150);
-
-            // Mobile-only: Check if device is mobile
-            const isMobile = () => window.innerWidth <= 768;
-
-            // Prevent sidebar collapse on desktop
-            if (sidebarCollapseBtn) {
+                // Desktop: Collapse sidebar
                 sidebarCollapseBtn.addEventListener('click', () => {
-                    if (isMobile()) {
-                        sidebar.classList.toggle('active');
-                        sidebarBackdrop.classList.toggle('active');
-                        preventScroll(sidebar.classList.contains('active'));
+                    if (!isMobile()) {
+                        sidebar.classList.toggle('collapsed');
                     }
                 });
-            }
 
-            if (collapseBtn) {
-                collapseBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
+                // Adjust sidebar state on resize
+                const handleResize = debounce(() => {
                     if (isMobile()) {
-                        sidebar.classList.remove('active');
+                        sidebar.classList.remove('collapsed'); // Remove collapsed state on mobile
+                    } else {
+                        sidebar.classList.remove('active'); // Close mobile sidebar on desktop
                         sidebarBackdrop.classList.remove('active');
-                        preventScroll(false);
+                        preventBodyScroll(false);
                     }
-                });
+                }, 150);
+
+                window.addEventListener('resize', handleResize);
             }
 
-            // Mobile sidebar toggle
-            const sidebarToggle = document.getElementById('sidebar-toggle');
+            // --- SWIPE GESTURE HANDLING ---
+            function enableSwipeToClose(element, backdrop, closeDirection) {
+                if (!isTouchDevice() || !element) return;
 
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                sidebarBackdrop.classList.toggle('active');
-                preventScroll(sidebar.classList.contains('active'));
-            });
-
-            // Close sidebar when clicking outside on mobile
-            sidebarBackdrop.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                sidebarBackdrop.classList.remove('active');
-                preventScroll(false);
-            });
-
-            // Handle window resize
-            window.addEventListener('resize', handleResize, passiveIfSupported);
-
-            // Check initial state on page load
-            if (!isMobile()) {
-                sidebar.classList.remove('collapsed');
-            }
-
-            // Notification sidebar functionality
-            const notificationToggle = document.getElementById('notification-toggle');
-            const notificationClose = document.getElementById('notification-close');
-            const notificationSidebar = document.querySelector('.notification-sidebar');
-            const notificationBackdrop = document.querySelector('.notification-backdrop');
-
-            notificationToggle.addEventListener('click', () => {
-                notificationSidebar.classList.toggle('active');
-                notificationBackdrop.classList.toggle('active');
-                preventScroll(notificationSidebar.classList.contains('active'));
-            });
-
-            notificationClose.addEventListener('click', () => {
-                notificationSidebar.classList.remove('active');
-                notificationBackdrop.classList.remove('active');
-                preventScroll(false);
-            });
-
-            notificationBackdrop.addEventListener('click', () => {
-                notificationSidebar.classList.remove('active');
-                notificationBackdrop.classList.remove('active');
-                preventScroll(false);
-            });
-
-
-
-            // Active link highlighting
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.sidebar-nav-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href !== '#' && currentPath.includes(href)) {
-                    link.classList.add('active');
-                }
-            });
-
-            // Make notification items clickable
-            document.querySelectorAll('.notification-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    this.classList.remove('unread');
-                    // Here you would typically make an AJAX call to mark the notification as read
-                });
-            });
-
-            // Add fastclick to eliminate 300ms delay on mobile browsers
-            if (isTouchDevice()) {
-                document.querySelectorAll('a, button, .sidebar-nav-link, .navbar-menu-item, .dropdown-toggle, .notification-item')
-                    .forEach(el => {
-                        el.addEventListener('touchstart', function() {}, passiveIfSupported);
-                    });
-            }
-
-            // Add support for swipe to close sidebars on mobile
-            if (isTouchDevice()) {
                 let touchStartX = 0;
                 let touchEndX = 0;
 
-                // For main sidebar (swipe left to close)
-                sidebar.addEventListener('touchstart', e => {
+                element.addEventListener('touchstart', e => {
                     touchStartX = e.changedTouches[0].screenX;
-                }, passiveIfSupported);
+                }, { passive: true });
 
-                sidebar.addEventListener('touchend', e => {
+                element.addEventListener('touchend', e => {
                     touchEndX = e.changedTouches[0].screenX;
-                    if (touchStartX - touchEndX > 50) { // Swipe left threshold
-                        sidebar.classList.remove('active');
-                        sidebarBackdrop.classList.remove('active');
-                        preventScroll(false);
-                    }
-                }, passiveIfSupported);
+                    const swipeDistance = touchEndX - touchStartX;
+                    const threshold = 50; // Minimum swipe distance in pixels
 
-                // For notification sidebar (swipe right to close)
-                const notificationSidebar = document.querySelector('.notification-sidebar');
-                notificationSidebar.addEventListener('touchstart', e => {
-                    touchStartX = e.changedTouches[0].screenX;
-                }, passiveIfSupported);
-
-                notificationSidebar.addEventListener('touchend', e => {
-                    touchEndX = e.changedTouches[0].screenX;
-                    if (touchEndX - touchStartX > 50) { // Swipe right threshold
-                        notificationSidebar.classList.remove('active');
-                        document.querySelector('.notification-backdrop').classList.remove('active');
-                        preventScroll(false);
+                    if (closeDirection === 'left' && swipeDistance < -threshold) {
+                        element.classList.remove('active');
+                        if (backdrop) backdrop.classList.remove('active');
+                        preventBodyScroll(false);
+                    } else if (closeDirection === 'right' && swipeDistance > threshold) {
+                        element.classList.remove('active');
+                        if (backdrop) backdrop.classList.remove('active');
+                        preventBodyScroll(false);
                     }
-                }, passiveIfSupported);
+                }, { passive: true });
             }
+
+            // --- NOTIFICATION SIDEBAR LOGIC ---
+            function setupNotificationSidebar() {
+                const notificationToggle = document.getElementById('notification-toggle');
+                const notificationClose = document.getElementById('notification-close');
+                const notificationSidebar = document.querySelector('.notification-sidebar');
+                const notificationBackdrop = document.querySelector('.notification-backdrop');
+
+                const toggleNotificationSidebar = (show) => {
+                    notificationSidebar.classList.toggle('active', show);
+                    notificationBackdrop.classList.toggle('active', show);
+                    preventBodyScroll(show);
+                };
+
+                notificationToggle.addEventListener('click', () => toggleNotificationSidebar(true));
+                notificationClose.addEventListener('click', () => toggleNotificationSidebar(false));
+                notificationBackdrop.addEventListener('click', () => toggleNotificationSidebar(false));
+            }
+
+            // --- ACTIVE LINK HIGHLIGHTING ---
+            function highlightActiveLink() {
+                const currentPath = window.location.pathname;
+                document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && currentPath.startsWith(href)) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Initial setup calls
+            setupSidebar();
+            setupNotificationSidebar();
+            highlightActiveLink();
+
+            // Enable swipe gestures
+            const notificationSidebar = document.querySelector('.notification-sidebar');
+            const notificationBackdrop = document.querySelector('.notification-backdrop');
+            enableSwipeToClose(sidebar, sidebarBackdrop, 'left');
+            enableSwipeToClose(notificationSidebar, notificationBackdrop, 'right');
         });
     </script>
 
     @auth
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const NotificationManager = {
-            // --- Elements ---
-            elements: {
-                list: document.getElementById('notification-list'),
-                toggle: document.getElementById('notification-toggle'),
-                badge: document.getElementById('notification-toggle')?.querySelector('.notification-badge'),
-                markAllReadBtn: document.getElementById('mark-all-as-read'),
-                loader: document.getElementById('notification-loader'),
-                emptyState: document.getElementById('notification-empty-state'),
-                errorState: document.getElementById('notification-error-state'),
-                toast: {
-                    element: document.getElementById('notification-toast'),
-                    instance: null,
-                    title: document.getElementById('toast-title'),
-                    body: document.getElementById('toast-body'),
-                }
-            },
+        const userId = {{ Auth::id() }};
+        const notificationList = document.getElementById('notification-list');
+        const notificationToggle = document.getElementById('notification-toggle');
+        const notificationBadge = notificationToggle.querySelector('.notification-badge');
+        const markAllAsReadBtn = document.getElementById('mark-all-as-read');
+        const placeholder = document.querySelector('.notification-item-placeholder');
+        const toastElement = document.getElementById('notification-toast');
+        const bsToast = new bootstrap.Toast(toastElement);
 
-            // --- State ---
-            state: {
-                userId: {{ Auth::id() }},
-                unreadCount: 0,
-                timeUpdater: null,
-            },
+        let unreadCount = 0;
 
-            // --- API Routes ---
-            routes: {
-                index: '{{ route("api.notifications.index") }}',
-                unread: '{{ route("api.notifications.unread") }}',
-                markAsRead: (id) => `/api/notifications/${id}/mark-as-read`,
-                markAllAsRead: '{{ route("api.notifications.read.all") }}',
-            },
+        function formatTimeAgo(dateString) {
+            if (!dateString) return 'just now';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
 
-            // --- Initialization ---
-            init() {
-                if (!this.elements.list) return; // Don't run if notification elements aren't on the page
+            if (seconds < 10) return "just now";
+            let interval = Math.floor(seconds / 31536000);
+            if (interval >= 1) return `${interval} year${interval > 1 ? 's' : ''} ago`;
+            interval = Math.floor(seconds / 2592000);
+            if (interval >= 1) return `${interval} month${interval > 1 ? 's' : ''} ago`;
+            interval = Math.floor(seconds / 86400);
+            if (interval >= 1) return `${interval} day${interval > 1 ? 's' : ''} ago`;
+            interval = Math.floor(seconds / 3600);
+            if (interval >= 1) return `${interval} hour${interval > 1 ? 's' : ''} ago`;
+            interval = Math.floor(seconds / 60);
+            if (interval >= 1) return `${interval} minute${interval > 1 ? 's' : ''} ago`;
+            return `${Math.floor(seconds)} second${seconds > 1 ? 's' : ''} ago`;
+        }
 
-                this.elements.toast.instance = new bootstrap.Toast(this.elements.toast.element);
-                this.addEventListeners();
-                this.fetchNotifications();
-                this.listenForRealtimeEvents();
+        function createNotificationItem(notification) {
+            const item = document.createElement('li');
+            item.className = `notification-item ${!notification.read_at ? 'unread' : ''}`;
+            item.dataset.id = notification.id;
 
-                // Start timer to update timestamps every minute
-                this.state.timeUpdater = setInterval(() => this.updateTimestamps(), 60000);
-            },
+            const data = notification.data || {};
+            const url = data.url || '#';
+            const title = data.title || 'Notification';
+            const body = data.body || 'You have a new notification.';
+            const type = data.type || 'default';
+            const iconMap = {
+                instruction_assigned: 'fa-file-alt',
+                instruction_replied: 'fa-reply',
+                instruction_forwarded: 'fa-share',
+                instruction_deadline_reminder: 'fa-clock',
+                instruction_forwarded_to_sender: 'fa-paper-plane',
+                default: 'fa-bell'
+            };
+            const icon = iconMap[type] || 'fa-bell';
 
-            // --- Event Listeners ---
-            addEventListeners() {
-                this.elements.markAllReadBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.markAllAsRead();
-                });
-            },
-
-            // --- UI Updates ---
-            showLoader(show) {
-                this.elements.loader.style.display = show ? 'block' : 'none';
-            },
-
-            showEmptyState(show) {
-                this.elements.emptyState.style.display = show ? 'block' : 'none';
-            },
-
-            showErrorState(show) {
-                this.elements.errorState.style.display = show ? 'block' : 'none';
-            },
-
-            updateUnreadCountBadge() {
-                if (this.elements.badge) {
-                    this.elements.badge.style.display = this.state.unreadCount > 0 ? 'block' : 'none';
-                }
-            },
-
-            /**
-             * Renders notifications in the list.
-             * @param {Array} notifications - Array of notification objects.
-             */
-            renderNotifications(notifications) {
-                // Clear all except state elements
-                this.elements.list.innerHTML = '';
-                this.elements.list.append(this.elements.loader, this.elements.emptyState, this.elements.errorState);
-
-                if (notifications && notifications.length > 0) {
-                    this.showEmptyState(false);
-                    notifications.forEach(n => this.elements.list.appendChild(this.createNotificationItem(n)));
-                } else {
-                    this.showEmptyState(true);
-                }
-                this.fetchUnreadCount();
-            },
-
-            /**
-             * Creates a single notification list item element.
-             * @param {object} notification - The notification object.
-             * @returns {HTMLElement} The created list item.
-             */
-            createNotificationItem(notification) {
-                const item = document.createElement('li');
-                item.className = 'notification-item';
-                if (!notification.read_at) {
-                    item.classList.add('unread');
-                }
-                item.dataset.id = notification.id;
-                item.dataset.createdAt = notification.created_at;
-
-                const data = notification.data || {};
-                const url = data.url || '#';
-                const title = data.title || 'Notification';
-                const body = data.body || 'You have a new notification.';
-                const type = data.type || 'default';
-
-                const iconMap = {
-                    instruction_assigned: 'fa-file-alt',
-                    instruction_replied: 'fa-reply',
-                    instruction_forwarded: 'fa-share',
-                    instruction_deadline_reminder: 'fa-clock',
-                    instruction_forwarded_to_sender: 'fa-paper-plane',
-                    default: 'fa-bell'
-                };
-                const icon = iconMap[type] || 'fa-bell';
-
-                item.innerHTML = `
-                    <div class="notification-content">
-                        <div class="notification-icon"><i class="fas ${icon}"></i></div>
-                        <div class="notification-text">
-                            <h5 class="notification-title">${title}</h5>
-                            <p class="notification-desc">${body}</p>
-                            <span class="notification-time">${this.formatTimeAgo(notification.created_at)}</span>
-                        </div>
+            item.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon"><i class="fas ${icon}"></i></div>
+                    <div class="notification-text">
+                        <h5 class="notification-title">${title}</h5>
+                        <p class="notification-desc">${body}</p>
+                        <span class="notification-time">${formatTimeAgo(notification.created_at)}</span>
                     </div>
-                `;
+                </div>`;
 
-                if (url && url !== '#') {
-                    item.dataset.url = url;
-                    item.style.cursor = 'pointer';
-                    item.addEventListener('click', () => this.markAsRead(notification.id, url));
-                }
-
-                return item;
-            },
-
-            /**
-             * Adds a new notification to the top of the list with an animation.
-             * @param {object} notification - The new notification object.
-             */
-            prependNotification(notification) {
-                this.showEmptyState(false);
-                this.showErrorState(false);
-
-                const newItem = this.createNotificationItem(notification);
-                newItem.classList.add('new-notification');
-
-                this.elements.list.prepend(newItem);
-                this.state.unreadCount++;
-                this.updateUnreadCountBadge();
-
-                // Clean up animation class
-                setTimeout(() => newItem.classList.remove('new-notification'), 500);
-            },
-
-            // --- API Calls ---
-            fetchNotifications() {
-                this.showLoader(true);
-                this.showEmptyState(false);
-                this.showErrorState(false);
-
-                axios.get(this.routes.index)
-                    .then(response => {
-                        this.renderNotifications(response.data.data);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching notifications:', error);
-                        this.showErrorState(true);
-                    })
-                    .finally(() => {
-                        this.showLoader(false);
-                    });
-            },
-
-            fetchUnreadCount() {
-                axios.get(this.routes.unread)
-                    .then(response => {
-                        this.state.unreadCount = response.data.count;
-                        this.updateUnreadCountBadge();
-                    })
-                    .catch(error => console.error('Error fetching unread count:', error));
-            },
-
-            markAsRead(id, redirectUrl) {
-                axios.post(this.routes.markAsRead(id))
-                    .then(() => {
-                        if (redirectUrl && redirectUrl !== '#') {
-                            window.location.href = redirectUrl;
-                        } else {
-                            const item = this.elements.list.querySelector(`li[data-id="${id}"]`);
-                            if (item) item.classList.remove('unread');
-                            this.state.unreadCount = Math.max(0, this.state.unreadCount - 1);
-                            this.updateUnreadCountBadge();
-                        }
-                    })
-                    .catch(error => console.error('Error marking notification as read:', error));
-            },
-
-            markAllAsRead() {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "This will mark all your notifications as read.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, mark all as read!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        axios.post(this.routes.markAllAsRead)
-                            .then(() => {
-                                document.querySelectorAll('.notification-item.unread').forEach(item => {
-                                    item.classList.remove('unread');
-                                });
-                                this.state.unreadCount = 0;
-                                this.updateUnreadCountBadge();
-                                Swal.fire('Done!', 'All notifications marked as read.', 'success');
-                            })
-                            .catch(error => {
-                                console.error('Error marking all as read:', error);
-                                Swal.fire('Oops!', 'Something went wrong.', 'error');
-                            });
-                    }
-                });
-            },
-
-            // --- Real-time Logic ---
-            listenForRealtimeEvents() {
-                if (window.Echo) {
-                    window.Echo.private(`App.Models.User.${this.state.userId}`)
-                        .notification((notification) => {
-                            console.log('New notification received:', notification);
-
-                            const newNotificationData = {
-                                id: notification.id,
-                                data: notification.data || {},
-                                read_at: null,
-                                created_at: new Date().toISOString()
-                            };
-
-                            this.prependNotification(newNotificationData);
-                            this.showToast(newNotificationData);
-                        });
-                }
-            },
-
-            showToast(notification) {
-                const data = notification.data || {};
-                this.elements.toast.title.textContent = data.title || 'New Notification';
-                this.elements.toast.body.textContent = data.body || 'You have a new notification.';
-
-                this.elements.toast.body.style.cursor = 'default';
-                this.elements.toast.element.onclick = null;
-                if (data.url && data.url !== '#') {
-                    this.elements.toast.body.style.cursor = 'pointer';
-                    this.elements.toast.element.onclick = () => {
-                        this.markAsRead(notification.id, data.url);
-                    };
-                }
-                this.elements.toast.instance.show();
-            },
-
-            // --- Helpers ---
-            formatTimeAgo(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                const now = new Date();
-                const seconds = Math.floor((now - date) / 1000);
-
-                if (seconds < 10) return "just now";
-                let interval = seconds / 31536000;
-                if (interval > 1) return Math.floor(interval) + "y ago";
-                interval = seconds / 2592000;
-                if (interval > 1) return Math.floor(interval) + "mo ago";
-                interval = seconds / 86400;
-                if (interval > 1) return Math.floor(interval) + "d ago";
-                interval = seconds / 3600;
-                if (interval > 1) return Math.floor(interval) + "h ago";
-                interval = seconds / 60;
-                if (interval > 1) return Math.floor(interval) + "m ago";
-                return Math.floor(seconds) + "s ago";
-            },
-
-            updateTimestamps() {
-                this.elements.list.querySelectorAll('.notification-item').forEach(item => {
-                    const timeEl = item.querySelector('.notification-time');
-                    if (timeEl && item.dataset.createdAt) {
-                        timeEl.textContent = this.formatTimeAgo(item.dataset.createdAt);
-                    }
-                });
+            if (url !== '#') {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', () => markAsRead(notification.id, url));
             }
-        };
+            return item;
+        }
 
-        NotificationManager.init();
+        function updateUnreadCountBadge(count) {
+            unreadCount = count;
+            if (notificationBadge) {
+                notificationBadge.style.display = unreadCount > 0 ? 'block' : 'none';
+                // If you have an element to show the number, update it here.
+                // e.g., notificationBadge.textContent = unreadCount;
+            }
+        }
+
+        function prependNotification(notification) {
+            if (placeholder) placeholder.style.display = 'none';
+            const newItem = createNotificationItem(notification);
+            notificationList.prepend(newItem);
+            updateUnreadCountBadge(unreadCount + 1);
+        }
+
+        async function fetchNotifications() {
+            try {
+                const response = await axios.get('{{ route("api.notifications.index") }}');
+                const notifications = response.data.data;
+                notificationList.innerHTML = '';
+                if (notifications && notifications.length > 0) {
+                    if (placeholder) placeholder.style.display = 'none';
+                    notifications.forEach(n => notificationList.appendChild(createNotificationItem(n)));
+                    const unread = notifications.filter(n => !n.read_at).length;
+                    updateUnreadCountBadge(unread);
+                } else {
+                    if (placeholder) placeholder.style.display = 'block';
+                    updateUnreadCountBadge(0);
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+                if (placeholder) placeholder.textContent = 'Could not load notifications.';
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to fetch notifications.' });
+            }
+        }
+
+        async function markAsRead(notificationId, redirectUrl) {
+            try {
+                await axios.post(`/api/notifications/${notificationId}/mark-as-read`);
+                if (redirectUrl && redirectUrl !== '#') {
+                    window.location.href = redirectUrl;
+                } else {
+                    const item = notificationList.querySelector(`li[data-id="${notificationId}"]`);
+                    if (item && item.classList.contains('unread')) {
+                        item.classList.remove('unread');
+                        updateUnreadCountBadge(unreadCount - 1);
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not mark notification as read.' });
+            }
+        }
+
+        markAllAsReadBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await axios.post('{{ route("api.notifications.read.all") }}');
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                });
+                updateUnreadCountBadge(0);
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not mark all notifications as read.' });
+            }
+        });
+
+        function showToast(notification) {
+            const data = notification.data || {};
+            const toastTitle = document.getElementById('toast-title');
+            const toastBody = document.getElementById('toast-body');
+
+            toastTitle.textContent = data.title || 'New Notification';
+            toastBody.textContent = data.body || 'You have a new notification.';
+
+            toastElement.onclick = null;
+            if (data.url && data.url !== '#') {
+                toastBody.style.cursor = 'pointer';
+                toastElement.onclick = () => markAsRead(notification.id, data.url);
+            }
+            bsToast.show();
+        }
+
+        // --- REAL-TIME INITIALIZATION ---
+        fetchNotifications();
+
+        if (window.Echo) {
+            window.Echo.private(`App.Models.User.${userId}`)
+                .notification((notification) => {
+                    console.log('New notification received:', notification);
+                    const fullNotification = {
+                        id: notification.id,
+                        data: notification.data || {},
+                        read_at: null,
+                        created_at: new Date().toISOString()
+                    };
+                    prependNotification(fullNotification);
+                    showToast(notification);
+                });
+        }
     });
     </script>
     @endauth
@@ -1699,3 +1454,4 @@
     </script>
 </body>
 </html>
+
