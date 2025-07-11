@@ -1400,7 +1400,7 @@
         function fetchNotifications() {
             axios.get('{{ route("api.notifications.index") }}')
                 .then(response => {
-                    const notifications = response.data.data;
+                    const notifications = response.data.data; // Note: our resource call wraps in 'data'
                     notificationList.innerHTML = ''; // Clear current list
                     if (notifications && notifications.length > 0) {
                         if (placeholder) placeholder.style.display = 'none';
@@ -1413,16 +1413,8 @@
                     fetchUnreadCount();
                 })
                 .catch(error => {
-                    console.error('Error fetching notifications:', {
-                        message: error.message,
-                        status: error.response ? error.response.status : 'N/A',
-                        url: error.config ? error.config.url : 'N/A',
-                        response: error.response ? error.response.data : 'N/A'
-                    });
-                    if (placeholder) {
-                        placeholder.textContent = 'Could not load notifications.';
-                        placeholder.style.display = 'block';
-                    }
+                    console.error('Error fetching notifications:', error.response ? error.response.data : error.message);
+                    if (placeholder) placeholder.textContent = 'Could not load notifications.';
                 });
         }
 
@@ -1459,7 +1451,7 @@
          * @param {string} redirectUrl - The URL to redirect to after marking as read.
          */
         function markAsRead(notificationId, redirectUrl) {
-            axios.post(`/api/notifications/${notificationId}/mark-as-read`)
+            axios.post(`/api/notifications/${notificationId}/mark-as-read`) // Note: This route should be named for consistency
                 .then(() => {
                     if (redirectUrl && redirectUrl !== '#') {
                         window.location.href = redirectUrl;
@@ -1470,7 +1462,11 @@
                         fetchUnreadCount();
                     }
                 })
-                .catch(error => console.error('Error marking notification as read:', error));
+                .catch(error => {
+                    console.error('Error marking notification as read:', error.response ? error.response.data : error.message);
+                    // Optionally, show a toast to the user
+                    // toast.fire({ icon: 'error', title: 'Could not update notification.' });
+                });
         }
 
         /**
@@ -1485,7 +1481,10 @@
                     });
                     updateUnreadCountBadge(false, 0); // All are read
                 })
-                .catch(error => console.error('Error marking all as read:', error));
+                .catch(error => {
+                    console.error('Error marking all as read:', error.response ? error.response.data : error.message);
+                    // toast.fire({ icon: 'error', title: 'Could not mark all as read.' });
+                });
         });
 
         // --- Initialization ---
@@ -1500,7 +1499,7 @@
 
             window.Echo.private(`App.Models.User.${userId}`)
                 .notification((notification) => {
-                    console.log('New notification received via Pusher:', notification);
+                    console.log('New notification received:', notification);
 
                     // Prepend the new notification to the sidebar list
                     prependNotification({
@@ -1531,13 +1530,6 @@
 
                     toast.show();
                 });
-
-            window.Echo.connector.pusher.connection.bind('error', function(err) {
-                console.error('Pusher connection error:', err);
-                if (err.error && err.error.data && err.error.data.code === 4004) {
-                    console.error('Pusher connection failed. App key may be misconfigured or the app is over its message quota.');
-                }
-            });
         }
     });
     </script>
