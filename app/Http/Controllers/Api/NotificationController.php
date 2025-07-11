@@ -16,10 +16,8 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
-        $notifications = $request->user()->notifications()->latest()->take(15)->get();
+        $user = Auth::user();
+        $notifications = $user->notifications()->latest()->paginate(15);
 
         return response()->json($notifications);
     }
@@ -33,10 +31,8 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, $id)
     {
-        $notification = $request->user()
-                                ->notifications()
-                                ->where('id', $id)
-                                ->first();
+        $user = Auth::user();
+        $notification = $user->notifications()->where('id', $id)->first();
 
         if ($notification) {
             $notification->markAsRead();
@@ -69,11 +65,12 @@ class NotificationController extends Controller
     public function unread(Request $request)
     {
         $user = Auth::user();
-        $count = $user->unreadNotifications->count();
+        $unreadNotifications = $user->unreadNotifications;
 
         return response()->json([
             'success' => true,
-            'count' => $count,
+            'count' => $unreadNotifications->count(),
+            'notifications' => $unreadNotifications
         ]);
     }
 }

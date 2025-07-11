@@ -1104,140 +1104,193 @@
 
     <!-- Add Application JS -->
     <script>
-        // --- UTILITY FUNCTIONS ---
+        // Prevent scrolling when mobile navigation is open
+        function preventScroll(prevent) {
+            document.body.style.overflow = prevent ? 'hidden' : '';
+        }
+
+        // Helper function to detect touch-enabled devices
         function isTouchDevice() {
-            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        }
-
-        function isMobile() {
-            return window.innerWidth <= 768;
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
-        function preventBodyScroll(shouldPrevent) {
-            document.body.style.overflow = shouldPrevent ? 'hidden' : '';
+            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Add touch class to body if on touch device
             if (isTouchDevice()) {
                 document.body.classList.add('touch-device');
             }
 
+            // Sidebar functionality
             const sidebar = document.querySelector('.sidebar');
+            const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
+            const collapseBtn = document.getElementById('collapse-btn');
             const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
-            const sidebarToggleBtn = document.getElementById('sidebar-toggle'); // Mobile toggle
-            const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn'); // Desktop collapse
 
-            // --- SIDEBAR LOGIC ---
-            function setupSidebar() {
-                // Mobile: Toggle sidebar with backdrop
-                sidebarToggleBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
-                    sidebarBackdrop.classList.toggle('active');
-                    preventBodyScroll(sidebar.classList.contains('active'));
-                });
+            // Add passive event listeners for better scroll performance
+            const passiveIfSupported = {
+                passive: true,
+                capture: false
+            };
 
-                sidebarBackdrop.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                    sidebarBackdrop.classList.remove('active');
-                    preventBodyScroll(false);
-                });
-
-                // Desktop: Collapse sidebar
-                sidebarCollapseBtn.addEventListener('click', () => {
-                    if (!isMobile()) {
-                        sidebar.classList.toggle('collapsed');
-                    }
-                });
-
-                // Adjust sidebar state on resize
-                const handleResize = debounce(() => {
-                    if (isMobile()) {
-                        sidebar.classList.remove('collapsed'); // Remove collapsed state on mobile
-                    } else {
-                        sidebar.classList.remove('active'); // Close mobile sidebar on desktop
-                        sidebarBackdrop.classList.remove('active');
-                        preventBodyScroll(false);
-                    }
-                }, 150);
-
-                window.addEventListener('resize', handleResize);
+            // Debounce function for performance optimization
+            function debounce(func, wait) {
+                let timeout;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), wait);
+                };
             }
 
-            // --- SWIPE GESTURE HANDLING ---
-            function enableSwipeToClose(element, backdrop, closeDirection) {
-                if (!isTouchDevice() || !element) return;
+            // Optimize resize event with debounce
+            const handleResize = debounce(() => {
+                if (!isMobile() && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    sidebarBackdrop.classList.remove('active');
+                    preventScroll(false);
+                }
 
+                // Remove collapsed class on desktop
+                if (!isMobile()) {
+                    sidebar.classList.remove('collapsed');
+                }
+            }, 150);
+
+            // Mobile-only: Check if device is mobile
+            const isMobile = () => window.innerWidth <= 768;
+
+            // Prevent sidebar collapse on desktop
+            if (sidebarCollapseBtn) {
+                sidebarCollapseBtn.addEventListener('click', () => {
+                    if (isMobile()) {
+                        sidebar.classList.toggle('active');
+                        sidebarBackdrop.classList.toggle('active');
+                        preventScroll(sidebar.classList.contains('active'));
+                    }
+                });
+            }
+
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (isMobile()) {
+                        sidebar.classList.remove('active');
+                        sidebarBackdrop.classList.remove('active');
+                        preventScroll(false);
+                    }
+                });
+            }
+
+            // Mobile sidebar toggle
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarBackdrop.classList.toggle('active');
+                preventScroll(sidebar.classList.contains('active'));
+            });
+
+            // Close sidebar when clicking outside on mobile
+            sidebarBackdrop.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarBackdrop.classList.remove('active');
+                preventScroll(false);
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', handleResize, passiveIfSupported);
+
+            // Check initial state on page load
+            if (!isMobile()) {
+                sidebar.classList.remove('collapsed');
+            }
+
+            // Notification sidebar functionality
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationClose = document.getElementById('notification-close');
+            const notificationSidebar = document.querySelector('.notification-sidebar');
+            const notificationBackdrop = document.querySelector('.notification-backdrop');
+
+            notificationToggle.addEventListener('click', () => {
+                notificationSidebar.classList.toggle('active');
+                notificationBackdrop.classList.toggle('active');
+                preventScroll(notificationSidebar.classList.contains('active'));
+            });
+
+            notificationClose.addEventListener('click', () => {
+                notificationSidebar.classList.remove('active');
+                notificationBackdrop.classList.remove('active');
+                preventScroll(false);
+            });
+
+            notificationBackdrop.addEventListener('click', () => {
+                notificationSidebar.classList.remove('active');
+                notificationBackdrop.classList.remove('active');
+                preventScroll(false);
+            });
+
+
+
+            // Active link highlighting
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && currentPath.includes(href)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Make notification items clickable
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.remove('unread');
+                    // Here you would typically make an AJAX call to mark the notification as read
+                });
+            });
+
+            // Add fastclick to eliminate 300ms delay on mobile browsers
+            if (isTouchDevice()) {
+                document.querySelectorAll('a, button, .sidebar-nav-link, .navbar-menu-item, .dropdown-toggle, .notification-item')
+                    .forEach(el => {
+                        el.addEventListener('touchstart', function() {}, passiveIfSupported);
+                    });
+            }
+
+            // Add support for swipe to close sidebars on mobile
+            if (isTouchDevice()) {
                 let touchStartX = 0;
                 let touchEndX = 0;
 
-                element.addEventListener('touchstart', e => {
+                // For main sidebar (swipe left to close)
+                sidebar.addEventListener('touchstart', e => {
                     touchStartX = e.changedTouches[0].screenX;
-                }, { passive: true });
+                }, passiveIfSupported);
 
-                element.addEventListener('touchend', e => {
+                sidebar.addEventListener('touchend', e => {
                     touchEndX = e.changedTouches[0].screenX;
-                    const swipeDistance = touchEndX - touchStartX;
-                    const threshold = 50; // Minimum swipe distance in pixels
-
-                    if (closeDirection === 'left' && swipeDistance < -threshold) {
-                        element.classList.remove('active');
-                        if (backdrop) backdrop.classList.remove('active');
-                        preventBodyScroll(false);
-                    } else if (closeDirection === 'right' && swipeDistance > threshold) {
-                        element.classList.remove('active');
-                        if (backdrop) backdrop.classList.remove('active');
-                        preventBodyScroll(false);
+                    if (touchStartX - touchEndX > 50) { // Swipe left threshold
+                        sidebar.classList.remove('active');
+                        sidebarBackdrop.classList.remove('active');
+                        preventScroll(false);
                     }
-                }, { passive: true });
-            }
+                }, passiveIfSupported);
 
-            // --- NOTIFICATION SIDEBAR LOGIC ---
-            function setupNotificationSidebar() {
-                const notificationToggle = document.getElementById('notification-toggle');
-                const notificationClose = document.getElementById('notification-close');
+                // For notification sidebar (swipe right to close)
                 const notificationSidebar = document.querySelector('.notification-sidebar');
-                const notificationBackdrop = document.querySelector('.notification-backdrop');
+                notificationSidebar.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, passiveIfSupported);
 
-                const toggleNotificationSidebar = (show) => {
-                    notificationSidebar.classList.toggle('active', show);
-                    notificationBackdrop.classList.toggle('active', show);
-                    preventBodyScroll(show);
-                };
-
-                notificationToggle.addEventListener('click', () => toggleNotificationSidebar(true));
-                notificationClose.addEventListener('click', () => toggleNotificationSidebar(false));
-                notificationBackdrop.addEventListener('click', () => toggleNotificationSidebar(false));
-            }
-
-            // --- ACTIVE LINK HIGHLIGHTING ---
-            function highlightActiveLink() {
-                const currentPath = window.location.pathname;
-                document.querySelectorAll('.sidebar-nav-link').forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href !== '#' && currentPath.startsWith(href)) {
-                        link.classList.add('active');
+                notificationSidebar.addEventListener('touchend', e => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    if (touchEndX - touchStartX > 50) { // Swipe right threshold
+                        notificationSidebar.classList.remove('active');
+                        document.querySelector('.notification-backdrop').classList.remove('active');
+                        preventScroll(false);
                     }
-                });
+                }, passiveIfSupported);
             }
-
-            // Initial setup calls
-            setupSidebar();
-            setupNotificationSidebar();
-            highlightActiveLink();
-
-            // Enable swipe gestures
-            const notificationSidebar = document.querySelector('.notification-sidebar');
-            const notificationBackdrop = document.querySelector('.notification-backdrop');
-            enableSwipeToClose(sidebar, sidebarBackdrop, 'left');
-            enableSwipeToClose(notificationSidebar, notificationBackdrop, 'right');
         });
     </script>
 
@@ -1250,41 +1303,53 @@
         const notificationBadge = notificationToggle.querySelector('.notification-badge');
         const markAllAsReadBtn = document.getElementById('mark-all-as-read');
         const placeholder = document.querySelector('.notification-item-placeholder');
-        const toastElement = document.getElementById('notification-toast');
-        const bsToast = new bootstrap.Toast(toastElement);
 
-        let unreadCount = 0;
-
+        /**
+         * Formats a date string into a human-readable "time ago" format.
+         * @param {string} dateString - The ISO date string to format.
+         * @returns {string} The formatted time ago string.
+         */
         function formatTimeAgo(dateString) {
-            if (!dateString) return 'just now';
+            if (!dateString) return '';
             const date = new Date(dateString);
             const now = new Date();
             const seconds = Math.floor((now - date) / 1000);
-
             if (seconds < 10) return "just now";
-            let interval = Math.floor(seconds / 31536000);
-            if (interval >= 1) return `${interval} year${interval > 1 ? 's' : ''} ago`;
-            interval = Math.floor(seconds / 2592000);
-            if (interval >= 1) return `${interval} month${interval > 1 ? 's' : ''} ago`;
-            interval = Math.floor(seconds / 86400);
-            if (interval >= 1) return `${interval} day${interval > 1 ? 's' : ''} ago`;
-            interval = Math.floor(seconds / 3600);
-            if (interval >= 1) return `${interval} hour${interval > 1 ? 's' : ''} ago`;
-            interval = Math.floor(seconds / 60);
-            if (interval >= 1) return `${interval} minute${interval > 1 ? 's' : ''} ago`;
-            return `${Math.floor(seconds)} second${seconds > 1 ? 's' : ''} ago`;
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return Math.floor(seconds) + " seconds ago";
         }
 
+        /**
+         * Creates a notification list item from a notification object.
+         * Handles missing data gracefully to prevent "undefined" in the UI.
+         * @param {object} notification - The notification object from the API or Echo.
+         * @returns {HTMLElement} The created list item element.
+         */
         function createNotificationItem(notification) {
             const item = document.createElement('li');
-            item.className = `notification-item ${!notification.read_at ? 'unread' : ''}`;
+            item.classList.add('notification-item');
+            if (!notification.read_at) {
+                item.classList.add('unread');
+            }
             item.dataset.id = notification.id;
 
+            // Safely access notification data with fallbacks
             const data = notification.data || {};
             const url = data.url || '#';
             const title = data.title || 'Notification';
             const body = data.body || 'You have a new notification.';
             const type = data.type || 'default';
+
+            // Define icons for each notification type
             const iconMap = {
                 instruction_assigned: 'fa-file-alt',
                 instruction_replied: 'fa-reply',
@@ -1303,115 +1368,160 @@
                         <p class="notification-desc">${body}</p>
                         <span class="notification-time">${formatTimeAgo(notification.created_at)}</span>
                     </div>
-                </div>`;
+                </div>
+            `;
 
-            if (url !== '#') {
+            // Make the item clickable only if a valid URL is provided
+            if (url && url !== '#') {
+                item.dataset.url = url;
                 item.style.cursor = 'pointer';
                 item.addEventListener('click', () => markAsRead(notification.id, url));
             }
+
             return item;
         }
 
-        function updateUnreadCountBadge(count) {
-            unreadCount = count;
-            if (notificationBadge) {
-                notificationBadge.style.display = unreadCount > 0 ? 'block' : 'none';
-                // If you have an element to show the number, update it here.
-                // e.g., notificationBadge.textContent = unreadCount;
-            }
-        }
-
+        /**
+         * Adds a new notification to the top of the list.
+         * @param {object} notification - The new notification to add.
+         */
         function prependNotification(notification) {
-            if (placeholder) placeholder.style.display = 'none';
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
             const newItem = createNotificationItem(notification);
             notificationList.prepend(newItem);
-            updateUnreadCountBadge(unreadCount + 1);
+            updateUnreadCountBadge(true); // Increment unread count
         }
 
-        async function fetchNotifications() {
-            try {
-                const response = await axios.get('{{ route("api.notifications.index") }}');
-                const notifications = response.data; // Changed from response.data.data
-                notificationList.innerHTML = '';
-                if (notifications && notifications.length > 0) {
-                    if (placeholder) placeholder.style.display = 'none';
-                    notifications.forEach(n => notificationList.appendChild(createNotificationItem(n)));
-                    const unread = notifications.filter(n => !n.read_at).length;
-                    updateUnreadCountBadge(unread);
-                } else {
-                    if (placeholder) placeholder.style.display = 'block';
-                    updateUnreadCountBadge(0);
-                }
-            } catch (error) {
-                console.error('Error fetching notifications:', error);
-                if (placeholder) placeholder.textContent = 'Could not load notifications.';
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to fetch notifications.' });
-            }
-        }
-
-        async function markAsRead(notificationId, redirectUrl) {
-            try {
-                await axios.post(`/api/notifications/${notificationId}/mark-as-read`);
-                if (redirectUrl && redirectUrl !== '#') {
-                    window.location.href = redirectUrl;
-                } else {
-                    const item = notificationList.querySelector(`li[data-id="${notificationId}"]`);
-                    if (item && item.classList.contains('unread')) {
-                        item.classList.remove('unread');
-                        updateUnreadCountBadge(unreadCount - 1);
+        /**
+         * Fetches all notifications from the API and populates the list.
+         */
+        function fetchNotifications() {
+            axios.get('{{ route("api.notifications.index") }}')
+                .then(response => {
+                    const notifications = response.data.data;
+                    notificationList.innerHTML = ''; // Clear current list
+                    if (notifications && notifications.length > 0) {
+                        if (placeholder) placeholder.style.display = 'none';
+                        notifications.forEach(notification => {
+                            notificationList.appendChild(createNotificationItem(notification));
+                        });
+                    } else {
+                        if (placeholder) placeholder.style.display = 'block';
                     }
-                }
-            } catch (error) {
-                console.error('Error marking notification as read:', error);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not mark notification as read.' });
-            }
+                    fetchUnreadCount();
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                    if (placeholder) placeholder.textContent = 'Could not load notifications.';
+                });
         }
 
-        markAllAsReadBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await axios.post('{{ route("api.notifications.read.all") }}');
-                document.querySelectorAll('.notification-item.unread').forEach(item => {
-                    item.classList.remove('unread');
-                });
-                updateUnreadCountBadge(0);
-            } catch (error) {
-                console.error('Error marking all as read:', error);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not mark all notifications as read.' });
+        /**
+         * Fetches the count of unread notifications and updates the badge.
+         */
+        function fetchUnreadCount() {
+            axios.get('{{ route("api.notifications.unread") }}')
+                .then(response => {
+                    updateUnreadCountBadge(false, response.data.count);
+                })
+                .catch(error => console.error('Error fetching unread count:', error));
+        }
+
+        /**
+         * Updates the visibility of the unread notification badge.
+         * @param {boolean} isNew - True if this is a new notification, false otherwise.
+         * @param {number} [count=0] - The total number of unread notifications.
+         */
+        function updateUnreadCountBadge(isNew, count = 0) {
+            let showBadge = false;
+            if (isNew) {
+                showBadge = true;
+            } else {
+                showBadge = count > 0;
             }
+            notificationBadge.style.display = showBadge ? 'block' : 'none';
+        }
+
+        /**
+         * Marks a notification as read via API call.
+         * If a redirect URL is provided, it navigates to that URL.
+         * @param {string} notificationId - The ID of the notification to mark as read.
+         * @param {string} redirectUrl - The URL to redirect to after marking as read.
+         */
+        function markAsRead(notificationId, redirectUrl) {
+            axios.post(`/api/notifications/${notificationId}/mark-as-read`)
+                .then(() => {
+                    if (redirectUrl && redirectUrl !== '#') {
+                        window.location.href = redirectUrl;
+                    } else {
+                        // If no URL, just update the UI locally
+                        const item = notificationList.querySelector(`li[data-id="${notificationId}"]`);
+                        if (item) item.classList.remove('unread');
+                        fetchUnreadCount();
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        /**
+         * Attaches a click listener to the "Mark all as read" button.
+         */
+        markAllAsReadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            axios.post('{{ route("api.notifications.read.all") }}')
+                .then(() => {
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    updateUnreadCountBadge(false, 0); // All are read
+                })
+                .catch(error => console.error('Error marking all as read:', error));
         });
 
-        function showToast(notification) {
-            const data = notification.data || {};
-            const toastTitle = document.getElementById('toast-title');
-            const toastBody = document.getElementById('toast-body');
+        // --- Initialization ---
 
-            toastTitle.textContent = data.title || 'New Notification';
-            toastBody.textContent = data.body || 'You have a new notification.';
-
-            toastElement.onclick = null;
-            if (data.url && data.url !== '#') {
-                toastBody.style.cursor = 'pointer';
-                toastElement.onclick = () => markAsRead(notification.id, data.url);
-            }
-            bsToast.show();
-        }
-
-        // --- REAL-TIME INITIALIZATION ---
+        // Initial fetch of notifications when the page loads
         fetchNotifications();
 
+        // Listen for real-time notifications via Laravel Echo
         if (window.Echo) {
+            const toastElement = document.getElementById('notification-toast');
+            const toast = new bootstrap.Toast(toastElement);
+
             window.Echo.private(`App.Models.User.${userId}`)
                 .notification((notification) => {
                     console.log('New notification received:', notification);
-                    const fullNotification = {
+
+                    // Prepend the new notification to the sidebar list
+                    prependNotification({
                         id: notification.id,
                         data: notification.data || {},
-                        read_at: null,
+                        read_at: null, // New notifications are always unread
                         created_at: new Date().toISOString()
-                    };
-                    prependNotification(fullNotification);
-                    showToast(notification);
+                    });
+
+                    // --- Show a toast for the new notification ---
+                    const toastTitle = document.getElementById('toast-title');
+                    const toastBody = document.getElementById('toast-body');
+
+                    // Safely access data
+                    const data = notification.data || {};
+                    toastTitle.textContent = data.title || 'New Notification';
+                    toastBody.textContent = data.body || 'You have a new notification.';
+
+                    // Make the toast clickable if there is a URL
+                    toastBody.style.cursor = 'default';
+                    toastElement.onclick = null; // Clear previous listener
+                    if (data.url && data.url !== '#') {
+                        toastBody.style.cursor = 'pointer';
+                        toastElement.onclick = () => {
+                            markAsRead(notification.id, data.url);
+                        };
+                    }
+
+                    toast.show();
                 });
         }
     });
@@ -1454,4 +1564,3 @@
     </script>
 </body>
 </html>
-
