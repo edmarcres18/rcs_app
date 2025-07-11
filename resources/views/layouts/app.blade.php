@@ -1331,7 +1331,7 @@
         async function fetchNotifications() {
             try {
                 const response = await axios.get('{{ route("api.notifications.index") }}');
-                const notifications = response.data.data;
+                const notifications = response.data; // Changed from response.data.data
                 notificationList.innerHTML = '';
                 if (notifications && notifications.length > 0) {
                     if (placeholder) placeholder.style.display = 'none';
