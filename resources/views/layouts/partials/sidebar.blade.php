@@ -141,6 +141,9 @@
                         <a href="{{ route('admin.pending-updates.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.pending-updates.index') ? 'active' : '' }}" data-title="Pending Approvals">
                             <i class="fas fa-tasks"></i>
                             <span>Pending Approvals</span>
+                            @if($pendingUpdatesCount > 0)
+                                <span class="badge bg-warning rounded-pill ms-auto">{{ $pendingUpdatesCount }}</span>
+                            @endif
                         </a>
                     </li>
                 </ul>
