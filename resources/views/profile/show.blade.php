@@ -49,6 +49,36 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Telegram Details Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Telegram Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @if($user->telegram_chat_id || $user->telegram_username)
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span><i class="fab fa-telegram-plane text-primary me-2"></i> Telegram Username</span>
+                                <span class="text-muted">{{ $user->telegram_username ?? 'Not set' }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span><i class="fas fa-bell text-primary me-2"></i> Notifications</span>
+                                @if($user->telegram_notifications_enabled)
+                                    <span class="badge bg-success">Enabled</span>
+                                @else
+                                    <span class="badge bg-secondary">Disabled</span>
+                                @endif
+                            </li>
+                        @else
+                            <li class="list-group-item text-center p-3">
+                                <p class="mb-0 text-muted">You have not linked your Telegram account.</p>
+                                <a href="{{ route('profile.edit') }}" class="btn btn-link">Link now</a>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-8">

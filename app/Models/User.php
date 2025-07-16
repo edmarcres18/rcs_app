@@ -56,6 +56,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'roles' => UserRole::class,
+            'telegram_notifications_enabled' => 'boolean',
         ];
     }
 

@@ -30,6 +30,8 @@ class ProfileUpdateRequest extends FormRequest
             'nickname' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'telegram_username' => ['nullable', 'string', 'max:255'],
+            'telegram_notifications_enabled' => ['nullable', 'boolean'],
         ];
     }
 
@@ -47,6 +49,8 @@ class ProfileUpdateRequest extends FormRequest
             'nickname' => 'nickname',
             'email' => 'email address',
             'avatar' => 'profile picture',
+            'telegram_username' => 'telegram username',
+            'telegram_notifications_enabled' => 'telegram notifications',
         ];
     }
 }

@@ -107,6 +107,35 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Telegram Details Card -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Telegram Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @if($user->telegram_chat_id || $user->telegram_username)
+                            <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: var(--bg-card); color: var(--text-color);">
+                                <span><i class="fab fa-telegram-plane me-2"></i> Username</span>
+                                <span class="text-secondary">{{ $user->telegram_username ?? 'Not set' }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: var(--bg-card); color: var(--text-color);">
+                                <span><i class="fas fa-bell me-2"></i> Notifications</span>
+                                @if($user->telegram_notifications_enabled)
+                                    <span class="badge bg-success rounded-pill">Enabled</span>
+                                @else
+                                    <span class="badge bg-secondary rounded-pill">Disabled</span>
+                                @endif
+                            </li>
+                        @else
+                            <li class="list-group-item text-center" style="background-color: var(--bg-card); color: var(--text-color);">
+                                <p class="mb-0 text-muted">Telegram account not linked.</p>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="col-lg-8 col-md-7">

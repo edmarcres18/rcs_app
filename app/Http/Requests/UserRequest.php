@@ -32,6 +32,8 @@ class UserRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:255'],
             'roles' => ['required', new Enum(UserRole::class)],
+            'telegram_username' => ['nullable', 'string', 'max:255'],
+            'telegram_notifications_enabled' => ['nullable', 'boolean'],
         ];
 
         if ($this->isMethod('POST')) {
@@ -48,6 +50,8 @@ class UserRequest extends FormRequest
             $rules['first_name'] = ['sometimes', 'string', 'max:255'];
             $rules['last_name'] = ['sometimes', 'string', 'max:255'];
             $rules['roles'] = ['sometimes', new Enum(UserRole::class)];
+            $rules['telegram_username'] = ['nullable', 'string', 'max:255'];
+            $rules['telegram_notifications_enabled'] = ['nullable', 'boolean'];
         }
 
         return $rules;

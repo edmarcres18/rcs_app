@@ -85,6 +85,29 @@
                                     @enderror
                                 </div>
 
+                                <hr>
+                                <h6 class="text-muted mb-3">Telegram Settings</h6>
+
+                                <div class="mb-3">
+                                    <label for="telegram_username" class="form-label">Telegram Username (optional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fab fa-telegram-plane"></i></span>
+                                        <input type="text" class="form-control @error('telegram_username') is-invalid @enderror" id="telegram_username" name="telegram_username" value="{{ old('telegram_username', $user->telegram_username) }}" placeholder="e.g. john_doe">
+                                    </div>
+                                    @error('telegram_username')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="telegram_notifications_enabled" name="telegram_notifications_enabled" value="1" {{ old('telegram_notifications_enabled', $user->telegram_notifications_enabled) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="telegram_notifications_enabled">Enable Telegram Notifications</label>
+                                    <small class="form-text text-muted d-block">
+                                        Receive real-time notifications on Telegram. You must first link your account via the bot.
+                                    </small>
+                                </div>
+
+
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-1"></i> Save Changes

@@ -126,6 +126,37 @@
                                 @enderror
                             </div>
 
+                            <!-- Telegram Configuration -->
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3 mt-2">Telegram Configuration</h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="telegram_username" class="form-label">Telegram Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fab fa-telegram-plane"></i></span>
+                                    <input type="text" class="form-control @error('telegram_username') is-invalid @enderror"
+                                        id="telegram_username" name="telegram_username" value="{{ old('telegram_username', $user->telegram_username) }}"
+                                        placeholder="e.g. john_doe" style="background-color: var(--bg-input); color: var(--text-color);">
+                                </div>
+                                @error('telegram_username')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3 d-flex align-items-center">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="telegram_notifications_enabled"
+                                        name="telegram_notifications_enabled" value="1" {{ old('telegram_notifications_enabled', $user->telegram_notifications_enabled) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="telegram_notifications_enabled">
+                                        Enable Telegram Notifications
+                                    </label>
+                                    <div class="form-text">
+                                        User must have a linked Telegram account.
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Password Change (Optional) -->
                             <div class="col-12">
                                 <h5 class="border-bottom pb-2 mb-3 mt-2">Change Password (Optional)</h5>

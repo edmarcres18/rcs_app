@@ -82,7 +82,7 @@ class UserProfileController extends Controller
             'profile_updated',
             'Profile information updated',
             [
-                'changes' => array_diff_assoc($user->getAttributes(), $oldData),
+                'changes' => $user->getChanges(),
             ]
         );
 

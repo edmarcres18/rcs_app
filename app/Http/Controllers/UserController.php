@@ -143,7 +143,7 @@ class UserController extends Controller
             $user->update($validated);
 
             // Log the activity
-            UserActivityService::logUserUpdated($currentUser, $user, $oldData);
+            UserActivityService::logUserUpdated($currentUser, $user, $user->getChanges());
 
             return redirect()->route('users.show', $user)
                 ->with('success', 'User updated successfully!');
