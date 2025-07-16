@@ -1,0 +1,22 @@
+{
+  "name": "MHR RCS",
+  "short_name": "MHR RCS",
+  "description": "MHR Reporting ComplianceSystem",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f5ff",
+  "theme_color": "#4070f4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/app_logo/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/app_logo/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

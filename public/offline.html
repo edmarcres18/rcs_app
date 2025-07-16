@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - MHR RCS</title>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f5ff;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 500px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4070f4;
+            margin-top: 0;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4070f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .icon {
+            font-size: 60px;
+            color: #4070f4;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <img src="/images/app_logo/logo.png" alt="MHR RCS Logo" class="logo">
+        <div class="icon">📶</div>
+        <h1>You're Offline</h1>
+        <p>It seems you've lost your internet connection. Please check your network and try again.</p>
+        <p>The MHR RCS app requires an internet connection to function properly.</p>
+        <a href="/" class="btn" id="retry-btn">Retry Connection</a>
+    </div>
+
+    <script>
+        document.getElementById('retry-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

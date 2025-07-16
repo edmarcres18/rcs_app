@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('instruction_activities', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('instruction_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade')->comment('Actor who performed the action');
+            $table->enum('action', ['sent', 'read', 'replied', 'forwarded']);
+            $table->text('content')->nullable()->comment('Reply content or forwarding message');
+            $table->foreignId('target_user_id')->nullable()->constrained('users')->onDelete('set null')->comment('Target user for forward action');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('instruction_activities');
+    }
+};

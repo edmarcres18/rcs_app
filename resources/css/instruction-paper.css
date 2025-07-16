@@ -1,0 +1,210 @@
+.instruction-paper-container {
+    max-width: 21.59cm; /* US Letter width */
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.instruction-paper {
+    background: white;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    color: black;
+    padding: 2.54cm;
+    border: 1px solid #d1d1d1;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    width: 100%;
+    min-height: 27.94cm; /* US Letter height */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.instruction-paper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid black;
+    margin-bottom: 2rem;
+}
+
+.instruction-paper-header .logo {
+    max-width: 150px;
+    height: auto;
+}
+
+.instruction-paper-details {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    width: 100px;
+    flex-shrink: 0;
+    font-weight: normal;
+    letter-spacing: 0.1em; /* Spacing for T O, R E */
+}
+
+.detail-colon {
+    width: 20px;
+    text-align: center;
+}
+
+.detail-value {
+    flex-grow: 1;
+}
+
+.instruction-paper-body {
+    flex-grow: 1;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.instruction-heading {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.instruction-sub-item {
+    margin-left: 2rem;
+    text-align: justify;
+}
+
+.instruction-bullets {
+    margin-left: 2rem;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.instruction-paper-footer {
+    margin-top: auto;
+    padding-top: 2rem;
+    flex-shrink: 0;
+}
+
+.closing-statement p {
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.sender-signature {
+    margin-top: 4rem;
+    width: 250px;
+}
+
+.sender-name {
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-top: 0.5rem;
+    border-top: 1px solid #000;
+    display: inline-block;
+}
+
+.sender-role {
+    font-size: 11pt;
+    color: #333;
+}
+
+@media print {
+    @page {
+        size: letter;
+        margin: 1in;
+    }
+
+    body, .modal, .modal-dialog, .modal-content, .modal-body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .modal-header, .modal-footer, .btn, .card, .col-lg-4, .row.mb-4, .replies-list, #reply-form {
+        display: none !important;
+    }
+
+    .instruction-paper-container {
+        width: 100% !important;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .instruction-paper {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        width: 100%;
+        height: auto;
+        display: block; /* For better page break handling */
+    }
+
+    .instruction-paper-header, .instruction-paper-details, .instruction-paper-footer {
+        page-break-inside: avoid;
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 991px) { /* Tablet */
+    .instruction-paper-container {
+        padding: 1rem;
+    }
+
+    .instruction-paper {
+        padding: 1.5cm;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 767px) { /* Mobile */
+    .modal-body {
+        padding: 0 !important;
+    }
+
+    .instruction-paper-container {
+        width: 100%;
+        padding: 0;
+    }
+
+    .instruction-paper {
+        font-size: 11pt;
+        padding: 2rem 1.5rem;
+        border: none;
+        box-shadow: none;
+    }
+
+    .detail-item {
+        flex-wrap: wrap;
+    }
+    .detail-label {
+        width: 100%;
+        margin-bottom: 2px;
+        letter-spacing: normal;
+        font-weight: bold;
+    }
+    .detail-colon {
+       display: none;
+    }
+    .detail-value {
+        width: 100%;
+        padding-left: 0.5rem;
+    }
+
+    .instruction-paper-header .logo {
+        max-width: 120px;
+    }
+
+    .instruction-paper-footer {
+        margin-top: 2rem;
+    }
+}
