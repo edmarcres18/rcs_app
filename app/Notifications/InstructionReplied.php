@@ -32,7 +32,7 @@ class InstructionReplied extends Notification implements ShouldBroadcast
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast'];
+        return ['mail', 'database', 'broadcast', 'telegram'];
     }
 
     /**
@@ -48,6 +48,23 @@ class InstructionReplied extends Notification implements ShouldBroadcast
             ->line('Reply: ' . substr($this->reply->content, 0, 100) . (strlen($this->reply->content) > 100 ? '...' : ''))
             ->action('View Instruction', route('instructions.show', $this->instruction))
             ->line('Please review this reply as soon as possible.');
+    }
+
+    /**
+     * Get the Telegram representation of the notification.
+     *
+     * @param  object  $notifiable
+     * @return string
+     */
+    public function toTelegram(object $notifiable): string
+    {
+        $url = route('instructions.show', $this->instruction->id);
+        $replyPreview = substr($this->reply->content, 0, 100) . (strlen($this->reply->content) > 100 ? '...' : '');
+
+        return "<b>💬 New Reply to Instruction</b>\n\n" .
+               e($this->replier->full_name) . " has replied to your instruction '<b>" . e($this->instruction->title) . "</b>'.\n\n" .
+               "<b>Reply:</b> \"" . e($replyPreview) . "\"\n\n" .
+               "<a href=\"" . $url . "\">View Reply</a>";
     }
 
     /**

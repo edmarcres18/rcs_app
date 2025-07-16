@@ -41,32 +41,61 @@ class InstructionController extends Controller
             return redirect()->route('instructions.monitor');
         }
 
-        // Get received instructions with pivot data
-        $receivedInstructions = Instruction::join('instruction_user', 'instructions.id', '=', 'instruction_user.instruction_id')
-            ->where('instruction_user.user_id', $user->id)
-            ->with(['sender', 'recipients' => function($query) use ($user) {
+        // Helper function for recipient display logic
+        $getRecipientDisplay = function ($recipients) {
+            if ($recipients->isEmpty()) {
+                return 'No Recipients';
+            }
+
+            $isGroup = $recipients->count() > 1;
+            $firstRole = $recipients->first()->roles;
+            $allHaveSameRole = $isGroup && $recipients->every(fn($r) => $r->roles === $firstRole);
+
+            if ($allHaveSameRole) {
+                if ($firstRole === UserRole::EMPLOYEE) return 'ALL EMPLOYEES';
+                if ($firstRole === UserRole::SUPERVISOR) return 'ALL SUPERVISORS';
+                if ($firstRole === UserRole::ADMIN) return 'ALL ADMINS';
+            }
+
+            return $recipients->map(function ($recipient) {
+                if ($recipient->roles === UserRole::EMPLOYEE) {
+                    return $recipient->first_name;
+                }
+                if ($recipient->roles === UserRole::SUPERVISOR || $recipient->roles === UserRole::ADMIN) {
+                    return getInitials($recipient->full_name);
+                }
+                return $recipient->full_name; // Fallback
+            })->implode(', ');
+        };
+
+        // Get received instructions
+        $receivedInstructions = Instruction::whereHas('recipients', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
-            }])
-            ->select('instructions.*', 'instruction_user.is_read', 'instruction_user.forwarded_by_id')
+            })
+            ->with(['sender', 'recipients']) // Eager load all recipients
             ->latest('instructions.created_at')
             ->get()
-            ->each(function($instruction) {
-                // Manually add pivot data
+            ->each(function($instruction) use ($user, $getRecipientDisplay) {
+                // Manually add pivot data for the current user
+                $pivot = DB::table('instruction_user')
+                    ->where('instruction_id', $instruction->id)
+                    ->where('user_id', $user->id)
+                    ->first();
                 $instruction->pivot = (object) [
-                    'is_read' => $instruction->is_read,
-                    'forwarded_by_id' => $instruction->forwarded_by_id
+                    'is_read' => $pivot->is_read ?? false,
+                    'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
                 ];
-
-                // Remove the attributes that we added to the pivot
-                unset($instruction->is_read);
-                unset($instruction->forwarded_by_id);
+                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
             });
 
         // Get sent instructions
         $sentInstructions = Instruction::where('sender_id', $user->id)
             ->with('recipients')
             ->latest()
-            ->get();
+            ->get()
+            ->each(function($instruction) use ($getRecipientDisplay) {
+                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+            });
 
         return view('instructions.index', compact('receivedInstructions', 'sentInstructions'));
     }
@@ -260,6 +289,54 @@ class InstructionController extends Controller
             $this->markAsRead($instruction);
         }
 
+        // Generate recipient display string
+        $recipients = $instruction->recipients;
+        $recipientDisplay = '';
+
+        if ($recipients->isNotEmpty()) {
+            $isGroup = $recipients->count() > 1;
+            $allHaveSameRole = $isGroup && ($recipients->pluck('roles')->unique()->count() === 1);
+            $useGenericRecipient = false;
+
+            if ($allHaveSameRole) {
+                $role = $recipients->first()->roles;
+                if ($role === UserRole::EMPLOYEE) {
+                    $recipientDisplay = 'ALL EMPLOYEES';
+                    $useGenericRecipient = true;
+                } elseif ($role === UserRole::SUPERVISOR) {
+                    $recipientDisplay = 'ALL SUPERVISORS';
+                    $useGenericRecipient = true;
+                } elseif ($role === UserRole::ADMIN) {
+                    $recipientDisplay = 'ALL ADMINS';
+                    $useGenericRecipient = true;
+                }
+            }
+
+            if (!$useGenericRecipient) {
+                $recipientNames = $recipients->map(function ($recipient) {
+                    if ($recipient->roles === UserRole::EMPLOYEE) {
+                        return $recipient->first_name;
+                    }
+
+                    if ($recipient->roles === UserRole::SUPERVISOR || $recipient->roles === UserRole::ADMIN) {
+                        $fullName = trim($recipient->full_name);
+                        $nameParts = explode(' ', $fullName);
+                        $initials = '';
+                        foreach ($nameParts as $part) {
+                            if (!empty($part)) {
+                                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+                            }
+                        }
+                        return $initials;
+                    }
+
+                    return $recipient->full_name; // Fallback
+                });
+                $recipientDisplay = $recipientNames->implode(', ');
+            }
+        }
+
+
         // Get all activities and replies
         $activities = $instruction->activities()
             ->with(['user', 'targetUser'])
@@ -271,7 +348,7 @@ class InstructionController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('instructions.show', compact('instruction', 'activities', 'replies'));
+        return view('instructions.show', compact('instruction', 'activities', 'replies', 'recipientDisplay'));
     }
 
     /**

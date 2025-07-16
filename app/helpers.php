@@ -180,3 +180,28 @@ if (!function_exists('versioned_asset')) {
         return asset($path);
     }
 }
+
+if (!function_exists('getInitials')) {
+    /**
+     * Generate initials from a full name.
+     *
+     * @param string $fullName
+     * @return string
+     */
+    function getInitials($fullName)
+    {
+        $fullName = trim($fullName);
+        if (empty($fullName)) {
+            return '';
+        }
+
+        $nameParts = explode(' ', $fullName);
+        $initials = '';
+        foreach ($nameParts as $part) {
+            if (!empty($part)) {
+                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+            }
+        }
+        return $initials;
+    }
+}

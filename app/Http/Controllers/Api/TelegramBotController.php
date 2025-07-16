@@ -94,11 +94,23 @@ class TelegramBotController extends Controller
 
         switch ($command) {
             case '/start':
-                $this->handleStartCommand($chatId, $username, $params);
+                $this->handleStartCommand($chatId, $username);
                 break;
 
             case '/link':
                 $this->handleLinkCommand($chatId, $username, $params);
+                break;
+
+            case '/unlink':
+                $this->handleUnlinkCommand($chatId, $username);
+                break;
+
+            case '/enable':
+                $this->handleEnableNotificationsCommand($chatId, $username);
+                break;
+
+            case '/disable':
+                $this->handleDisableNotificationsCommand($chatId, $username);
                 break;
 
             case '/register':
@@ -130,28 +142,30 @@ class TelegramBotController extends Controller
      *
      * @param string $chatId
      * @param string|null $username
-     * @param array $params
      * @return void
      */
-    protected function handleStartCommand($chatId, $username = null, $params = [])
+    protected function handleStartCommand($chatId, $username = null)
     {
-        $message = "Good Success! Welcome to MHR Reporting Compliance System Notifications\n\n";
-        $message .= "Here are some available commands:\n";
-        $message .= "/help - Show available commands\n";
-        $message .= "/link [email] - Link your account with your email\n";
-        $message .= "/status - Check your account linking status\n";
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if ($user) {
+            // User is already linked
+            $status = $user->telegram_notifications_enabled ? '✅ Enabled' : '❌ Disabled';
+            $message = "<b>Welcome back, " . e($user->full_name) . "!</b>\n\n";
+            $message .= "Your Telegram account is linked to the MHR Reporting Compliance System.\n\n";
+            $message .= "<b>Email:</b> " . e($user->email) . "\n";
+            $message .= "<b>Notification Status:</b> " . $status . "\n\n";
+            $message .= "You are all set to receive real-time notifications. Type /help to see all available commands.";
+        } else {
+            // New user
+            $message = "<b>Welcome to the MHR Reporting Compliance System Bot!</b>\n\n";
+            $message .= "This bot delivers real-time notifications for instructions and deadlines directly to your Telegram account.\n\n";
+            $message .= "To get started, please link this Telegram account with your MHR system email address using the following command:\n\n";
+            $message .= "<code>/link your.email@example.com</code>\n\n";
+            $message .= "<i>(Replace <b>your.email@example.com</b> with the email you use for the MHR system.)</i>";
+        }
 
         $this->telegramService->sendMessage($chatId, $message);
-
-        // If user already has an account linked by chat ID, show status
-        if (!empty($username) || !empty($chatId)) {
-            $user = $this->findUserByTelegram($chatId, $username);
-
-            if ($user) {
-                $statusMessage = "\nYour account is already linked to: " . $user->email;
-                $this->telegramService->sendMessage($chatId, $statusMessage);
-            }
-        }
     }
 
     /**
@@ -200,6 +214,77 @@ class TelegramBotController extends Controller
     }
 
     /**
+     * Handle the /unlink command.
+     *
+     * @param string $chatId
+     * @param string|null $username
+     * @return void
+     */
+    protected function handleUnlinkCommand($chatId, $username = null)
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if ($user) {
+            $user->telegram_chat_id = null;
+            $user->telegram_username = null;
+            $user->telegram_notifications_enabled = false;
+            $user->save();
+
+            $this->telegramService->sendMessage($chatId, "Your Telegram account has been successfully unlinked from the MHR system.");
+        } else {
+            $this->telegramService->sendMessage($chatId, "This Telegram account is not linked to any account. Use /link to get started.");
+        }
+    }
+
+    /**
+     * Handle the /enable command.
+     *
+     * @param string $chatId
+     * @param string|null $username
+     * @return void
+     */
+    protected function handleEnableNotificationsCommand($chatId, $username = null)
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if ($user) {
+            if ($user->telegram_notifications_enabled) {
+                $this->telegramService->sendMessage($chatId, "Notifications are already enabled for your account.");
+            } else {
+                $user->telegram_notifications_enabled = true;
+                $user->save();
+                $this->telegramService->sendMessage($chatId, "✅ Notifications have been enabled. You will now receive alerts via Telegram.");
+            }
+        } else {
+            $this->telegramService->sendMessage($chatId, "This Telegram account is not linked. Use /link to get started.");
+        }
+    }
+
+    /**
+     * Handle the /disable command.
+     *
+     * @param string $chatId
+     * @param string|null $username
+     * @return void
+     */
+    protected function handleDisableNotificationsCommand($chatId, $username = null)
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if ($user) {
+            if (!$user->telegram_notifications_enabled) {
+                $this->telegramService->sendMessage($chatId, "Notifications are already disabled for your account.");
+            } else {
+                $user->telegram_notifications_enabled = false;
+                $user->save();
+                $this->telegramService->sendMessage($chatId, "❌ Notifications have been disabled. You will no longer receive alerts via Telegram.");
+            }
+        } else {
+            $this->telegramService->sendMessage($chatId, "This Telegram account is not linked. Use /link to get started.");
+        }
+    }
+
+    /**
      * Handle the /register command.
      *
      * @param string $chatId
@@ -225,11 +310,15 @@ class TelegramBotController extends Controller
      */
     protected function handleHelpCommand($chatId)
     {
-        $message = "MHR Reporting Compliance System Bot Commands:\n\n";
-        $message .= "/start - Start the bot and get welcome message\n";
-        $message .= "/link [email] - Link your account with your email address\n";
-        $message .= "/status - Check if your account is linked\n";
-        $message .= "/help - Show this help message\n";
+        $message = "<b>MHR Reporting Compliance System Bot Help</b>\n\n";
+        $message .= "Here are the available commands:\n\n";
+        $message .= "<b>/start</b> - <i>Display welcome message and status.</i>\n";
+        $message .= "<b>/link [email]</b> - <i>Link your Telegram to your MHR account.</i>\n";
+        $message .= "<b>/unlink</b> - <i>Remove the link between your Telegram and MHR account.</i>\n";
+        $message .= "<b>/status</b> - <i>Check your account linking status.</i>\n";
+        $message .= "<b>/enable</b> - <i>Enable receiving notifications.</i>\n";
+        $message .= "<b>/disable</b> - <i>Disable receiving notifications.</i>\n";
+        $message .= "<b>/help</b> - <i>Show this help message.</i>";
 
         $this->telegramService->sendMessage($chatId, $message);
     }
@@ -246,18 +335,19 @@ class TelegramBotController extends Controller
         $user = $this->findUserByTelegram($chatId, $username);
 
         if ($user) {
-            $status = $user->telegram_notifications_enabled ? 'enabled' : 'disabled';
+            $status = $user->telegram_notifications_enabled ? '✅ Enabled' : '❌ Disabled';
 
-            $message = "Your account is linked to:\n";
-            $message .= "Email: {$user->email}\n";
-            $message .= "Name: {$user->name}\n";
-            $message .= "Notifications: {$status}\n\n";
-            $message .= "You will receive notifications for new instructions and updates.";
+            $message = "<b>Your Account Status</b>\n\n";
+            $message .= "This Telegram account is linked to the following MHR System user:\n\n";
+            $message .= "<b>Name:</b> " . e($user->full_name) . "\n";
+            $message .= "<b>Email:</b> " . e($user->email) . "\n";
+            $message .= "<b>Notification Status:</b> " . $status . "\n\n";
+            $message .= "To change your notification preference, use /enable or /disable.";
 
             $this->telegramService->sendMessage($chatId, $message);
         } else {
-            $message = "Your Telegram account is not linked to any MHR Reporting Compliance System account.\n";
-            $message .= "Please use /link [your-email] to link your account.";
+            $message = "Your Telegram account is not linked to any MHR Reporting Compliance System account.\n\n";
+            $message .= "Please use the <code>/link [your-email]</code> command to link your account.";
 
             $this->telegramService->sendMessage($chatId, $message);
         }

@@ -30,7 +30,7 @@ class InstructionDeadlineReminder extends Notification implements ShouldBroadcas
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast'];
+        return ['mail', 'database', 'broadcast', 'telegram'];
     }
 
     /**
@@ -49,6 +49,25 @@ class InstructionDeadlineReminder extends Notification implements ShouldBroadcas
                     ->line('You have not yet replied to this instruction.')
                     ->action('View Instruction', route('instructions.show', $this->instruction))
                     ->line('Please review and reply to this instruction as soon as possible.');
+    }
+
+    /**
+     * Get the Telegram representation of the notification.
+     *
+     * @param  object  $notifiable
+     * @return string
+     */
+    public function toTelegram(object $notifiable): string
+    {
+        $deadline = \Carbon\Carbon::parse($this->instruction->target_deadline)->format('F d, Y');
+        $daysRemaining = \Carbon\Carbon::now()->diffInDays($this->instruction->target_deadline, false);
+        $url = route('instructions.show', $this->instruction->id);
+
+        return "<b>🔔 Deadline Reminder</b>\n\n" .
+               "The instruction '<b>" . e($this->instruction->title) . "</b>' is due in <b>{$daysRemaining} days</b>.\n" .
+               "<b>Deadline:</b> {$deadline}\n\n" .
+               "Please review and reply to this instruction as soon as possible.\n" .
+               "<a href=\"" . $url . "\">View Instruction</a>";
     }
 
     /**

@@ -27,7 +27,7 @@ class InstructionAssigned extends Notification implements ShouldBroadcast
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast'];
+        return ['mail', 'database', 'broadcast', 'telegram'];
     }
 
     /**
@@ -43,6 +43,23 @@ class InstructionAssigned extends Notification implements ShouldBroadcast
             ->line('From: ' . $this->instruction->sender->full_name)
             ->action('View Instruction', route('instructions.show', $this->instruction))
             ->line('Please review this instruction as soon as possible.');
+    }
+
+    /**
+     * Get the Telegram representation of the notification.
+     *
+     * @param  object  $notifiable
+     * @return string
+     */
+    public function toTelegram(object $notifiable): string
+    {
+        $url = route('instructions.show', $this->instruction->id);
+
+        return "<b>📢 New Instruction Assigned</b>\n\n" .
+               "<b>Title:</b> " . e($this->instruction->title) . "\n" .
+               "<b>From:</b> " . e($this->instruction->sender->full_name) . "\n\n" .
+               "Please review this instruction as soon as possible.\n" .
+               "<a href=\"" . $url . "\">View Instruction</a>";
     }
 
     /**
