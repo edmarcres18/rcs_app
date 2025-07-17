@@ -44,6 +44,9 @@ class TelegramService
     public function __construct()
     {
         $this->token = config('telegram.api_token') ?: config('services.telegram.bot_token');
+        if (empty($this->token)) {
+            throw new \InvalidArgumentException('Telegram API token is not configured. Please check your .env file.');
+        }
         $this->debug = config('telegram.debug', false);
         $this->commands = config('telegram.commands', []);
         $this->isLocal = App::environment('local');
