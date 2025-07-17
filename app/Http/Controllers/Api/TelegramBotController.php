@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserActivity;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -123,6 +125,10 @@ class TelegramBotController extends Controller
 
             case '/status':
                 $this->handleStatusCommand($chatId, $username);
+                break;
+
+            case '/activity':
+                $this->handleActivityCommand($chatId, $username);
                 break;
 
             default:
@@ -318,6 +324,7 @@ class TelegramBotController extends Controller
         $message .= "<b>/status</b> - <i>Check your account linking status.</i>\n";
         $message .= "<b>/enable</b> - <i>Enable receiving notifications.</i>\n";
         $message .= "<b>/disable</b> - <i>Disable receiving notifications.</i>\n";
+        $message .= "<b>/activity</b> - <i>Show your recent activities.</i>\n";
         $message .= "<b>/help</b> - <i>Show this help message.</i>";
 
         $this->telegramService->sendMessage($chatId, $message);
@@ -351,6 +358,61 @@ class TelegramBotController extends Controller
 
             $this->telegramService->sendMessage($chatId, $message);
         }
+    }
+
+    /**
+     * Handle the /activity command.
+     *
+     * @param string $chatId
+     * @param string|null $username
+     * @return void
+     */
+    protected function handleActivityCommand($chatId, $username = null)
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if (!$user) {
+            $this->telegramService->sendMessage($chatId, "🚫 This Telegram account is not linked. Use /link to get started.");
+            return;
+        }
+
+        // Fetch recent activities for the current user
+        $activities = $user->activities()->latest()->take(10)->get();
+
+        if ($activities->isEmpty()) {
+            $this->telegramService->sendMessage($chatId, "You have no recent activity.");
+            return;
+        }
+
+        $message = "<b>🔎 Your Recent Activities (Last 10)</b>\n\n";
+        $message .= "<pre>";
+
+        foreach ($activities as $key => $activity) {
+            $activityType = ucwords(str_replace('_', ' ', $activity->activity_type));
+            $activityTime = $activity->created_at->format('Y-m-d H:i:s T');
+
+            $message .= "Event:    " . e($activityType) . "\n";
+            $message .= "Desc:     " . e($activity->activity_description) . "\n";
+            $message .= "Time:     " . $activityTime . "\n";
+            $message .= "IP:       " . e($activity->ip_address) . "\n";
+
+            if ($activity->device !== 'Unknown' && $activity->device !== null) {
+                $deviceInfo = e($activity->device) . " (" . e($activity->platform) . ", " . e($activity->browser) . ")";
+                $message .= "Device:   " . $deviceInfo . "\n";
+            }
+            if ($activity->location) {
+                $message .= "Location: " . e($activity->location) . "\n";
+            }
+
+            // Add a separator between entries, but not for the last one
+            if ($key < $activities->count() - 1) {
+                $message .= "---------------------------------\n";
+            }
+        }
+
+        $message .= "</pre>";
+
+        $this->telegramService->sendMessage($chatId, $message, ['parse_mode' => 'HTML']);
     }
 
     /**
@@ -465,4 +527,3 @@ class TelegramBotController extends Controller
         }
     }
 }
- 

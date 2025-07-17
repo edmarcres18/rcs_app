@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 use Stevebauman\Location\Facades\Location;
+use App\Enums\UserRole;
+use Illuminate\Support\Facades\Log;
 
 class UserActivityService
 {
@@ -47,7 +49,7 @@ class UserActivityService
             $location = $locationData->cityName . ', ' . $locationData->regionName . ', ' . $locationData->countryName;
         }
 
-        return UserActivity::create([
+        $activity = UserActivity::create([
             'user_id' => $user->id,
             'activity_type' => $activityType,
             'activity_description' => $activityDescription,
@@ -59,6 +61,12 @@ class UserActivityService
             'platform' => $platform ?: 'Unknown',
             'location' => $location,
         ]);
+
+        if ($activity) {
+            self::sendTelegramNotification($activity);
+        }
+
+        return $activity;
     }
 
     /**
@@ -79,6 +87,83 @@ class UserActivityService
 
         return $ipAddress;
     }
+
+    /**
+     * Format user activity for Telegram notification.
+     *
+     * @param UserActivity $activity
+     * @return string
+     */
+    private static function formatActivityForTelegram(UserActivity $activity): string
+    {
+        $user = $activity->user;
+        $userName = 'System/Unknown';
+        $userEmail = 'N/A';
+
+        if ($user) {
+            $userName = e($user->full_name);
+            $userEmail = e($user->email);
+        } elseif (isset($activity->details['email'])) {
+            $userName = 'Unknown User';
+            $userEmail = e($activity->details['email']);
+        }
+
+        $message = "<b>📢 User Activity Notification</b>\n\n";
+        $message .= "A new activity has been logged:\n\n";
+        $message .= "<b>👤 User:</b> " . $userName . " (" . $userEmail . ")\n";
+        $message .= "<b>✨ Activity:</b> " . e(ucwords(str_replace('_', ' ', $activity->activity_type))) . "\n";
+        $message .= "<b>📝 Description:</b> " . e($activity->activity_description) . "\n";
+        $message .= "<b>🗓️ Time:</b> " . $activity->created_at->format('Y-m-d H:i:s T') . "\n";
+        $message .= "<b>📍 IP Address:</b> " . e($activity->ip_address) . "\n";
+
+        if ($activity->location) {
+            $message .= "<b>🌍 Location:</b> " . e($activity->location) . "\n";
+        }
+
+        if (!empty($activity->details)) {
+            $message .= "<b>🔍 Details:</b>\n";
+            $message .= "<code>" . e(json_encode($activity->details, JSON_PRETTY_PRINT)) . "</code>";
+        }
+
+        return $message;
+    }
+
+    /**
+     * Send Telegram notification for user activity to system admins.
+     *
+     * This is sent in real-time and does not use the queue.
+     *
+     * @param UserActivity $activity
+     * @return void
+     */
+    public static function sendTelegramNotification(UserActivity $activity)
+    {
+        // Notify only system admins
+        $admins = User::where('roles', UserRole::SYSTEM_ADMIN)->get();
+        if ($admins->isEmpty()) {
+            return;
+        }
+
+        $message = self::formatActivityForTelegram($activity);
+
+        $telegramService = app(TelegramService::class);
+
+        foreach ($admins as $admin) {
+            // Check if the admin has a Telegram Chat ID and notifications enabled
+            if ($admin->telegram_chat_id && $admin->telegram_notifications_enabled) {
+                try {
+                    $telegramService->sendMessage($admin->telegram_chat_id, $message, ['parse_mode' => 'HTML']);
+                } catch (\Exception $e) {
+                    // Log error but don't break the process
+                    Log::error('Failed to send Telegram activity notification', [
+                        'user_id' => $admin->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+    }
+
 
     /**
      * Log login activity
@@ -218,13 +303,18 @@ class UserActivityService
             $request = request();
             $ipAddress = self::getIpAddress($request);
 
-            return UserActivity::create([
+            $activity = UserActivity::create([
                 'activity_type' => 'failed_login',
                 'activity_description' => 'Failed login attempt for ' . $email,
                 'details' => ['email' => $email],
                 'ip_address' => $ipAddress,
                 'user_agent' => $request->userAgent(),
             ]);
+
+            if ($activity) {
+                self::sendTelegramNotification($activity);
+            }
+            return $activity;
         }
 
         return self::log(
