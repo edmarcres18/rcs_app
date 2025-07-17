@@ -3,28 +3,18 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\EmailVerification;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
+use App\Mail\WelcomeMail;
 
 class EmailVerificationController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('guest');
-    }
-
-    /**
-     * Show the email verification form.
+     * Show the email verification notice.
      *
      * @return \Illuminate\View\View
      */
@@ -34,7 +24,7 @@ class EmailVerificationController extends Controller
     }
 
     /**
-     * Verify the email using OTP.
+     * Mark the user's email address as verified.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
@@ -43,7 +33,7 @@ class EmailVerificationController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'otp' => 'required|string|size:6',
+            'otp' => 'required|string|min:6|max:6',
         ]);
 
         $verification = EmailVerification::where('email', $request->email)
@@ -51,52 +41,63 @@ class EmailVerificationController extends Controller
             ->first();
 
         if (!$verification) {
-            return back()->withErrors(['otp' => 'Invalid OTP.'])->withInput();
+            return back()->withErrors(['otp' => 'Invalid OTP. Please try again.']);
         }
 
-        if ($verification->isExpired()) {
-            return back()->withErrors(['otp' => 'OTP has expired. Please request a new one.'])->withInput();
+        if (Carbon::now()->isAfter($verification->expires_at)) {
+            return back()->withErrors(['otp' => 'The OTP has expired. Please request a new one.']);
         }
 
-        // Mark user's email as verified
         $user = User::where('email', $request->email)->first();
-        $user->email_verified_at = Carbon::now();
-        $user->save();
 
-        // Delete the verification record
+        if (!$user) {
+            return back()->withErrors(['email' => 'User not found.']);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        // Send welcome email
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
+        // Delete the OTP record after successful verification
         $verification->delete();
 
-        // Login the user
-        Auth::login($user);
-
-        return redirect()->route('home')->with('status', 'Email verified successfully!');
+        return view('auth.verification-successful');
     }
 
     /**
-     * Resend OTP to email.
+     * Resend the email verification OTP.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function resend(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
+        $request->validate(['email' => 'required|email|exists:users,email']);
 
+        $user = User::where('email', $request->email)->first();
+
+        if ($user->hasVerifiedEmail()) {
+            return back()->with('status', 'Your email is already verified.');
+        }
+
+        // Generate a new OTP
         $otp = mt_rand(100000, 999999);
-        
+
+        // Update or create the OTP record
         EmailVerification::updateOrCreate(
-            ['email' => $request->email],
+            ['email' => $user->email],
             [
                 'otp' => $otp,
                 'expires_at' => Carbon::now()->addMinutes(15),
             ]
         );
 
-        // Send OTP email
-        Mail::to($request->email)->send(new OtpMail($otp));
+        // Send the new OTP
+        Mail::to($user->email)->send(new OtpMail($otp));
 
-        return back()->with('status', 'OTP has been sent to your email.');
+        return back()->with('status', 'A fresh OTP has been sent to your email address.');
     }
 }

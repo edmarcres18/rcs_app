@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        $middleware->appendToGroup('web', \Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->appendToGroup('web', [
+            \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\AddSecurityHeaders::class,
+        ]);
         $middleware->appendToGroup('api', \Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {

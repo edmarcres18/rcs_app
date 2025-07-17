@@ -1,16 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Auth\EmailVerificationController;
-use App\Http\Controllers\PendingUpdateController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\InstructionController;
 use App\Http\Controllers\InstructionMonitorController;
+use App\Http\Controllers\PendingUpdateController;
 use App\Http\Controllers\SystemSettingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\File;
-use App\Http\Controllers\Api\NotificationController;
+use Illuminate\Support\Facades\Route;
 
 // Offline fallback route for service worker
 Route::get('/offline', function () {
@@ -21,20 +21,28 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Auth::routes();
+Route::get('/help', function () {
+    return view('help');
+});
 
-// Broadcasting Authentication for Pusher
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Auth::routes(['verify' => false]); // Disable default verification routes
 
 // Email Verification Routes
 Route::get('/email/verify', [EmailVerificationController::class, 'showVerificationForm'])
+    ->middleware('guest')
     ->name('verification.notice');
+
 Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
+    ->middleware('guest')
     ->name('verification.verify');
+
 Route::post('/email/resend', [EmailVerificationController::class, 'resend'])
+    ->middleware('guest')
     ->name('verification.resend');
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // User Management Routes
 Route::middleware('auth')->group(function () {
@@ -115,6 +123,6 @@ Route::middleware('auth')->get('/test-notification', function () {
             'app_key' => config('broadcasting.connections.pusher.key'),
             'cluster' => config('broadcasting.connections.pusher.options.cluster'),
             'host' => config('broadcasting.connections.pusher.options.host'),
-        ]
+        ],
     ]);
 })->name('test.notification');

@@ -98,7 +98,7 @@ class RegisterController extends Controller
 
         // Generate OTP
         $otp = mt_rand(100000, 999999);
-        
+
         // Store OTP in email_verifications table
         EmailVerification::updateOrCreate(
             ['email' => $user->email],
