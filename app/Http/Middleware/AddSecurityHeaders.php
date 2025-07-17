@@ -16,7 +16,7 @@ class AddSecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;");
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:;");
         $response->headers->set('Permissions-Policy', "geolocation=(), microphone=(), camera=()");
         return $response;
     }
