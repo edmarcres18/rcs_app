@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "minishlink/web-push": "^9.0",
+        "pragmarx/google2fa-laravel": "^2.3",
         "pusher/pusher-php-server": "^7.2",
         "stevebauman/location": "^7.5"
     },
