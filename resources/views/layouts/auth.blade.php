@@ -56,6 +56,59 @@
                 box-shadow: none !important;
             }
         }
+
+        /* Floating help button styles */
+        .floating-help-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(45deg, #0d6efd, #0dcaf0); /* Stunning blue gradient */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Softer, more pronounced shadow */
+            text-decoration: none;
+            font-size: 1rem;
+            z-index: 1050;
+            transition: all 0.3s ease-in-out;
+            border: none;
+        }
+
+        .floating-help-btn:hover {
+            background: linear-gradient(45deg, #0b5ed7, #0a9ebf); /* Darker gradient on hover */
+            color: white;
+            transform: translateY(-5px) scale(1.05); /* Lift and scale up on hover */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        .floating-help-btn i {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .floating-help-btn:hover i {
+            transform: rotate(10deg); /* Slightly rotate icon on hover */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .floating-help-btn span {
+                display: none;
+            }
+            .floating-help-btn {
+                padding: 0.5rem;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                justify-content: center;
+            }
+            .floating-help-btn i {
+                margin-left: 0 !important; /* Reset margin for icon when text is hidden */
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -64,6 +117,11 @@
             @yield('content')
         </main>
     </div>
+
+    <a href="{{ url('/help') }}" class="floating-help-btn" title="RCS Guide">
+        <span>RCS Guide</span>
+        <i class="fas fa-question-circle ms-2"></i>
+    </a>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

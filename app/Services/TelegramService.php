@@ -210,7 +210,7 @@ class TelegramService
                 return null;
             }
 
-            $response = Http::get("https://api.telegram.org/bot{$this->token}/setWebhook", [
+            $response = Http::post("https://api.telegram.org/bot{$this->token}/setWebhook", [
                 'url' => $webhookUrl
             ]);
 
@@ -242,7 +242,7 @@ class TelegramService
     public function deleteWebhook()
     {
         try {
-            $response = Http::get("https://api.telegram.org/bot{$this->token}/deleteWebhook");
+            $response = Http::post("https://api.telegram.org/bot{$this->token}/deleteWebhook");
 
             if ($response->successful()) {
                 Log::info('Telegram webhook deleted');
@@ -265,7 +265,7 @@ class TelegramService
     }
 
     /**
-     * Get webhook info.
+     * Get information about the current webhook.
      *
      * @return array|null
      */

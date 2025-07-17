@@ -36,12 +36,19 @@
     </style>
 </head>
 <body class="bg-slate-100 font-sans" x-data="guide()" x-on:scroll.window="setActiveSection()">
+@php
+    $authLogo = 'images/app_logo/auth_logo.png';
+    $defaultLogo = 'images/app_logo/logo.png';
+    $logoPath = file_exists(public_path($authLogo)) ? asset($authLogo) : asset($defaultLogo);
+    $appUrl = config('app.url');
+    $visitUrl = str_contains($appUrl, 'localhost') ? url('/') : $appUrl;
+@endphp
 
     <!-- Mobile header with menu toggle -->
     <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-sm shadow-sm lg:hidden">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fas fa-robot text-2xl text-indigo-600"></i>
+                <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 w-auto">
                 <span class="font-bold text-lg text-slate-800">RCS Guide</span>
             </div>
             <button @click="sidebarOpen = !sidebarOpen" class="text-slate-600 hover:text-indigo-600">
@@ -60,7 +67,7 @@
                 <!-- Logo -->
                 <div class="h-20 flex items-center justify-center border-b border-slate-200">
                      <div class="flex items-center space-x-3">
-                        <i class="fas fa-robot text-3xl text-indigo-600"></i>
+                        <img src="{{ $logoPath }}" alt="RCS Logo" class="h-10 w-auto">
                         <span class="font-bold text-xl text-slate-800">RCS Guide</span>
                     </div>
                 </div>
@@ -74,7 +81,7 @@
                         <i class="fas fa-user-plus w-6 text-center text-slate-400 mr-3"></i> Registration
                     </a>
                     <a href="#email-verification" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'email-verification' }">
-                        <i class="fas fa-envelope-check w-6 text-center text-slate-400 mr-3"></i> Email Verification
+                        <i class="fas fa-envelope-open-text w-6 text-center text-slate-400 mr-3"></i> Email Verification
                     </a>
                     <a href="#login" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'login' }">
                         <i class="fas fa-sign-in-alt w-6 text-center text-slate-400 mr-3"></i> Logging In
@@ -93,8 +100,15 @@
                     </a>
                     <a href="#support" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'support' }">
                         <i class="fas fa-headset w-6 text-center text-slate-400 mr-3"></i> Support
-                </a>
+                    </a>
                 </nav>
+
+                <!-- Back button -->
+                <div class="px-6 py-4 border-t border-slate-200">
+                    <a href="{{ url('/') }}" class="w-full flex items-center justify-center px-4 py-2 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i> Go Back
+                    </a>
+                </div>
             </div>
         </aside>
 
@@ -110,7 +124,7 @@
                     <div class="text-center">
                         <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">RCS App User Guide</h1>
                         <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Welcome! This guide provides comprehensive instructions for all of the app's authentication processes.</p>
-                        <a href="https://rcs.mhrpci.site/" target="_blank" class="mt-8 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                        <a href="{{ $visitUrl }}" target="_blank" class="mt-8 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                             <i class="fas fa-external-link-alt mr-2"></i> Visit RCS App
                         </a>
                     </div>
@@ -176,7 +190,7 @@
                                 <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-sm border border-slate-200">
                                     <div class="border-b border-slate-200 pb-4 mb-4">
                                         <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm text-slate-500">From: no-reply@rcs.mhrpci.site</span>
+                                            <span class="text-sm text-slate-500">From: {{ config('mail.from.address') }}</span>
                                             <span class="text-xs text-slate-400">Just now</span>
                                         </div>
                                         <h4 class="font-bold text-lg text-slate-800">Your RCS App Verification Code</h4>
@@ -207,7 +221,7 @@
                                 <div class="mt-2 text-sm text-blue-700 space-y-1">
                                     <p>• Check your spam or junk folder.</p>
                                     <p>• Ensure you entered the correct email address during registration.</p>
-                                    <p>• Add <span class="font-mono bg-blue-100 text-blue-800 px-1 py-0.5 rounded">no-reply@rcs.mhrpci.site</span> to your contacts or safe senders list.</p>
+                                    <p>• Add <span class="font-mono bg-blue-100 text-blue-800 px-1 py-0.5 rounded">{{ config('mail.from.address') }}</span> to your contacts or safe senders list.</p>
                                     <p>• Wait a few minutes as delivery can sometimes be delayed.</p>
                         </div>
                             </div>
@@ -235,7 +249,7 @@
                                         <div class="flex-shrink-0 w-10 h-10 bg-green-500 text-white font-bold rounded-full flex items-center justify-center mr-4">1</div>
                                         <div>
                                             <h3 class="font-bold text-lg text-slate-800">Check Your Inbox</h3>
-                                            <p class="text-slate-600">Find the email from <span class="font-mono bg-slate-100 text-slate-800 px-1 py-0.5 rounded">no-reply@rcs.mhrpci.site</span>. It contains your 6-digit One-Time Password (OTP).</p>
+                                            <p class="text-slate-600">Find the email from <span class="font-mono bg-slate-100 text-slate-800 px-1 py-0.5 rounded">{{ config('mail.from.address') }}</span>. It contains your 6-digit One-Time Password (OTP).</p>
                                         </div>
                                     </div>
                                     <div class="flex items-start">
@@ -441,7 +455,7 @@
                                         <div class="flex-shrink-0 w-10 h-10 bg-sky-500 text-white font-bold rounded-full flex items-center justify-center mr-4">1</div>
                             <div>
                                             <h4 class="font-bold text-slate-800">Find the Bot</h4>
-                                            <p class="text-slate-600">Search for <span class="font-mono bg-slate-200 px-2 py-1 rounded">@RCSNotificationsBot</span> in Telegram.</p>
+                                            <p class="text-slate-600">Search for <span class="font-mono bg-slate-200 px-2 py-1 rounded">@mhr_rcs_bot</span> in Telegram.</p>
                             </div>
                         </div>
                                     <div class="flex items-start">
@@ -494,7 +508,7 @@
                                         </div>
                             <div>
                                             <span class="font-bold text-slate-800">RCS Notifications</span>
-                                            <span class="text-xs text-slate-500 block">via @RCSNotificationsBot</span>
+                                            <span class="text-xs text-slate-500 block">via @mhr_rcs_bot</span>
                             </div>
                                         <span class="text-xs text-slate-500 ml-auto">12:34 PM</span>
                         </div>
@@ -613,7 +627,7 @@
                                     <ol class="list-decimal pl-5 space-y-2 mt-3">
                                         <li><b>Check your spam/junk folder:</b> Emails from new senders can sometimes be incorrectly filtered.</li>
                                         <li><b>Verify the email address:</b> Double-check that there are no typos in the email address you provided.</li>
-                                        <li><b>Add us to your contacts:</b> Add <span class="font-mono bg-slate-100 text-slate-800 px-1 py-0.5 rounded">no-reply@rcs.mhrpci.site</span> to your email client's address book or safe sender list.</li>
+                                        <li><b>Add us to your contacts:</b> Add <span class="font-mono bg-slate-100 text-slate-800 px-1 py-0.5 rounded">{{ config('mail.from.address') }}</span> to your email client's address book or safe sender list.</li>
                                         <li><b>Wait a few minutes:</b> Email networks can occasionally have small delays.</li>
                                         <li>If problems persist, please contact our support team for assistance.</li>
                             </ol>
@@ -630,10 +644,10 @@
                         <h2 class="text-3xl font-bold text-white mb-4">Need Further Assistance?</h2>
                         <p class="text-indigo-100 max-w-2xl mx-auto mb-8">Our support team is ready to help you with any questions or issues regarding your RCS App account.</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="mailto:support@rcs.mhrpci.site" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition duration-300 flex items-center justify-center">
+                            <a href="mailto:{{ config('mail.from.address') }}" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition duration-300 flex items-center justify-center">
                         <i class="fas fa-envelope mr-2"></i> Email Support
                     </a>
-                            <a href="mailto:support@rcs.mhrpci.site?subject=Support%20Ticket%20Request" class="bg-indigo-500/50 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-500/80 transition duration-300 flex items-center justify-center border border-indigo-400">
+                            <a href="mailto:{{ config('mail.from.address') }}?subject=Support%20Ticket%20Request" class="bg-indigo-500/50 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-500/80 transition duration-300 flex items-center justify-center border border-indigo-400">
                                 <i class="fas fa-life-ring mr-2"></i> Open a Ticket
                     </a>
                 </div>
@@ -648,7 +662,7 @@
                     <div class="grid md:grid-cols-4 gap-8">
                         <div class="md:col-span-1">
                              <div class="flex items-center space-x-3">
-                                <i class="fas fa-robot text-2xl text-indigo-600"></i>
+                                <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 w-auto">
                                 <span class="font-bold text-lg text-slate-800">RCS App</span>
                             </div>
                             <p class="mt-4 text-slate-500 text-sm">Secure authentication and account management.</p>
@@ -670,7 +684,7 @@
                 </div>
                 <div>
                             <h3 class="font-semibold text-slate-800 mb-4">Connect With Us</h3>
-                             <a href="mailto:support@rcs.mhrpci.site" class="text-sm text-slate-600 hover:text-indigo-600 transition">support@rcs.mhrpci.site</a>
+                             <a href="mailto:{{ config('mail.from.address') }}" class="text-sm text-slate-600 hover:text-indigo-600 transition">{{ config('mail.from.address') }}</a>
                         </div>
                     </div>
                     <div class="border-t border-slate-200 mt-8 pt-8 text-center text-sm text-slate-500">
