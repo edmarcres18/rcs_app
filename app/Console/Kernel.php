@@ -21,7 +21,6 @@ class Kernel extends ConsoleKernel
         Commands\PollTelegramUpdates::class,
         Commands\TelegramWebhookInfo::class,
         Commands\DeleteTelegramWebhook::class,
-        Commands\VerifyAndRepairTelegramWebhook::class,
     ];
 
     /**
@@ -31,7 +30,6 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('instructions:send-reminders')->daily();
-        $schedule->command('telegram:verify-webhook')->everyFifteenMinutes();
     }
 
     /**

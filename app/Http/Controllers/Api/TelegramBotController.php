@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
-use App\Jobs\ProcessTelegramUpdate;
 
 class TelegramBotController extends Controller
 {
@@ -45,7 +44,7 @@ class TelegramBotController extends Controller
         $update = $request->all();
         Log::info('Telegram webhook received', ['update' => $update]);
 
-        ProcessTelegramUpdate::dispatch($update);
+        $this->processUpdate($update);
 
         return response()->json(['status' => 'success']);
     }
