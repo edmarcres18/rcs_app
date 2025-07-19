@@ -69,8 +69,18 @@ class AppServiceProvider extends ServiceProvider
         // Get Telegram service
         $telegramService = app(TelegramService::class);
 
+        // If we're in a production environment
+        if (app()->environment('production')) {
+            $webhookUrl = config('app.url') . '/api/telegram/webhook';
+            $currentWebhook = $telegramService->getWebhookInfo();
+
+            if (!$currentWebhook || $currentWebhook['result']['url'] !== $webhookUrl) {
+                Log::info('Setting up Telegram webhook for production environment', ['url' => $webhookUrl]);
+                $telegramService->setWebhook($webhookUrl);
+            }
+        }
         // If we're in local environment
-        if (app()->environment('local')) {
+        elseif (app()->environment('local')) {
             // Check if we should use polling in local environment
             if (config('telegram.local.use_polling', true)) {
                 // Make sure webhook is not set
