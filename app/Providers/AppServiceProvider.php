@@ -12,6 +12,8 @@ use App\Notifications\Channels\WebPushChannel;
 use App\Notifications\Channels\TelegramChannel;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Artisan;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,6 +54,26 @@ class AppServiceProvider extends ServiceProvider
 
         // Auto-setup Telegram environment if needed
         $this->setupTelegramEnvironment();
+
+        if (App::environment('production') && config('telegram.api_token')) {
+            try {
+                // Get current webhook info
+                Artisan::call('telegram:webhook-info');
+                $output = Artisan::output();
+
+                $expectedUrl = config('telegram.webhook_url');
+
+                // Check if current webhook URL matches expected
+                if (!str_contains($output, $expectedUrl)) {
+                    Artisan::call('telegram:setup-webhook');
+                    Log::info('✅ Telegram webhook was set automatically: ' . $expectedUrl);
+                } else {
+                    Log::info('ℹ️ Telegram webhook already set to: ' . $expectedUrl);
+                }
+            } catch (\Exception $e) {
+                Log::error('❌ Telegram webhook setup failed: ' . $e->getMessage());
+            }
+        }
     }
 
     /**

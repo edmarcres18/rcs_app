@@ -34,6 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/webpush/vapid-public-key', [WebPushController::class, 'getVapidPublicKey'])->name('webpush.vapid-public-key');
 });
 
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::prefix('v1')->group(function () {
+    require __DIR__.'/api_v1.php';
+});
+
 /*
  * Telegram Bot API Routes
  */
