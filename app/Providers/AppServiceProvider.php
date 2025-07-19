@@ -12,8 +12,6 @@ use App\Notifications\Channels\WebPushChannel;
 use App\Notifications\Channels\TelegramChannel;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Artisan;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -54,26 +52,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Auto-setup Telegram environment if needed
         $this->setupTelegramEnvironment();
-
-        if (App::environment('production') && config('telegram.api_token')) {
-            try {
-                // Get current webhook info
-                Artisan::call('telegram:webhook-info');
-                $output = Artisan::output();
-
-                $expectedUrl = config('telegram.webhook_url');
-
-                // Check if current webhook URL matches expected
-                if (!str_contains($output, $expectedUrl)) {
-                    Artisan::call('telegram:setup-webhook');
-                    Log::info('✅ Telegram webhook was set automatically: ' . $expectedUrl);
-                } else {
-                    Log::info('ℹ️ Telegram webhook already set to: ' . $expectedUrl);
-                }
-            } catch (\Exception $e) {
-                Log::error('❌ Telegram webhook setup failed: ' . $e->getMessage());
-            }
-        }
     }
 
     /**
@@ -91,8 +69,18 @@ class AppServiceProvider extends ServiceProvider
         // Get Telegram service
         $telegramService = app(TelegramService::class);
 
+        // If we're in a production environment
+        if (app()->environment('production')) {
+            $webhookUrl = config('app.url') . '/api/telegram/webhook';
+            $currentWebhook = $telegramService->getWebhookInfo();
+
+            if (!$currentWebhook || $currentWebhook['result']['url'] !== $webhookUrl) {
+                Log::info('Setting up Telegram webhook for production environment', ['url' => $webhookUrl]);
+                $telegramService->setWebhook($webhookUrl);
+            }
+        }
         // If we're in local environment
-        if (app()->environment('local')) {
+        elseif (app()->environment('local')) {
             // Check if we should use polling in local environment
             if (config('telegram.local.use_polling', true)) {
                 // Make sure webhook is not set
