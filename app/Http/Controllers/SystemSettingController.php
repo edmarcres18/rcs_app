@@ -122,8 +122,12 @@ class SystemSettingController extends Controller
 
             $newAppName = null;
             if ($request->has('app_name')) {
-                $newAppName = $validatedData['app_name'];
-                $this->updateEnvVariable('APP_NAME', $newAppName);
+                $incomingName = $validatedData['app_name'];
+                // Only attempt to update if different from current
+                if ($incomingName !== config('app.name')) {
+                    $this->updateEnvVariable('APP_NAME', $incomingName);
+                }
+                $newAppName = $incomingName;
             }
 
             $appLogoPath = null;
@@ -213,22 +217,36 @@ class SystemSettingController extends Controller
      */
     protected function updateEnvVariable(string $key, string $value)
     {
-        $envFilePath = base_path('.env');
+        try {
+            $envFilePath = base_path('.env');
 
-        $value = preg_match('/\s/', $value) ? '"' . $value . '"' : $value;
+            // If .env is missing or not writable, log and bail quietly
+            if (!file_exists($envFilePath) || !is_writable($envFilePath)) {
+                Log::warning(".env not writable or missing; skipping env update for {$key}");
+                return;
+            }
 
-        $envFileContent = File::get($envFilePath);
+            $sanitizedValue = preg_match('/\s/', $value) ? '"' . $value . '"' : $value;
+            $envFileContent = @file_get_contents($envFilePath);
 
-        $newEntry = "{$key}={$value}";
+            if ($envFileContent === false) {
+                Log::warning('Unable to read .env file; skipping env update');
+                return;
+            }
 
-        $pattern = "/^{$key}=.*$/m";
+            $newEntry = "{$key}={$sanitizedValue}";
+            $pattern = "/^{$key}=.*$/m";
 
-        if (preg_match($pattern, $envFileContent)) {
-            $envFileContent = preg_replace($pattern, $newEntry, $envFileContent, 1);
-        } else {
-            $envFileContent .= "\n" . $newEntry;
+            if (preg_match($pattern, $envFileContent)) {
+                $envFileContent = preg_replace($pattern, $newEntry, $envFileContent, 1);
+            } else {
+                $envFileContent .= "\n" . $newEntry;
+            }
+
+            @file_put_contents($envFilePath, $envFileContent);
+        } catch (\Throwable $e) {
+            // Never break the request because of env write; just log.
+            Log::warning('updateEnvVariable failed: ' . $e->getMessage());
         }
-
-        File::put($envFilePath, $envFileContent);
     }
 }
