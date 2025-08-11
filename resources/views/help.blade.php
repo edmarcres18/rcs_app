@@ -690,6 +690,135 @@
                         </div>
                             </div>
                         </div>
+
+                        <!-- Bot Commands & Role Access -->
+                        <div class="mt-10">
+                            <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                                <i class="fab fa-telegram text-sky-500 mr-3"></i>
+                                Bot Commands & Role Access
+                            </h3>
+                            <p class="text-slate-600 mb-6">Use these commands in the Telegram chat with the bot. Access is enforced by your role and link status. Make sure your Telegram is linked to your account first using <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">/link your.email@example.com</span>.</p>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Command</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Description</th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Employee</th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Supervisor</th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Admin</th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">System Admin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 text-sm">
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/start</td>
+                                            <td class="px-4 py-3 text-slate-600">Welcome + current link/notification status</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/link [email]</td>
+                                            <td class="px-4 py-3 text-slate-600">Link your Telegram to account</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/unlink</td>
+                                            <td class="px-4 py-3 text-slate-600">Unlink Telegram from account</td>
+                                            <td class="px-4 py-3 text-center">🚫</td>
+                                            <td class="px-4 py-3 text-center">🚫</td>
+                                            <td class="px-4 py-3 text-center">🚫</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/status</td>
+                                            <td class="px-4 py-3 text-slate-600">Show link and notification settings</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/enable</td>
+                                            <td class="px-4 py-3 text-slate-600">Enable Telegram notifications</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/disable</td>
+                                            <td class="px-4 py-3 text-slate-600">Disable Telegram notifications</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/activity</td>
+                                            <td class="px-4 py-3 text-slate-600">Show your recent account activities</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/pendings</td>
+                                            <td class="px-4 py-3 text-slate-600">List your assigned instructions that are unread or not replied</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/reply [id] [message]</td>
+                                            <td class="px-4 py-3 text-slate-600">Reply to a specific instruction by ID</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">🚫</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-mono text-slate-800">/help</td>
+                                            <td class="px-4 py-3 text-slate-600">Show available commands and usage</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                            <td class="px-4 py-3 text-center">✅</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Usage examples -->
+                            <div class="mt-6 grid md:grid-cols-2 gap-6">
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                                    <h4 class="font-semibold text-slate-800 mb-2">View your pendings</h4>
+                                    <p class="text-slate-600 mb-3">Get a clean list of unread or no-reply instructions assigned to you:</p>
+                                    <div class="font-mono text-sm bg-white border border-slate-200 rounded p-3">/pendings</div>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                                    <h4 class="font-semibold text-slate-800 mb-2">Reply from Telegram</h4>
+                                    <p class="text-slate-600 mb-3">Use the ID shown in /pendings to reply. Your reply is saved, notifies stakeholders, and appears in real-time:</p>
+                                    <div class="font-mono text-sm bg-white border border-slate-200 rounded p-3">/reply 123 Thanks, I will handle this today.</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 text-xs text-slate-500">
+                                <p>Notes:</p>
+                                <ul class="list-disc ml-5 space-y-1 mt-1">
+                                    <li>System Administrators cannot reply to instructions and are the only role authorized to run <span class="font-mono">/unlink</span>.</li>
+                                    <li>Replies are linked to the correct instruction ID, saved to the database, and trigger email, in-app, Telegram, and broadcast notifications for real-time updates.</li>
+                                    <li>Ensure your Telegram is linked and notifications are enabled to receive alerts: <span class="font-mono">/enable</span>.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
