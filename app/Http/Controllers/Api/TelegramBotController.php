@@ -46,8 +46,8 @@ class TelegramBotController extends Controller
             $update = $request->all();
             Log::info('Telegram webhook received', ['update' => $update]);
 
-            // Push processing to queue to respond fast
-            ProcessTelegramUpdate::dispatch($update);
+            // Queue after the HTTP response is sent to avoid any DB/queue latency blocking Telegram
+            ProcessTelegramUpdate::dispatch($update)->afterResponse();
         } catch (\Throwable $e) {
             // Never fail the webhook response; log and still return 200
             Log::error('Telegram webhook handling error', [
