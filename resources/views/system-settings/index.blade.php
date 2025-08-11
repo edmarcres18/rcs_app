@@ -39,7 +39,14 @@
                                 <label for="app_logo" class="form-label">{{ __('Application Logo') }}</label>
                                 <div class="card">
                                     <div class="card-body text-center">
-                                        <img src="{{ versioned_asset('storage/app_logo/logo.png') }}" alt="Current App Logo" class="img-fluid rounded mb-3" style="max-height: 100px;" id="app-logo-preview">
+                                        @php
+                                            $storageLogo = 'storage/app_logo/logo.png';
+                                            $publicLogo = 'images/app_logo/logo.png';
+                                            $currentAppLogo = file_exists(public_path($storageLogo))
+                                                ? versioned_asset($storageLogo)
+                                                : versioned_asset($publicLogo);
+                                        @endphp
+                                        <img src="{{ $currentAppLogo }}" alt="Current App Logo" class="img-fluid rounded mb-3" style="max-height: 100px;" id="app-logo-preview">
                                         <input id="app_logo" type="file" class="form-control @error('app_logo') is-invalid @enderror" name="app_logo">
                                         <small class="form-text text-muted mt-2">Upload a new PNG or JPG to update the logo.</small>
                                         @error('app_logo')
@@ -52,7 +59,14 @@
                                 <label for="auth_logo" class="form-label">{{ __('Authentication Page Logo') }}</label>
                                 <div class="card">
                                     <div class="card-body text-center">
-                                        <img src="{{ versioned_asset('storage/app_logo/auth_logo.png') }}" alt="Current Auth Logo" class="img-fluid rounded mb-3" style="max-height: 100px;" onerror="this.style.display='none'; this.onerror=null;" id="auth-logo-preview">
+                                        @php
+                                            $storageAuthLogo = 'storage/app_logo/auth_logo.png';
+                                            $publicAuthLogo = 'images/app_logo/auth_logo.png';
+                                            $currentAuthLogo = file_exists(public_path($storageAuthLogo))
+                                                ? versioned_asset($storageAuthLogo)
+                                                : versioned_asset($publicAuthLogo);
+                                        @endphp
+                                        <img src="{{ $currentAuthLogo }}" alt="Current Auth Logo" class="img-fluid rounded mb-3" style="max-height: 100px;" onerror="this.style.display='none'; this.onerror=null;" id="auth-logo-preview">
                                         <input id="auth_logo" type="file" class="form-control @error('auth_logo') is-invalid @enderror" name="auth_logo">
                                         <small class="form-text text-muted mt-2">Upload a new PNG or JPG for the auth pages.</small>
                                         @error('auth_logo')

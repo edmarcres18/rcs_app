@@ -1072,7 +1072,14 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="{{ versioned_asset('storage/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
+                    @php
+                        $storageLogo = 'storage/app_logo/logo.png';
+                        $publicLogo = 'images/app_logo/logo.png';
+                        $sidebarLogoPath = file_exists(public_path($storageLogo))
+                            ? versioned_asset($storageLogo)
+                            : versioned_asset($publicLogo);
+                    @endphp
+                    <img src="{{ $sidebarLogoPath }}" alt="{{ config('app.name') }} Logo" class="logo-image">
                     <span class="logo-name">{{ config('app.name', 'Laravel') }}</span>
                 </div>
             </div>

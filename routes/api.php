@@ -31,8 +31,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
-    Route::get('/webpush/vapid-public-key', [WebPushController::class, 'getVapidPublicKey'])->name('webpush.vapid-public-key');
 });
+
+// Public route to fetch VAPID key for service worker initialization
+Route::get('/webpush/vapid-public-key', [WebPushController::class, 'getVapidPublicKey'])->name('webpush.vapid-public-key');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
