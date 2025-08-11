@@ -37,7 +37,7 @@ class WebPushService
                     json_encode([
                         'title' => $title,
                         'body' => $body,
-                        'icon' => $icon ?? '/images/app_logo/logo.png',
+                        'icon' => $icon ?? '/storage/app_logo/logo.png',
                         'data' => [
                             'url' => $url
                         ]

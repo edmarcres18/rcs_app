@@ -1072,7 +1072,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="{{ versioned_asset('images/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
+                    <img src="{{ versioned_asset('storage/app_logo/logo.png') }}" alt="{{ config('app.name') }} Logo" class="logo-image">
                     <span class="logo-name">{{ config('app.name', 'Laravel') }}</span>
                 </div>
             </div>

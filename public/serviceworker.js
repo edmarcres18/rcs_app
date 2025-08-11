@@ -3,7 +3,7 @@ const CACHE_NAME = 'mhr-rcs-cache-v3';
 const urlsToCache = [
   '/',
   '/offline',
-  '/images/app_logo/logo.png',
+  '/storage/app_logo/logo.png',
 ];
 
 // Install the service worker with improved error handling
@@ -103,7 +103,7 @@ self.addEventListener('push', event => {
     notificationData = {
       title: 'New Notification',
       body: 'You have a new notification.',
-      icon: '/images/app_logo/logo.png',
+      icon: '/storage/app_logo/logo.png',
       data: {
         url: '/'
       }
@@ -113,8 +113,8 @@ self.addEventListener('push', event => {
   const title = notificationData.title || 'New Notification';
   const options = {
     body: notificationData.body || 'You have a new notification',
-    icon: notificationData.icon || '/images/app_logo/logo.png',
-    badge: '/images/app_logo/logo.png',
+    icon: notificationData.icon || '/storage/app_logo/logo.png',
+    badge: '/storage/app_logo/logo.png',
     data: notificationData.data || { url: '/' },
     vibrate: [100, 50, 100],
     requireInteraction: true

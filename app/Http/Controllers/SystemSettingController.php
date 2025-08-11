@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -93,14 +94,23 @@ class SystemSettingController extends Controller
         try {
             $validatedData = $request->validate([
                 'app_name' => 'sometimes|required|string|max:255',
-                'app_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:30720',
-                'auth_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:30720',
+                'app_logo' => 'nullable|image|mimes:png,jpg,jpeg',
+                'auth_logo' => 'nullable|image|mimes:png,jpg,jpeg',
             ]);
 
-            // Ensure the logo directory exists before moving files
-            $logoDirectory = public_path('images/app_logo');
-            if (!File::isDirectory($logoDirectory)) {
-                File::makeDirectory($logoDirectory, 0755, true);
+            // Ensure the public storage symlink exists (public/storage)
+            if (!File::exists(public_path('storage'))) {
+                try {
+                    Artisan::call('storage:link');
+                } catch (\Exception $e) {
+                    Log::warning('Unable to create storage symlink: ' . $e->getMessage());
+                }
+            }
+
+            // Ensure the logo directory exists on the public disk
+            $logoDirectory = 'app_logo';
+            if (!Storage::disk('public')->exists($logoDirectory)) {
+                Storage::disk('public')->makeDirectory($logoDirectory);
             }
 
             $newAppName = null;
@@ -111,22 +121,18 @@ class SystemSettingController extends Controller
 
             $appLogoPath = null;
             if ($request->hasFile('app_logo')) {
-                $appLogoTarget = $logoDirectory . DIRECTORY_SEPARATOR . 'logo.png';
-                if (File::exists($appLogoTarget)) {
-                    File::delete($appLogoTarget);
-                }
-                $request->file('app_logo')->move($logoDirectory, 'logo.png');
-                $appLogoPath = versioned_asset('images/app_logo/logo.png');
+                $publicDisk = Storage::disk('public');
+                $publicDisk->delete($logoDirectory . '/logo.png');
+                $request->file('app_logo')->storeAs($logoDirectory, 'logo.png', 'public');
+                $appLogoPath = versioned_asset('storage/' . $logoDirectory . '/logo.png');
             }
 
             $authLogoPath = null;
             if ($request->hasFile('auth_logo')) {
-                $authLogoTarget = $logoDirectory . DIRECTORY_SEPARATOR . 'auth_logo.png';
-                if (File::exists($authLogoTarget)) {
-                    File::delete($authLogoTarget);
-                }
-                $request->file('auth_logo')->move($logoDirectory, 'auth_logo.png');
-                $authLogoPath = versioned_asset('images/app_logo/auth_logo.png');
+                $publicDisk = Storage::disk('public');
+                $publicDisk->delete($logoDirectory . '/auth_logo.png');
+                $request->file('auth_logo')->storeAs($logoDirectory, 'auth_logo.png', 'public');
+                $authLogoPath = versioned_asset('storage/' . $logoDirectory . '/auth_logo.png');
             }
 
             Artisan::call('config:clear');

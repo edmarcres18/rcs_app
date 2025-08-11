@@ -1,6 +1,6 @@
 @php
-    $authLogo = 'images/app_logo/auth_logo.png';
-    $defaultLogo = 'images/app_logo/logo.png';
+    $authLogo = 'storage/app_logo/auth_logo.png';
+    $defaultLogo = 'storage/app_logo/logo.png';
     $logoToUse = file_exists(public_path($authLogo)) ? $authLogo : $defaultLogo;
     $logoPath = versioned_asset($logoToUse);
 @endphp
