@@ -42,12 +42,21 @@ class TelegramBotController extends Controller
      */
     public function webhook(Request $request)
     {
-        $update = $request->all();
-        Log::info('Telegram webhook received', ['update' => $update]);
+        try {
+            $update = $request->all();
+            Log::info('Telegram webhook received', ['update' => $update]);
 
-        ProcessTelegramUpdate::dispatch($update);
+            // Push processing to queue to respond fast
+            ProcessTelegramUpdate::dispatch($update);
+        } catch (\Throwable $e) {
+            // Never fail the webhook response; log and still return 200
+            Log::error('Telegram webhook handling error', [
+                'message' => $e->getMessage(),
+            ]);
+        }
 
-        return response()->json(['status' => 'success']);
+        // Telegram expects a 200 OK quickly to consider delivery successful
+        return response()->json(['status' => 'ok']);
     }
 
     /**

@@ -48,7 +48,8 @@ Route::prefix('v1')->group(function () {
  * Telegram Bot API Routes
  */
 Route::prefix('telegram')->group(function () {
-    Route::post('webhook', [App\Http\Controllers\Api\TelegramBotController::class, 'webhook']);
+    Route::post('webhook', [App\Http\Controllers\Api\TelegramBotController::class, 'webhook'])
+        ->withoutMiddleware('throttle:api');
     Route::get('set-webhook', [App\Http\Controllers\Api\TelegramBotController::class, 'setWebhook']);
     Route::get('delete-webhook', [App\Http\Controllers\Api\TelegramBotController::class, 'deleteWebhook']);
     Route::get('webhook-info', [App\Http\Controllers\Api\TelegramBotController::class, 'getWebhookInfo']);

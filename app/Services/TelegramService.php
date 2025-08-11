@@ -62,7 +62,7 @@ class TelegramService
     public function sendMessage($chatId, $message)
     {
         try {
-            $response = Http::post("https://api.telegram.org/bot{$this->token}/sendMessage", [
+            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/sendMessage", [
                 'chat_id' => $chatId,
                 'text' => $message,
                 'parse_mode' => 'HTML',
@@ -170,7 +170,7 @@ class TelegramService
                 $params['offset'] = $offset;
             }
 
-            $response = Http::get("https://api.telegram.org/bot{$this->token}/getUpdates", $params);
+            $response = Http::timeout(10)->retry(2, 200)->get("https://api.telegram.org/bot{$this->token}/getUpdates", $params);
 
             if ($response->successful()) {
                 return $response->json();
@@ -213,7 +213,7 @@ class TelegramService
                 return null;
             }
 
-            $response = Http::post("https://api.telegram.org/bot{$this->token}/setWebhook", [
+            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/setWebhook", [
                 'url' => $webhookUrl
             ]);
 
@@ -245,7 +245,7 @@ class TelegramService
     public function deleteWebhook()
     {
         try {
-            $response = Http::post("https://api.telegram.org/bot{$this->token}/deleteWebhook");
+            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/deleteWebhook");
 
             if ($response->successful()) {
                 Log::info('Telegram webhook deleted');
@@ -275,7 +275,7 @@ class TelegramService
     public function getWebhookInfo()
     {
         try {
-            $response = Http::get("https://api.telegram.org/bot{$this->token}/getWebhookInfo");
+            $response = Http::timeout(10)->retry(2, 200)->get("https://api.telegram.org/bot{$this->token}/getWebhookInfo");
 
             if ($response->successful()) {
                 return $response->json();
