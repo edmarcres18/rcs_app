@@ -98,7 +98,7 @@ class SystemSettingController extends Controller
                 'auth_logo' => 'nullable|image|mimes:png,jpg,jpeg',
             ]);
 
-            // Ensure the public storage symlink exists (public/storage)
+            // Ensure the public storage symlink exists (public/storage) - best effort
             if (!File::exists(public_path('storage'))) {
                 try {
                     Artisan::call('storage:link');
@@ -109,8 +109,15 @@ class SystemSettingController extends Controller
 
             // Ensure the logo directory exists on the public disk
             $logoDirectory = 'app_logo';
-            if (!Storage::disk('public')->exists($logoDirectory)) {
-                Storage::disk('public')->makeDirectory($logoDirectory);
+            $publicDisk = Storage::disk('public');
+            if (!$publicDisk->exists($logoDirectory)) {
+                $publicDisk->makeDirectory($logoDirectory);
+            }
+
+            // Also ensure legacy public path exists as a fallback
+            $legacyPublicDir = public_path('images/app_logo');
+            if (!File::isDirectory($legacyPublicDir)) {
+                File::makeDirectory($legacyPublicDir, 0755, true);
             }
 
             $newAppName = null;
@@ -121,22 +128,55 @@ class SystemSettingController extends Controller
 
             $appLogoPath = null;
             if ($request->hasFile('app_logo')) {
-                $publicDisk = Storage::disk('public');
                 $publicDisk->delete($logoDirectory . '/logo.png');
                 $request->file('app_logo')->storeAs($logoDirectory, 'logo.png', 'public');
-                $appLogoPath = versioned_asset('storage/' . $logoDirectory . '/logo.png');
+
+                // Copy to legacy public path as fallback for environments without storage symlink
+                try {
+                    $storedPath = $publicDisk->path($logoDirectory . '/logo.png');
+                    $legacyTarget = $legacyPublicDir . DIRECTORY_SEPARATOR . 'logo.png';
+                    if (File::exists($legacyTarget)) {
+                        File::delete($legacyTarget);
+                    }
+                    File::copy($storedPath, $legacyTarget);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to copy app logo to legacy public path: ' . $e->getMessage());
+                }
+
+                // Choose the best accessible URL
+                $appLogoPath = file_exists(public_path('storage/' . $logoDirectory . '/logo.png'))
+                    ? versioned_asset('storage/' . $logoDirectory . '/logo.png')
+                    : versioned_asset('images/app_logo/logo.png');
             }
 
             $authLogoPath = null;
             if ($request->hasFile('auth_logo')) {
-                $publicDisk = Storage::disk('public');
                 $publicDisk->delete($logoDirectory . '/auth_logo.png');
                 $request->file('auth_logo')->storeAs($logoDirectory, 'auth_logo.png', 'public');
-                $authLogoPath = versioned_asset('storage/' . $logoDirectory . '/auth_logo.png');
+
+                // Copy to legacy public path as fallback
+                try {
+                    $storedPath = $publicDisk->path($logoDirectory . '/auth_logo.png');
+                    $legacyTarget = $legacyPublicDir . DIRECTORY_SEPARATOR . 'auth_logo.png';
+                    if (File::exists($legacyTarget)) {
+                        File::delete($legacyTarget);
+                    }
+                    File::copy($storedPath, $legacyTarget);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to copy auth logo to legacy public path: ' . $e->getMessage());
+                }
+
+                $authLogoPath = file_exists(public_path('storage/' . $logoDirectory . '/auth_logo.png'))
+                    ? versioned_asset('storage/' . $logoDirectory . '/auth_logo.png')
+                    : versioned_asset('images/app_logo/auth_logo.png');
             }
 
-            Artisan::call('config:clear');
-            Artisan::call('config:cache');
+            try {
+                Artisan::call('config:clear');
+                Artisan::call('config:cache');
+            } catch (\Exception $e) {
+                Log::warning('Failed to refresh config cache: ' . $e->getMessage());
+            }
 
             if ($request->wantsJson()) {
                 return response()->json([
