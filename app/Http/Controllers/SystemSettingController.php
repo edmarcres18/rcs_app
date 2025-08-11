@@ -97,6 +97,12 @@ class SystemSettingController extends Controller
                 'auth_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:30720',
             ]);
 
+            // Ensure the logo directory exists before moving files
+            $logoDirectory = public_path('images/app_logo');
+            if (!File::isDirectory($logoDirectory)) {
+                File::makeDirectory($logoDirectory, 0755, true);
+            }
+
             $newAppName = null;
             if ($request->has('app_name')) {
                 $newAppName = $validatedData['app_name'];
@@ -105,13 +111,21 @@ class SystemSettingController extends Controller
 
             $appLogoPath = null;
             if ($request->hasFile('app_logo')) {
-                $request->file('app_logo')->move(public_path('images/app_logo'), 'logo.png');
+                $appLogoTarget = $logoDirectory . DIRECTORY_SEPARATOR . 'logo.png';
+                if (File::exists($appLogoTarget)) {
+                    File::delete($appLogoTarget);
+                }
+                $request->file('app_logo')->move($logoDirectory, 'logo.png');
                 $appLogoPath = versioned_asset('images/app_logo/logo.png');
             }
 
             $authLogoPath = null;
             if ($request->hasFile('auth_logo')) {
-                $request->file('auth_logo')->move(public_path('images/app_logo'), 'auth_logo.png');
+                $authLogoTarget = $logoDirectory . DIRECTORY_SEPARATOR . 'auth_logo.png';
+                if (File::exists($authLogoTarget)) {
+                    File::delete($authLogoTarget);
+                }
+                $request->file('auth_logo')->move($logoDirectory, 'auth_logo.png');
                 $authLogoPath = versioned_asset('images/app_logo/auth_logo.png');
             }
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PresentationController;
 
 // Offline fallback route for service worker
 Route::get('/offline', function () {
@@ -24,6 +25,9 @@ Route::get('/', function () {
 Route::get('/help', function () {
     return view('help');
 });
+
+// Public presentation of end-user slides
+Route::get('/presentation', [PresentationController::class, 'show'])->name('presentation.show');
 
 Auth::routes(['verify' => false]); // Disable default verification routes
 

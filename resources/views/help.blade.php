@@ -39,7 +39,8 @@
 @php
     $authLogo = 'images/app_logo/auth_logo.png';
     $defaultLogo = 'images/app_logo/logo.png';
-    $logoPath = file_exists(public_path($authLogo)) ? asset($authLogo) : asset($defaultLogo);
+    $logoToUse = file_exists(public_path($authLogo)) ? $authLogo : $defaultLogo;
+    $logoPath = versioned_asset($logoToUse);
     $appUrl = config('app.url');
     $visitUrl = str_contains($appUrl, 'localhost') ? url('/') : $appUrl;
 @endphp
