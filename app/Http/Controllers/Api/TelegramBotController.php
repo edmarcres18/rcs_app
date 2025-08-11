@@ -4,13 +4,22 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Instruction;
+use App\Models\InstructionActivity;
+use App\Models\InstructionReply;
 use App\Models\User;
 use App\Models\UserActivity;
+use App\Notifications\InstructionReplied as InstructionRepliedNotification;
+use App\Events\InstructionRepliedEvent;
+use App\Services\UserActivityService;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Jobs\ProcessTelegramUpdate;
 
@@ -56,7 +65,8 @@ class TelegramBotController extends Controller
         }
 
         // Telegram expects a 200 OK quickly to consider delivery successful
-        return response()->json(['status' => 'ok']);
+        // Keep payload aligned with test expectations
+        return response()->json(['status' => 'success']);
     }
 
     /**
@@ -139,6 +149,14 @@ class TelegramBotController extends Controller
 
             case '/activity':
                 $this->handleActivityCommand($chatId, $username);
+                break;
+
+            case '/pendings':
+                $this->handlePendingsCommand($chatId, $username);
+                break;
+
+            case '/reply':
+                $this->handleReplyCommand($chatId, $username, $params, $message);
                 break;
 
             default:
@@ -240,16 +258,23 @@ class TelegramBotController extends Controller
     {
         $user = $this->findUserByTelegram($chatId, $username);
 
-        if ($user) {
-            $user->telegram_chat_id = null;
-            $user->telegram_username = null;
-            $user->telegram_notifications_enabled = false;
-            $user->save();
-
-            $this->telegramService->sendMessage($chatId, "Your Telegram account has been successfully unlinked from the MHR system.");
-        } else {
-            $this->telegramService->sendMessage($chatId, "This Telegram account is not linked to any account. Use /link to get started.");
+        if (!$user) {
+            $this->telegramService->sendMessage($chatId, "🚫 This Telegram account is not linked. Use /link to get started.");
+            return;
         }
+
+        // Restrict /unlink to SYSTEM_ADMIN only
+        if ($user->roles !== UserRole::SYSTEM_ADMIN) {
+            $this->telegramService->sendMessage($chatId, "🚫 Access denied. Only System Administrators can execute /unlink.");
+            return;
+        }
+
+        $user->telegram_chat_id = null;
+        $user->telegram_username = null;
+        $user->telegram_notifications_enabled = false;
+        $user->save();
+
+        $this->telegramService->sendMessage($chatId, "Your Telegram account has been successfully unlinked from the MHR system.");
     }
 
     /**
@@ -335,6 +360,8 @@ class TelegramBotController extends Controller
         $message .= "<b>/enable</b> - <i>Enable receiving notifications.</i>\n";
         $message .= "<b>/disable</b> - <i>Disable receiving notifications.</i>\n";
         $message .= "<b>/activity</b> - <i>Show your recent activities.</i>\n";
+        $message .= "<b>/pendings</b> - <i>Show your pending instructions (unread or not replied).</i>\n";
+        $message .= "<b>/reply [instruction_id] [message]</b> - <i>Reply to an instruction from Telegram.</i>\n";
         $message .= "<b>/help</b> - <i>Show this help message.</i>";
 
         $this->telegramService->sendMessage($chatId, $message);
@@ -423,6 +450,171 @@ class TelegramBotController extends Controller
         $message .= "</pre>";
 
         $this->telegramService->sendMessage($chatId, $message, ['parse_mode' => 'HTML']);
+    }
+
+    /**
+     * Handle the /pendings command.
+     */
+    protected function handlePendingsCommand($chatId, $username = null)
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if (!$user) {
+            $this->telegramService->sendMessage($chatId, "🚫 This Telegram account is not linked. Use /link to get started.");
+            return;
+        }
+
+        // Fetch instructions assigned to the user that are unread OR not replied to by the user
+        $instructions = Instruction::with(['sender', 'recipients'])
+            ->whereHas('recipients', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->where(function ($q) use ($user) {
+                $q->whereHas('recipients', function ($qr) use ($user) {
+                    $qr->where('user_id', $user->id)->where('is_read', false);
+                })
+                ->orWhereDoesntHave('replies', function ($qr) use ($user) {
+                    $qr->where('user_id', $user->id);
+                });
+            })
+            ->latest('instructions.created_at')
+            ->take(10)
+            ->get();
+
+        if ($instructions->isEmpty()) {
+            $this->telegramService->sendMessage($chatId, "✅ You have no pending instructions. Great job!\n\nTip: You will receive real-time notifications for new instructions and replies.");
+            return;
+        }
+
+        $lines = [];
+        $lines[] = '<b>📋 Your Pending Instructions</b>';
+        $lines[] = '';
+        foreach ($instructions as $idx => $ins) {
+            $number = $idx + 1;
+            $deadline = $ins->target_deadline ? $ins->target_deadline->format('M d, Y g:i A') : '—';
+            $isUnread = (bool) optional($ins->recipients->firstWhere('id', $user->id))->pivot?->is_read === false;
+            $hasReplied = $ins->replies()->where('user_id', $user->id)->exists();
+
+            $lines[] = sprintf(
+                "%d) <b>#%d</b> %s\n   <b>From:</b> %s\n   <b>Deadline:</b> %s\n   <b>Status:</b> %s%s",
+                $number,
+                $ins->id,
+                e($ins->title),
+                e($ins->sender->full_name),
+                e($deadline),
+                $isUnread ? '🔔 Not read' : '✅ Read',
+                $hasReplied ? ' · 💬 Replied' : ' · ⏳ No reply'
+            );
+        }
+        $lines[] = '';
+        $lines[] = 'Reply directly here using:';
+        $lines[] = '<code>/reply [instruction_id] [your message]</code>';
+
+        $this->telegramService->sendMessage($chatId, implode("\n", $lines));
+    }
+
+    /**
+     * Handle the /reply command.
+     * Format: /reply <instruction_id> <message>
+     */
+    protected function handleReplyCommand($chatId, $username = null, $params = [], $rawMessage = [])
+    {
+        $user = $this->findUserByTelegram($chatId, $username);
+
+        if (!$user) {
+            $this->telegramService->sendMessage($chatId, "🚫 This Telegram account is not linked. Use /link to get started.");
+            return;
+        }
+
+        // System admin cannot reply
+        if ($user->roles === UserRole::SYSTEM_ADMIN) {
+            $this->telegramService->sendMessage($chatId, "🚫 System Administrators cannot reply to instructions.");
+            return;
+        }
+
+        if (count($params) < 2) {
+            $this->telegramService->sendMessage($chatId, "Usage: <code>/reply [instruction_id] [your message]</code>");
+            return;
+        }
+
+        $instructionId = (int) array_shift($params);
+        $content = trim(implode(' ', $params));
+
+        if ($instructionId <= 0 || $content === '') {
+            $this->telegramService->sendMessage($chatId, "Usage: <code>/reply [instruction_id] [your message]</code>");
+            return;
+        }
+
+        $instruction = Instruction::with(['recipients', 'sender'])->find($instructionId);
+        if (!$instruction) {
+            $this->telegramService->sendMessage($chatId, "🚫 Instruction not found.");
+            return;
+        }
+
+        // Authorization
+        if (!$instruction->canBeAccessedBy($user)) {
+            $this->telegramService->sendMessage($chatId, "🚫 You do not have permission to reply to this instruction.");
+            return;
+        }
+
+        // Validate content length (basic)
+        $validator = Validator::make(['content' => $content], [
+            'content' => 'required|string|max:5000',
+        ]);
+        if ($validator->fails()) {
+            $this->telegramService->sendMessage($chatId, '🚫 ' . e($validator->errors()->first()));
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            $reply = InstructionReply::create([
+                'instruction_id' => $instruction->id,
+                'user_id' => $user->id,
+                'content' => $content,
+            ]);
+
+            InstructionActivity::create([
+                'instruction_id' => $instruction->id,
+                'user_id' => $user->id,
+                'action' => 'replied',
+                'content' => $content,
+            ]);
+
+            // Notify sender if different
+            if ($user->id !== $instruction->sender_id) {
+                $instruction->sender->notify(new InstructionRepliedNotification($instruction, $user, $reply));
+            }
+
+            // Notify other recipients except the replier
+            $recipients = $instruction->recipients()->where('user_id', '!=', $user->id)->get();
+            foreach ($recipients as $recipient) {
+                $recipient->notify(new InstructionRepliedNotification($instruction, $user, $reply));
+            }
+
+            // Log system activity
+            UserActivityService::log(
+                'instruction_replied',
+                'Replied to instruction: ' . $instruction->title,
+                ['instruction_id' => $instruction->id],
+                $user
+            );
+
+            // Broadcast for real-time updates
+            event(new InstructionRepliedEvent($instruction, $reply, $user));
+
+            DB::commit();
+
+            $this->telegramService->sendMessage($chatId, "✅ Reply posted to instruction #{$instruction->id}.\n\nPreview:\n" . e(Str::limit($content, 200)));
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Telegram reply failed', [
+                'instruction_id' => $instructionId,
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+            $this->telegramService->sendMessage($chatId, '🚫 Failed to post reply. Please try again later.');
+        }
     }
 
     /**
