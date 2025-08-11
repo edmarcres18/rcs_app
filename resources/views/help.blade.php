@@ -93,6 +93,12 @@
                     <a href="#login" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'login' }">
                         <i class="fas fa-sign-in-alt w-6 text-center text-slate-400 mr-3"></i> Logging In
                     </a>
+                    <a href="#instructions-sending" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'instructions-sending' }">
+                        <i class="fas fa-paper-plane w-6 text-center text-slate-400 mr-3"></i> Sending Instructions
+                    </a>
+                    <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'instructions-reading' }">
+                        <i class="fas fa-inbox w-6 text-center text-slate-400 mr-3"></i> Reading & Replying
+                    </a>
                     <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link flex items-center px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" :class="{ 'active': activeSection === 'password-recovery' }">
                         <i class="fas fa-key w-6 text-center text-slate-400 mr-3"></i> Password Recovery
                     </a>
@@ -154,6 +160,8 @@
                 </div>
             </div>
         </section>
+
+
 
                 <!-- Section Heading -->
                 <div class="sticky top-0 lg:top-auto bg-slate-100/80 backdrop-blur-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 z-20 border-b border-slate-200">
@@ -341,7 +349,7 @@
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 w-8 h-8 border-2 border-purple-500 text-purple-500 font-bold rounded-full flex items-center justify-center mr-4">3</div>
                                     <p class="text-slate-600 pt-1">Click "Login" to access your dashboard.</p>
-                            </div>
+                                </div>
                             </div>
                         </div>
                         <div class="bg-white rounded-xl shadow-lg p-8">
@@ -350,16 +358,16 @@
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 w-8 h-8 border-2 border-purple-500 text-purple-500 font-bold rounded-full flex items-center justify-center mr-4">1</div>
                                     <p class="text-slate-600 pt-1">Enable 2FA in your account settings.</p>
-                    </div>
+                                </div>
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 w-8 h-8 border-2 border-purple-500 text-purple-500 font-bold rounded-full flex items-center justify-center mr-4">2</div>
                                     <p class="text-slate-600 pt-1">On login, provide the 6-digit code from your authenticator app.</p>
-                </div>
+                                </div>
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 w-8 h-8 border-2 border-purple-500 text-purple-500 font-bold rounded-full flex items-center justify-center mr-4">3</div>
                                     <p class="text-slate-600 pt-1">Optionally, trust the device to skip 2FA on future logins.</p>
-                </div>
-            </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -377,11 +385,170 @@
                             <div class="border-l-4 border-purple-300 pl-4">
                                 <h4 class="font-bold text-slate-800">Browser Issues</h4>
                                 <p class="text-slate-600 text-sm">Try clearing your browser cache or using a different browser.</p>
-                        </div>
+                            </div>
                             <div class="border-l-4 border-purple-300 pl-4">
                                 <h4 class="font-bold text-slate-800">Email Not Recognized</h4>
                                 <p class="text-slate-600 text-sm">Ensure you are using the correct registered email or nickname.</p>
+                            </div>
+                        </div>
                     </div>
+                </section>
+
+                <!-- Section Heading -->
+                <div class="sticky top-0 lg:top-auto bg-slate-100/80 backdrop-blur-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 z-20 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                        <i class="fas fa-paper-plane mr-4 text-indigo-500"></i>
+                        Sending Instructions
+                    </h2>
+                </div>
+
+                <!-- Sending Instructions Section -->
+                <section id="instructions-sending" class="mb-16 guide-section">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="grid md:grid-cols-2">
+                            <div class="p-8">
+                                <p class="text-slate-600 mb-8">Create and send instructions to teammates from the app's Instructions area. You can target specific users, entire roles, or everyone (except System Administrators).</p>
+                                <div class="space-y-8">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center mr-4">1</div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-800">Open New Instruction</h3>
+                                            <p class="text-slate-600">Go to <span class="font-semibold">My Instructions</span> and click <span class="font-semibold">New Instruction</span>.</p>
+                                            <a href="{{ route('instructions.create') }}" class="inline-flex items-center mt-3 text-indigo-600 hover:underline">
+                                                Open create page <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center mr-4">2</div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-800">Enter Details</h3>
+                                            <ul class="text-slate-600 list-disc ml-5 space-y-1">
+                                                <li><span class="font-semibold">Title</span> and <span class="font-semibold">Instruction Body</span> (required)</li>
+                                                <li><span class="font-semibold">Target Deadline</span> (optional)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center mr-4">3</div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-800">Choose Recipients</h3>
+                                            <ul class="text-slate-600 list-disc ml-5 space-y-1">
+                                                <li><span class="font-semibold">Specific Users</span>: pick one or more teammates</li>
+                                                <li><span class="font-semibold">By Role</span>: send to all with selected roles</li>
+                                                <li><span class="font-semibold">All Users</span>: send to everyone (excluding System Administrators)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-500 text-white font-bold rounded-full flex items-center justify-center mr-4">4</div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-800">Send</h3>
+                                            <p class="text-slate-600">Click <span class="font-semibold">Send Instruction</span>. Recipients are notified and the instruction appears in your <span class="font-semibold">Sent</span> list.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-8 flex items-center justify-center">
+                                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md border border-slate-200">
+                                    <h4 class="font-bold text-lg text-slate-800 mb-4">Create Instruction (Preview)</h4>
+                                    <div class="space-y-4 text-sm">
+                                        <div>
+                                            <label class="block text-slate-700 font-medium mb-1">Title</label>
+                                            <input class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Weekly Project Update Reminder" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-slate-700 font-medium mb-1">Instruction Body</label>
+                                            <textarea class="w-full px-3 py-2 border border-slate-300 rounded-lg" rows="4" placeholder="Enter the main content..."></textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-slate-700 font-medium mb-1">Target Deadline (optional)</label>
+                                            <input type="datetime-local" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-slate-700 font-medium mb-1">Recipients</label>
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <button class="px-2 py-1 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold">Specific</button>
+                                                <button class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-semibold">By Role</button>
+                                                <button class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-semibold">All</button>
+                                            </div>
+                                        </div>
+                                        <button class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition">Send Instruction</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-indigo-50 border-l-4 border-indigo-400 p-6 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0"><i class="fas fa-info-circle text-indigo-500 text-xl mt-1 mr-4"></i></div>
+                            <div class="text-sm text-indigo-800 space-y-1">
+                                <p>• You cannot send to yourself or to System Administrators.</p>
+                                <p>• When selecting roles, all users with those roles receive the instruction.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Heading -->
+                <div class="sticky top-0 lg:top-auto bg-slate-100/80 backdrop-blur-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 z-20 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                        <i class="fas fa-inbox mr-4 text-emerald-500"></i>
+                        Reading & Replying to Instructions
+                    </h2>
+                </div>
+
+                <!-- Reading & Replying Section -->
+                <section id="instructions-reading" class="mb-16 guide-section">
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <div class="grid lg:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="font-bold text-xl text-slate-800 mb-4">My Instructions</h3>
+                    <p class="text-slate-600 mb-6">Your instruction center has two tabs:</p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start"><i class="fas fa-envelope-open text-emerald-500 mt-1 mr-3"></i><span class="text-slate-700"><span class="font-semibold">Received</span>: instructions sent to you. Unread items show a colored dot and accent border.</span></li>
+                                    <li class="flex items-start"><i class="fas fa-paper-plane text-indigo-500 mt-1 mr-3"></i><span class="text-slate-700"><span class="font-semibold">Sent</span>: instructions you have sent to others.</span></li>
+                                </ul>
+                                <div class="mt-6">
+                                    <a href="{{ route('instructions.index') }}" class="inline-flex items-center text-indigo-600 hover:underline font-medium">Open My Instructions <i class="fas fa-external-link-alt ml-2 text-xs"></i></a>
+                                </div>
+                                <div class="mt-10">
+                                    <h4 class="font-semibold text-slate-800 mb-2">Open an instruction</h4>
+                                    <p class="text-slate-600">Click a card to view details. It includes sender, recipients, optional deadline, the full body, and your reply box.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-slate-800 mb-4">Reply, Forward, and Activity</h3>
+                                <div class="space-y-4 text-slate-700">
+                                    <div class="flex items-start"><i class="fas fa-reply text-emerald-500 mt-1 mr-3"></i><p><span class="font-semibold">Reply</span>: type your message and click <span class="font-semibold">Send Reply</span>. Your reply appears instantly in the activity feed.</p></div>
+                                    <div class="flex items-start"><i class="fas fa-share text-sky-500 mt-1 mr-3"></i><p><span class="font-semibold">Forward</span>: click <span class="font-semibold">Forward</span> to select new recipients and optionally add a message.</p></div>
+                                    <div class="flex items-start"><i class="fas fa-stream text-purple-500 mt-1 mr-3"></i><p><span class="font-semibold">Activity Feed</span>: shows reads, forwards, and replies in chronological order.</p></div>
+                                    <div class="flex items-start"><i class="fas fa-check-circle text-gray-500 mt-1 mr-3"></i><p><span class="font-semibold">Mark as Read</span>: when you open an instruction you received, it is automatically marked as read.</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-emerald-50 border-l-4 border-emerald-400 p-6 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0"><i class="fas fa-lightbulb text-emerald-500 text-xl mt-1 mr-4"></i></div>
+                            <div class="text-sm text-emerald-800 space-y-1">
+                                <p>• Replies notify the sender and other recipients.</p>
+                                <p>• Use <span class="font-semibold">Print</span> for a clean hard copy of the instruction details.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 bg-slate-50 border-l-4 border-slate-300 p-6 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0"><i class="fas fa-info-circle text-slate-500 text-xl mt-1 mr-4"></i></div>
+                            <div class="text-sm text-slate-700 space-y-1">
+                                <p>• Opening a received instruction automatically marks it as read and logs the activity.</p>
+                                <p>• System Administrators cannot reply to instructions.</p>
+                                <p>• When you reply, the sender (if not you) and all other recipients are notified.</p>
+                                <p>• The activity feed shows reads, forwards, and replies in time order; replies appear with full content.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -679,6 +846,8 @@
                     <ul class="space-y-2">
                                 <li><a href="#login" class="text-sm text-slate-600 hover:text-indigo-600 transition">Login</a></li>
                                 <li><a href="#registration" class="text-sm text-slate-600 hover:text-indigo-600 transition">Register</a></li>
+                                <li><a href="#instructions-sending" class="text-sm text-slate-600 hover:text-indigo-600 transition">Send Instruction</a></li>
+                                <li><a href="#instructions-reading" class="text-sm text-slate-600 hover:text-indigo-600 transition">My Instructions</a></li>
                                 <li><a href="#password-recovery" class="text-sm text-slate-600 hover:text-indigo-600 transition">Password Recovery</a></li>
                     </ul>
                 </div>
