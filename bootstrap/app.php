@@ -14,7 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
-            'login.rate.limit' => \App\Http\Middleware\LoginRateLimit::class,
         ]);
 
         $middleware->appendToGroup('web', \Illuminate\Http\Middleware\HandleCors::class);
