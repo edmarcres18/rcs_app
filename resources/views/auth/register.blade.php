@@ -86,8 +86,12 @@
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ __('Register') }}
+                            <button type="submit" class="btn btn-primary btn-lg" id="register-btn">
+                                <span class="btn-text">{{ __('Register') }}</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    {{ __('Creating Account...') }}
+                                </span>
                             </button>
                         </div>
 
@@ -107,6 +111,11 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const registerForm = document.querySelector('form');
+    const registerBtn = document.querySelector('#register-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
+
     function togglePasswordVisibility(toggleBtnId, passwordInputId) {
         const toggleBtn = document.querySelector(`#${toggleBtnId}`);
         const passwordInput = document.querySelector(`#${passwordInputId}`);
@@ -124,6 +133,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     togglePasswordVisibility('togglePassword', 'password');
     togglePasswordVisibility('togglePasswordConfirm', 'password-confirm');
+
+    // Handle form submission to prevent duplicate submits
+    if (registerForm && registerBtn) {
+        registerForm.addEventListener('submit', function() {
+            // Disable button and show loading state
+            registerBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+        });
+    }
 });
 </script>
 @endpush

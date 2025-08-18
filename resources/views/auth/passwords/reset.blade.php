@@ -45,8 +45,12 @@
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ __('Reset Password') }}
+                            <button type="submit" class="btn btn-primary btn-lg" id="reset-btn">
+                                <span class="btn-text">{{ __('Reset Password') }}</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    {{ __('Resetting...') }}
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -60,6 +64,11 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const resetForm = document.querySelector('form');
+    const resetBtn = document.querySelector('#reset-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
+
     function togglePasswordVisibility(toggleBtnId, passwordInputId) {
         const toggleBtn = document.querySelector(`#${toggleBtnId}`);
         const passwordInput = document.querySelector(`#${passwordInputId}`);
@@ -77,6 +86,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     togglePasswordVisibility('togglePassword', 'password');
     togglePasswordVisibility('togglePasswordConfirm', 'password-confirm');
+
+    // Handle form submission to prevent duplicate submits
+    if (resetForm && resetBtn) {
+        resetForm.addEventListener('submit', function() {
+            // Disable button and show loading state
+            resetBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+        });
+    }
 });
 </script>
 @endpush

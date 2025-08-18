@@ -23,8 +23,12 @@
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ __('Send Password Reset Link') }}
+                            <button type="submit" class="btn btn-primary btn-lg" id="email-btn">
+                                <span class="btn-text">{{ __('Send Password Reset Link') }}</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    {{ __('Sending...') }}
+                                </span>
                             </button>
                         </div>
 
@@ -40,3 +44,24 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const emailForm = document.querySelector('form');
+    const emailBtn = document.querySelector('#email-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
+
+    // Handle form submission to prevent duplicate submits
+    if (emailForm && emailBtn) {
+        emailForm.addEventListener('submit', function() {
+            // Disable button and show loading state
+            emailBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+        });
+    }
+});
+</script>
+@endpush

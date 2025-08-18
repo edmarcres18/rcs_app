@@ -28,8 +28,12 @@
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ __('Confirm Password') }}
+                            <button type="submit" class="btn btn-primary btn-lg" id="confirm-btn">
+                                <span class="btn-text">{{ __('Confirm Password') }}</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    {{ __('Confirming...') }}
+                                </span>
                             </button>
                         </div>
 
@@ -53,6 +57,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     const togglePassword = document.querySelector('#togglePassword');
     const password = document.querySelector('#password');
+    const confirmForm = document.querySelector('form');
+    const confirmBtn = document.querySelector('#confirm-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
 
     if (togglePassword && password) {
         togglePassword.addEventListener('click', function () {
@@ -63,6 +71,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const icon = this.querySelector('i');
             icon.classList.toggle('fa-eye');
             icon.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // Handle form submission to prevent duplicate submits
+    if (confirmForm && confirmBtn) {
+        confirmForm.addEventListener('submit', function() {
+            // Disable button and show loading state
+            confirmBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
         });
     }
 });

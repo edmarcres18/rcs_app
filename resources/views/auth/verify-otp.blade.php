@@ -27,8 +27,12 @@
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {{ __('Verify Account') }}
+                            <button type="submit" class="btn btn-primary btn-lg" id="verify-btn">
+                                <span class="btn-text">{{ __('Verify Account') }}</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    {{ __('Verifying...') }}
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -56,6 +60,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const emailInput = document.getElementById('email');
     const resendEmailInput = document.getElementById('resend-email');
     const resendForm = document.getElementById('resend-form');
+    const verifyForm = document.getElementById('verify-form');
+    const verifyBtn = document.getElementById('verify-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
 
     if(resendBtn) {
         resendBtn.addEventListener('click', function(e) {
@@ -71,6 +79,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             resendEmailInput.value = emailValue;
             resendForm.submit();
+        });
+    }
+
+    // Handle form submission to prevent duplicate submits
+    if (verifyForm && verifyBtn) {
+        verifyForm.addEventListener('submit', function() {
+            // Disable button and show loading state
+            verifyBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
         });
     }
 });
