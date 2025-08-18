@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use App\Services\UserActivityService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+use Exception;
+use Throwable;
 
 class LoginController extends Controller
 {
@@ -52,7 +55,16 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        UserActivityService::logLogin($user);
+        try {
+            UserActivityService::logLogin($user);
+        } catch (Exception $e) {
+            Log::error('Failed to log user login activity', [
+                'user_id' => $user->id ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Don't fail the login process if logging fails
+        }
     }
 
     /**
@@ -62,10 +74,19 @@ class LoginController extends Controller
      */
     public function username()
     {
-        $login = request()->input('login');
-        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'nickname';
-        request()->merge([$field => $login]);
-        return $field;
+        try {
+            $login = request()->input('login');
+            $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'nickname';
+            request()->merge([$field => $login]);
+            return $field;
+        } catch (Exception $e) {
+            Log::error('Error determining login field type', [
+                'login_input' => request()->input('login'),
+                'error' => $e->getMessage()
+            ]);
+            // Default to email if there's an error
+            return 'email';
+        }
     }
 
     /**
@@ -78,10 +99,26 @@ class LoginController extends Controller
      */
     protected function validateLogin(Request $request)
     {
-        $request->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'login' => 'required|string',
+                'password' => 'required|string',
+            ]);
+        } catch (ValidationException $e) {
+            Log::warning('Login validation failed', [
+                'login_input' => $request->input('login'),
+                'errors' => $e->errors()
+            ]);
+            throw $e;
+        } catch (Exception $e) {
+            Log::error('Unexpected error during login validation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new ValidationException(validator(), $request, [
+                'login' => ['An unexpected error occurred during validation.']
+            ]);
+        }
     }
 
     /**
@@ -94,7 +131,15 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-        UserActivityService::logFailedLogin($request->input('login'));
+        try {
+            UserActivityService::logFailedLogin($request->input('login'));
+        } catch (Exception $e) {
+            Log::error('Failed to log failed login attempt', [
+                'login_input' => $request->input('login'),
+                'error' => $e->getMessage()
+            ]);
+            // Don't fail the failed login response if logging fails
+        }
 
         throw ValidationException::withMessages([
             $this->username() => [trans('auth.failed')],
@@ -109,12 +154,40 @@ class LoginController extends Controller
      */
     protected function attemptLogin(Request $request)
     {
-        $field = $this->username();
+        try {
+            $field = $this->username();
 
-        return $this->guard()->attempt(
-            [$field => $request->input($field), 'password' => $request->input('password')],
-            $request->filled('remember')
-        );
+            $credentials = [
+                $field => $request->input($field),
+                'password' => $request->input('password')
+            ];
+
+            $remember = $request->filled('remember');
+
+            $result = $this->guard()->attempt($credentials, $remember);
+
+            if (!$result) {
+                Log::info('Failed login attempt', [
+                    'field' => $field,
+                    'login_value' => $request->input($field),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent()
+                ]);
+            }
+
+            return $result;
+
+        } catch (Exception $e) {
+            Log::error('Error during login attempt', [
+                'field' => $field ?? 'unknown',
+                'login_value' => $request->input($field ?? 'login'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return false to indicate login failure
+            return false;
+        }
     }
 
     /**
@@ -125,17 +198,38 @@ class LoginController extends Controller
      */
     protected function sendLoginResponse(Request $request)
     {
-        $request->session()->regenerate();
+        try {
+            $request->session()->regenerate();
+            $this->clearLoginAttempts($request);
 
-        $this->clearLoginAttempts($request);
+            if ($response = $this->authenticated($request, $this->guard()->user())) {
+                return $response;
+            }
 
-        if ($response = $this->authenticated($request, $this->guard()->user())) {
-            return $response;
+            return $request->wantsJson()
+                        ? new JsonResponse([], 204)
+                        : redirect()->intended($this->redirectPath())->with('success', 'Logged in successfully!');
+
+        } catch (Exception $e) {
+            Log::error('Error sending login response', [
+                'user_id' => $this->guard()->user()->id ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Attempt to redirect to login with error message
+            try {
+                return redirect('/login')->with('error', 'An error occurred during login. Please try again.');
+            } catch (Exception $redirectError) {
+                Log::critical('Failed to redirect after login error', [
+                    'original_error' => $e->getMessage(),
+                    'redirect_error' => $redirectError->getMessage()
+                ]);
+
+                // Return a basic response as last resort
+                return response('Login error occurred', 500);
+            }
         }
-
-        return $request->wantsJson()
-                    ? new JsonResponse([], 204)
-                    : redirect()->intended($this->redirectPath())->with('success', 'Logged in successfully!');
     }
 
     /**
@@ -146,18 +240,50 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        $this->guard()->logout();
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        $request->session()->invalidate();
+            if ($user) {
+                try {
+                    UserActivityService::logLogout($user);
+                } catch (Exception $e) {
+                    Log::error('Failed to log user logout activity', [
+                        'user_id' => $user->id ?? 'unknown',
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the logout process if logging fails
+                }
+            }
 
-        $request->session()->regenerateToken();
+            return $this->loggedOut($request) ?: redirect('/login')->with('success', 'Logged out successfully!');
 
-        if ($user) {
-            UserActivityService::logLogout($user);
+        } catch (Exception $e) {
+            Log::error('Error during logout process', [
+                'user_id' => Auth::id() ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Attempt to force logout and redirect
+            try {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect('/login')->with('error', 'An error occurred during logout. You have been logged out.');
+            } catch (Exception $forceLogoutError) {
+                Log::critical('Failed to force logout after error', [
+                    'original_error' => $e->getMessage(),
+                    'force_logout_error' => $forceLogoutError->getMessage()
+                ]);
+
+                // Return a basic response as last resort
+                return response('Logout error occurred', 500);
+            }
         }
-
-        return $this->loggedOut($request) ?: redirect('/login')->with('success', 'Logged out successfully!');
     }
 }
