@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\WebPushController;
+use App\Http\Controllers\Api\SessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,21 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
+});
+
+// Session Management Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('sessions')->group(function () {
+        Route::get('/', [SessionController::class, 'getSessions'])->name('sessions.index');
+        Route::delete('/{session_id}', [SessionController::class, 'terminateSession'])->name('sessions.terminate');
+        Route::delete('/others', [SessionController::class, 'terminateOtherSessions'])->name('sessions.terminate-others');
+    });
+
+    // Admin-only session routes
+    Route::middleware('role:admin')->prefix('admin/sessions')->group(function () {
+        Route::get('/stats', [SessionController::class, 'getSessionStats'])->name('admin.sessions.stats');
+        Route::post('/force-logout', [SessionController::class, 'forceLogoutUser'])->name('admin.sessions.force-logout');
+    });
 });
 
 // Public route to fetch VAPID key for service worker initialization
