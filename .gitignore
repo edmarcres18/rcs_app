@@ -20,7 +20,10 @@ yarn-error.log
 /.idea
 /.vscode
 docker-compose.yml
+docker-compose.old.yml
 Dockerfile
+DockerfileOld
 /docker
 .bash_history
 default.conf
+defaultold.conf

@@ -10,13 +10,33 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libzip-dev
+    libzip-dev \
+    libcurl4-openssl-dev \
+    libssl-dev
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Install PHP extensions (including all Laravel 11.x required extensions)
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    ctype \
+    curl \
+    dom \
+    fileinfo \
+    filter \
+    hash \
+    openssl \
+    pcre \
+    session \
+    tokenizer \
+    xml
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -26,3 +46,11 @@ WORKDIR /var/www
 
 # Copy existing application directory contents
 COPY . /var/www
+
+# Set proper permissions for Laravel
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
+
+# Switch to www-data user for security
+USER www-data

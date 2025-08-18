@@ -11,6 +11,9 @@ services:
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
     working_dir: /var/www
     volumes:
       - .:/var/www
@@ -19,6 +22,7 @@ services:
       - rcs-network
     depends_on:
       - db
+      - redis
 
   # Nginx Service
   webserver:
@@ -70,6 +74,19 @@ services:
     networks:
       - rcs-network
 
+  # Redis Service
+  redis:
+    image: redis:7-alpine
+    container_name: rcs_redis
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - rcs-network
+
   # Websocket Service
   websocket:
     build:
@@ -83,11 +100,16 @@ services:
       - "6001:6001"
     environment:
       SERVICE_NAME: websocket
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
     working_dir: /var/www
     volumes:
       - .:/var/www
     networks:
       - rcs-network
+    depends_on:
+      - redis
 
   # Scheduler Service
   scheduler:
@@ -104,6 +126,7 @@ services:
       - .:/var/www
     depends_on:
       - app
+      - redis
     networks:
       - rcs-network
 
@@ -115,4 +138,6 @@ networks:
 # Docker Volumes
 volumes:
   dbdata:
+    driver: local
+  redisdata:
     driver: local
