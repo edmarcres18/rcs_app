@@ -2,6 +2,31 @@
 
 @section('title', 'Register')
 
+@push('styles')
+<style>
+.password-requirements .requirement {
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.password-requirements .requirement i {
+    transition: all 0.3s ease;
+}
+
+.password-match {
+    transition: all 0.3s ease;
+}
+
+.password-match i {
+    transition: all 0.3s ease;
+}
+
+.requirement small, .password-match small {
+    transition: color 0.3s ease;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center w-100">
@@ -70,6 +95,25 @@
                                             <i class="fa fa-eye" aria-hidden="true"></i>
                                         </button>
                                     </div>
+                                    <div class="password-requirements mt-2">
+                                        <small class="form-text text-muted mb-2 d-block">Password requirements:</small>
+                                        <div class="requirement" data-requirement="length">
+                                            <i class="fa fa-circle text-muted me-2"></i>
+                                            <small>At least 8 characters</small>
+                                        </div>
+                                        <div class="requirement" data-requirement="uppercase">
+                                            <i class="fa fa-circle text-muted me-2"></i>
+                                            <small>1 capital letter</small>
+                                        </div>
+                                        <div class="requirement" data-requirement="number">
+                                            <i class="fa fa-circle text-muted me-2"></i>
+                                            <small>1 number</small>
+                                        </div>
+                                        <div class="requirement" data-requirement="symbol">
+                                            <i class="fa fa-circle text-muted me-2"></i>
+                                            <small>1 symbol</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -80,6 +124,12 @@
                                         <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirm">
                                             <i class="fa fa-eye" aria-hidden="true"></i>
                                         </button>
+                                    </div>
+                                    <div class="password-match mt-2">
+                                        <small class="form-text text-muted">
+                                            <i class="fa fa-circle text-muted me-2"></i>
+                                            Passwords must match
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -115,6 +165,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const registerBtn = document.querySelector('#register-btn');
     const btnText = document.querySelector('.btn-text');
     const btnLoading = document.querySelector('.btn-loading');
+    const passwordInput = document.querySelector('#password');
+    const confirmPasswordInput = document.querySelector('#password-confirm');
 
     function togglePasswordVisibility(toggleBtnId, passwordInputId) {
         const toggleBtn = document.querySelector(`#${toggleBtnId}`);
@@ -131,18 +183,105 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function validatePassword(password) {
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            number: /[0-9]/.test(password),
+            symbol: /[^A-Za-z0-9]/.test(password)
+        };
+
+        // Update requirement indicators
+        Object.keys(requirements).forEach(requirement => {
+            const requirementElement = document.querySelector(`[data-requirement="${requirement}"]`);
+            if (requirementElement) {
+                const icon = requirementElement.querySelector('i');
+                const text = requirementElement.querySelector('small');
+
+                if (requirements[requirement]) {
+                    icon.className = 'fa fa-check-circle text-success me-2';
+                    text.className = 'text-success';
+                } else {
+                    icon.className = 'fa fa-circle text-muted me-2';
+                    text.className = 'text-muted';
+                }
+            }
+        });
+
+        return Object.values(requirements).every(Boolean);
+    }
+
+    function validatePasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const matchElement = document.querySelector('.password-match small');
+        const matchIcon = document.querySelector('.password-match i');
+
+        if (confirmPassword === '') {
+            matchIcon.className = 'fa fa-circle text-muted me-2';
+            matchElement.className = 'text-muted';
+            return false;
+        }
+
+        if (password === confirmPassword) {
+            matchIcon.className = 'fa fa-check-circle text-success me-2';
+            matchElement.className = 'text-success';
+            return true;
+        } else {
+            matchIcon.className = 'fa fa-times-circle text-danger me-2';
+            matchElement.className = 'text-danger';
+            return false;
+        }
+    }
+
+    function updateRegisterButton() {
+        const isPasswordValid = validatePassword(passwordInput.value);
+        const isPasswordMatch = validatePasswordMatch();
+        const isFormValid = isPasswordValid && isPasswordMatch;
+
+        registerBtn.disabled = !isFormValid;
+    }
+
+    // Password validation on input
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            validatePassword(this.value);
+            validatePasswordMatch();
+            updateRegisterButton();
+        });
+    }
+
+    // Confirm password validation on input
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            validatePasswordMatch();
+            updateRegisterButton();
+        });
+    }
+
     togglePasswordVisibility('togglePassword', 'password');
     togglePasswordVisibility('togglePasswordConfirm', 'password-confirm');
 
     // Handle form submission to prevent duplicate submits
     if (registerForm && registerBtn) {
-        registerForm.addEventListener('submit', function() {
+        registerForm.addEventListener('submit', function(e) {
+            const isPasswordValid = validatePassword(passwordInput.value);
+            const isPasswordMatch = validatePasswordMatch();
+
+            if (!isPasswordValid || !isPasswordMatch) {
+                e.preventDefault();
+                return false;
+            }
+
             // Disable button and show loading state
             registerBtn.disabled = true;
             btnText.classList.add('d-none');
             btnLoading.classList.remove('d-none');
         });
     }
+
+    // Initial validation
+    updateRegisterButton();
 });
 </script>
 @endpush
