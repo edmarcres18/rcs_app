@@ -23,4 +23,4 @@ docker-compose.yml
 Dockerfile
 /docker
 .bash_history
-nginx.conf
+default.conf
