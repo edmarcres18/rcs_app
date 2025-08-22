@@ -16,49 +16,25 @@ class AdminUserSeeder extends Seeder
     {
         User::create([
             'avatar' => null,
-            'first_name' => 'Admin',
-            'middle_name' => null,
-            'last_name' => 'User',
-            'nickname' => 'admin',
-            'email' => 'admin@example.com',
+            'first_name' => 'Michael Amus',
+            'middle_name' => 'Hillario',
+            'last_name' => 'Refugio',
+            'nickname' => 'mhr',
+            'email' => 'michael.refugio@mhrhealthcare.com',
             'roles' => UserRole::ADMIN,
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Mhr@2025'),
             'email_verified_at' => now(),
         ]);
 
         User::create([
             'avatar' => null,
-            'first_name' => 'System',
-            'middle_name' => null,
-            'last_name' => 'Admin',
-            'nickname' => 'system-admin',
-            'email' => 'system-admin@example.com',
-            'roles' => UserRole::ADMIN,
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-
-        User::create([
-            'avatar' => null,
-            'first_name' => 'Sample',
-            'middle_name' => null,
-            'last_name' => 'User',
-            'nickname' => 'sample-user',
-            'email' => 'sample-user@example.com',
+            'first_name' => 'Angelu',
+            'middle_name' => 'Sarco',
+            'last_name' => 'De Jesus',
+            'nickname' => 'jelay',
+            'email' => 'angeludejesus43@gmail.com',
             'roles' => UserRole::EMPLOYEE,
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-
-        User::create([
-            'avatar' => null,
-            'first_name' => 'Sample',
-            'middle_name' => null,
-            'last_name' => 'User2',
-            'nickname' => 'sample-user2',
-            'email' => 'sample-user2@example.com',
-            'roles' => UserRole::EMPLOYEE,
-            'password' => Hash::make('password'),
+            'password' => Hash::make('@Angelu07'),
             'email_verified_at' => now(),
         ]);
     }
