@@ -20,9 +20,9 @@ class SystemAdminUserSeeder extends Seeder
             'middle_name' => null,
             'last_name' => 'Administrator',
             'nickname' => 'sysadmin',
-            'email' => 'sysadmin@example.com',
+            'email' => 'mhrpci.it@gmail.com',
             'roles' => UserRole::SYSTEM_ADMIN,
-            'password' => Hash::make('password'),
+            'password' => Hash::make('mhrpci-admin@2025'),
             'email_verified_at' => now(),
         ]);
     }
