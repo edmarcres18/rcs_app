@@ -298,150 +298,40 @@
                 </div>
 
                 <!-- Nav Links -->
-                <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 overflow-y-auto overscroll-contain">
-                    <!-- Getting Started Section -->
-                    <div class="mb-6">
-                        <div class="px-3 mb-3">
-                            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Getting Started</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <a href="#introduction" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'introduction' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-book-open text-blue-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Welcome</div>
-                                    <div class="text-xs text-slate-500 truncate">App overview & features</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Account Management Section -->
-                    <div class="mb-6">
-                        <div class="px-3 mb-3">
-                            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Account Management</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <a href="#registration" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'registration' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-user-plus text-green-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Registration</div>
-                                    <div class="text-xs text-slate-500 truncate">Create new account</div>
-                                </div>
-                            </a>
-                            <a href="#email-verification" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'email-verification' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-envelope-check text-emerald-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Email Verification</div>
-                                    <div class="text-xs text-slate-500 truncate">Verify your account</div>
-                                </div>
-                            </a>
-                            <a href="#login" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'login' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-sign-in-alt text-purple-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Login</div>
-                                    <div class="text-xs text-slate-500 truncate">Access your account</div>
-                                </div>
-                            </a>
-                            <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'password-recovery' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-key text-red-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Password Recovery</div>
-                                    <div class="text-xs text-slate-500 truncate">Reset forgotten password</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Instructions Section -->
-                    <div class="mb-6">
-                        <div class="px-3 mb-3">
-                            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Instructions</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <a href="#instructions-sending" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-sending' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-paper-plane text-indigo-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Sending</div>
-                                    <div class="text-xs text-slate-500 truncate">Create & send instructions</div>
-                                </div>
-                            </a>
-                            <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-reading' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-inbox text-teal-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Reading & Replying</div>
-                                    <div class="text-xs text-slate-500 truncate">Manage received instructions</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Security & Support Section -->
-                    <div class="mb-6">
-                        <div class="px-3 mb-3">
-                            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Security & Support</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <a href="#telegram-notifications" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'telegram-notifications' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-100 mr-3 flex-shrink-0">
-                                    <i class="fab fa-telegram text-sky-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Telegram Bot</div>
-                                    <div class="text-xs text-slate-500 truncate">Real-time notifications</div>
-                                </div>
-                            </a>
-                            <a href="#security-tips" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'security-tips' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-shield-alt text-amber-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Security Tips</div>
-                                    <div class="text-xs text-slate-500 truncate">Best security practices</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Help Section -->
-                    <div class="mb-4">
-                        <div class="px-3 mb-3">
-                            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Help</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <a href="#faq" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'faq' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-question-circle text-yellow-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">FAQ</div>
-                                    <div class="text-xs text-slate-500 truncate">Common questions</div>
-                                </div>
-                            </a>
-                            <a href="#support" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'support' }">
-                                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 mr-3 flex-shrink-0">
-                                    <i class="fas fa-headset text-rose-600 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-slate-800">Support</div>
-                                    <div class="text-xs text-slate-500 truncate">Get help & contact us</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+                <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 lg:space-y-2 overflow-y-auto overscroll-contain">
+                    <a href="#introduction" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'introduction' }">
+                        <i class="fas fa-book-open w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Welcome
+                    </a>
+                    <a href="#registration" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'registration' }">
+                        <i class="fas fa-user-plus w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Registration
+                    </a>
+                    <a href="#email-verification" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'email-verification' }">
+                        <i class="fas fa-envelope-open-text w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Email Verification
+                    </a>
+                    <a href="#login" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'login' }">
+                        <i class="fas fa-sign-in-alt w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Logging In
+                    </a>
+                    <a href="#instructions-sending" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-sending' }">
+                        <i class="fas fa-paper-plane w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Sending Instructions
+                    </a>
+                    <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-reading' }">
+                        <i class="fas fa-inbox w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Reading & Replying
+                    </a>
+                    <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'password-recovery' }">
+                        <i class="fas fa-key w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Password Recovery
+                    </a>
+                    <a href="#telegram-notifications" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'telegram-notifications' }">
+                        <i class="fab fa-telegram w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Telegram Bot
+                    </a>
+                    <a href="#security-tips" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'security-tips' }">
+                        <i class="fas fa-shield-alt w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Security Tips
+                    </a>
+                    <a href="#faq" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'faq' }">
+                        <i class="fas fa-question-circle w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> FAQ
+                    </a>
+                    <a href="#support" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'support' }">
+                        <i class="fas fa-headset w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Support
+                    </a>
                 </nav>
 
                 <!-- Back button -->
@@ -470,29 +360,23 @@
                         </a>
                     </div>
 
-                    <div class="mt-12 lg:mt-16 responsive-grid">
-                        <div class="mobile-card bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 mb-4">
-                                <i class="fas fa-shield-alt text-xl text-indigo-600"></i>
-                            </div>
-                            <h3 class="responsive-subheading font-bold text-slate-800 mb-2">Secure Authentication</h3>
-                            <p class="responsive-text text-slate-600">Industry-standard security protocols to protect your account.</p>
+                    <div class="mt-12 lg:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8">
+                        <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm transition-transform hover:-translate-y-1">
+                            <i class="fas fa-shield-alt text-2xl lg:text-3xl text-indigo-500 mb-3 lg:mb-4"></i>
+                            <h3 class="font-bold text-slate-800 mb-2 text-sm lg:text-base">Secure Authentication</h3>
+                            <p class="text-slate-600 text-xs lg:text-sm">Industry-standard security protocols to protect your account.</p>
                         </div>
-                        <div class="mobile-card bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 mb-4">
-                                <i class="fas fa-bell text-xl text-green-600"></i>
-                            </div>
-                            <h3 class="responsive-subheading font-bold text-slate-800 mb-2">Real-time Notifications</h3>
-                            <p class="responsive-text text-slate-600">Get instant alerts about your account activity via multiple channels.</p>
-                        </div>
-                        <div class="mobile-card bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-100 mb-4">
-                                <i class="fas fa-user-check text-xl text-purple-600"></i>
-                            </div>
-                            <h3 class="responsive-subheading font-bold text-slate-800 mb-2">Easy Recovery</h3>
-                            <p class="responsive-text text-slate-600">Simple processes to regain access if you're locked out.</p>
-                        </div>
+                        <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm transition-transform hover:-translate-y-1">
+                            <i class="fas fa-bell text-2xl lg:text-3xl text-green-500 mb-3 lg:mb-4"></i>
+                            <h3 class="font-bold text-slate-800 mb-2 text-sm lg:text-base">Real-time Notifications</h3>
+                            <p class="text-slate-600 text-xs lg:text-sm">Get instant alerts about your account activity via multiple channels.</p>
                     </div>
+                        <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm transition-transform hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
+                            <i class="fas fa-user-check text-2xl lg:text-3xl text-purple-500 mb-3 lg:mb-4"></i>
+                            <h3 class="font-bold text-slate-800 mb-2 text-sm lg:text-base">Easy Recovery</h3>
+                            <p class="text-slate-600 text-xs lg:text-sm">Simple processes to regain access if you're locked out.</p>
+                </div>
+            </div>
         </section>
 
 
@@ -623,14 +507,14 @@
                                     <p class="text-slate-500 text-xs lg:text-sm text-center mb-4 lg:mb-6">Enter the OTP sent to your email.</p>
                                     <div class="space-y-3 lg:space-y-4">
                                         <div>
-                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-2">Email Address</label>
-                                            <input type="email" class="form-input" placeholder="your@email.com" value="user@example.com">
+                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-1">Email Address</label>
+                                            <input type="email" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm" placeholder="your@email.com" value="user@example.com">
                                         </div>
                                         <div>
-                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-2">One-Time Password (OTP)</label>
-                                            <input type="text" class="form-input" placeholder="Enter 6-digit OTP">
+                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-1">One-Time Password (OTP)</label>
+                                            <input type="text" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm" placeholder="Enter 6-digit OTP">
                                         </div>
-                                        <button class="btn w-full bg-green-600 text-white hover:bg-green-700 transition duration-300">Verify Account</button>
+                                        <button class="w-full bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-300 text-sm">Verify Account</button>
                                         <div class="text-center text-xs lg:text-sm text-slate-500 pt-2">
                                             <p>Didn't receive the code? <a href="#" class="text-indigo-600 hover:underline font-medium">Resend OTP</a></p>
                                         </div>
@@ -788,16 +672,16 @@
                                     <h4 class="font-bold text-base lg:text-lg text-slate-800 mb-3 lg:mb-4">Create Instruction (Preview)</h4>
                                     <div class="space-y-4 text-sm">
                                         <div>
-                                            <label class="block text-slate-700 font-medium mb-2">Title</label>
-                                            <input class="form-input" placeholder="Weekly Project Update Reminder" />
+                                            <label class="block text-slate-700 font-medium mb-1">Title</label>
+                                            <input class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Weekly Project Update Reminder" />
                                         </div>
                                         <div>
-                                            <label class="block text-slate-700 font-medium mb-2">Instruction Body</label>
-                                            <textarea class="form-input" rows="4" placeholder="Enter the main content..."></textarea>
+                                            <label class="block text-slate-700 font-medium mb-1">Instruction Body</label>
+                                            <textarea class="w-full px-3 py-2 border border-slate-300 rounded-lg" rows="4" placeholder="Enter the main content..."></textarea>
                                         </div>
                                         <div>
-                                            <label class="block text-slate-700 font-medium mb-2">Target Deadline (optional)</label>
-                                            <input type="datetime-local" class="form-input" />
+                                            <label class="block text-slate-700 font-medium mb-1">Target Deadline (optional)</label>
+                                            <input type="datetime-local" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
                                         </div>
                                         <div>
                                             <label class="block text-slate-700 font-medium mb-1">Recipients</label>
@@ -807,7 +691,7 @@
                                                 <button class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-semibold">All</button>
                                             </div>
                                         </div>
-                                        <button class="btn w-full bg-indigo-600 text-white hover:bg-indigo-700 transition">Send Instruction</button>
+                                        <button class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition">Send Instruction</button>
                                     </div>
                                 </div>
                             </div>
@@ -930,10 +814,10 @@
                                     <h4 class="font-bold text-base lg:text-lg text-center mb-4 text-slate-800">Reset Your Password</h4>
                                     <div class="space-y-4">
                                         <div>
-                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-2">Email Address</label>
-                                            <input type="email" class="form-input" placeholder="your@email.com">
+                                            <label class="block text-slate-700 text-xs lg:text-sm font-medium mb-1">Email Address</label>
+                                            <input type="email" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" placeholder="your@email.com">
                                         </div>
-                                        <button class="btn w-full bg-red-600 text-white hover:bg-red-700 transition duration-300">Send Reset Link</button>
+                                        <button class="w-full bg-red-600 text-white py-2.5 rounded-lg font-medium hover:bg-red-700 transition duration-300 text-sm lg:text-base">Send Reset Link</button>
                                         <div class="text-center text-xs lg:text-sm text-slate-500 pt-2">
                                             <p>Remember your password? <a href="#login" class="text-indigo-600 hover:underline font-medium">Log in</a></p>
                     </div>
@@ -1033,112 +917,8 @@
                             </h3>
                             <p class="text-slate-600 mb-6">Use these commands in the Telegram chat with the bot. Access is enforced by your role and link status. Make sure your Telegram is linked to your account first using <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">/link your.email@example.com</span>.</p>
 
-                            <!-- Mobile-first command cards (visible on mobile) -->
-                            <div class="block lg:hidden space-y-4">
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/start</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Welcome + current link/notification status</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/link [email]</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Link your Telegram to account</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/unlink</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Sys Admin</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Unlink Telegram from account</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/status</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Show link and notification settings</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/enable</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Enable Telegram notifications</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/disable</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Disable Telegram notifications</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/activity</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Show your recent account activities</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/pendings</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">List your assigned instructions that are unread or not replied</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/reply [id] [message]</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Most Users</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Reply to a specific instruction by ID</p>
-                                </div>
-                                
-                                <div class="mobile-card bg-white border border-slate-200">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <code class="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-800">/help</code>
-                                        <div class="flex space-x-1 ml-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">All</span>
-                                        </div>
-                                    </div>
-                                    <p class="responsive-text text-slate-600">Show available commands and usage</p>
-                                </div>
-                            </div>
-
-                            <!-- Desktop table (hidden on mobile) -->
-                            <div class="table-wrapper hidden lg:block">
-                                <table class="responsive-table">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200 responsive-table">
                                     <thead class="bg-slate-50">
                                         <tr>
                                             <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Command</th>
