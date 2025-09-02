@@ -68,6 +68,42 @@
             transform: translateX(2px);
         }
 
+        /* Sidebar alignment and accessibility */
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-link .nav-icon {
+            width: 1.5rem; /* 24px */
+            min-width: 1.5rem;
+            text-align: center;
+            color: #94a3b8; /* slate-400 */
+        }
+
+        .sidebar-link.active .nav-icon {
+            color: #ffffff;
+        }
+
+        .sidebar-link .nav-label {
+            flex: 1 1 auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-link:focus-visible {
+            outline: 2px solid #6366f1; /* indigo-500 */
+            outline-offset: 2px;
+        }
+
         /* Responsive typography - mobile first */
         .responsive-heading {
             font-size: 1.5rem;
@@ -298,39 +334,50 @@
                 </div>
 
                 <!-- Nav Links -->
-                <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 lg:space-y-2 overflow-y-auto overscroll-contain">
-                    <a href="#introduction" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'introduction' }">
-                        <i class="fas fa-book-open w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Welcome
+                <nav class="sidebar-nav flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 lg:space-y-2 overflow-y-auto overscroll-contain" role="navigation" aria-label="Guide sections">
+                    <a href="#introduction" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'introduction' }" :aria-current="activeSection === 'introduction' ? 'page' : false" title="Overview and quick start">
+                        <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                        <span class="nav-label">Welcome</span>
                     </a>
-                    <a href="#registration" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'registration' }">
-                        <i class="fas fa-user-plus w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Registration
+                    <a href="#registration" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'registration' }" :aria-current="activeSection === 'registration' ? 'page' : false" title="Create a new account">
+                        <span class="nav-icon"><i class="fas fa-user-plus"></i></span>
+                        <span class="nav-label">Registration</span>
                     </a>
-                    <a href="#email-verification" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'email-verification' }">
-                        <i class="fas fa-envelope-open-text w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Email Verification
+                    <a href="#email-verification" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'email-verification' }" :aria-current="activeSection === 'email-verification' ? 'page' : false" title="Verify your email with OTP">
+                        <span class="nav-icon"><i class="fas fa-envelope-open-text"></i></span>
+                        <span class="nav-label">Email Verification</span>
                     </a>
-                    <a href="#login" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'login' }">
-                        <i class="fas fa-sign-in-alt w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Logging In
+                    <a href="#login" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'login' }" :aria-current="activeSection === 'login' ? 'page' : false" title="Sign in to your account">
+                        <span class="nav-icon"><i class="fas fa-sign-in-alt"></i></span>
+                        <span class="nav-label">Logging In</span>
                     </a>
-                    <a href="#instructions-sending" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-sending' }">
-                        <i class="fas fa-paper-plane w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Sending Instructions
+                    <a href="#instructions-sending" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-sending' }" :aria-current="activeSection === 'instructions-sending' ? 'page' : false" title="Compose and send instructions">
+                        <span class="nav-icon"><i class="fas fa-paper-plane"></i></span>
+                        <span class="nav-label">Sending Instructions</span>
                     </a>
-                    <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-reading' }">
-                        <i class="fas fa-inbox w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Reading & Replying
+                    <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-reading' }" :aria-current="activeSection === 'instructions-reading' ? 'page' : false" title="Read and reply to instructions">
+                        <span class="nav-icon"><i class="fas fa-inbox"></i></span>
+                        <span class="nav-label">Reading & Replying</span>
                     </a>
-                    <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'password-recovery' }">
-                        <i class="fas fa-key w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Password Recovery
+                    <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'password-recovery' }" :aria-current="activeSection === 'password-recovery' ? 'page' : false" title="Reset a forgotten password">
+                        <span class="nav-icon"><i class="fas fa-key"></i></span>
+                        <span class="nav-label">Password Recovery</span>
                     </a>
-                    <a href="#telegram-notifications" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'telegram-notifications' }">
-                        <i class="fab fa-telegram w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Telegram Bot
+                    <a href="#telegram-notifications" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'telegram-notifications' }" :aria-current="activeSection === 'telegram-notifications' ? 'page' : false" title="Connect the Telegram bot">
+                        <span class="nav-icon"><i class="fab fa-telegram"></i></span>
+                        <span class="nav-label">Telegram Bot</span>
                     </a>
-                    <a href="#security-tips" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'security-tips' }">
-                        <i class="fas fa-shield-alt w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Security Tips
+                    <a href="#security-tips" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'security-tips' }" :aria-current="activeSection === 'security-tips' ? 'page' : false" title="Best practices for safety">
+                        <span class="nav-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="nav-label">Security Tips</span>
                     </a>
-                    <a href="#faq" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'faq' }">
-                        <i class="fas fa-question-circle w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> FAQ
+                    <a href="#faq" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'faq' }" :aria-current="activeSection === 'faq' ? 'page' : false" title="Answers to common questions">
+                        <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav-label">FAQ</span>
                     </a>
-                    <a href="#support" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'support' }">
-                        <i class="fas fa-headset w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Support
+                    <a href="#support" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'support' }" :aria-current="activeSection === 'support' ? 'page' : false" title="Get help and contact support">
+                        <span class="nav-icon"><i class="fas fa-headset"></i></span>
+                        <span class="nav-label">Support</span>
                     </a>
                 </nav>
 
