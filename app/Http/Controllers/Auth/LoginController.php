@@ -115,7 +115,7 @@ class LoginController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            throw new ValidationException(validator(), $request, [
+            throw ValidationException::withMessages([
                 'login' => ['An unexpected error occurred during validation.']
             ]);
         }
@@ -212,7 +212,7 @@ class LoginController extends Controller
 
         } catch (Exception $e) {
             Log::error('Error sending login response', [
-                'user_id' => $this->guard()->user()->id ?? 'unknown',
+                'user_id' => Auth::id() ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

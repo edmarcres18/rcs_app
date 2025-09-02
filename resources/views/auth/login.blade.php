@@ -14,22 +14,55 @@
                         <p class="text-muted">Sign in to continue.</p>
                     </div>
 
+                    {{-- Global Alerts --}}
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>There were some problems with your input.</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
                         <div class="form-group mb-3">
                             <label for="login" class="form-label">{{ __('Email or Nickname') }} <span class="text-danger">*</span></label>
-                            <input id="login" type="text" class="form-control" name="login" value="{{ old('login') }}" required autofocus placeholder="e.g. john.doe@example.com">
+                            <input id="login" type="text" class="form-control @error('login') is-invalid @enderror" name="login" value="{{ old('login') }}" required autofocus placeholder="e.g. john.doe@example.com, nickname" autocomplete="username" autocapitalize="none" spellcheck="false">
+                            @error('login')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="password" class="form-label">{{ __('Password') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input id="password" type="password" class="form-control" name="password" required autocomplete="current-password" placeholder="Enter your password">
+                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password" placeholder="Enter your password">
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="fa fa-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
