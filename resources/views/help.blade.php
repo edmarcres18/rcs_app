@@ -8,10 +8,23 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Mobile-first base styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            overflow-x: hidden;
+        }
+
         /* Custom scrollbar for a cleaner look */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f5f9;
@@ -34,50 +47,208 @@
             color: white;
         }
 
-        /* Mobile-first responsive improvements */
-        @media (max-width: 640px) {
-            .mobile-padding {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-
-            .mobile-text {
-                font-size: 0.875rem;
-                line-height: 1.25rem;
-            }
-
-            .mobile-heading {
-                font-size: 1.5rem;
-                line-height: 2rem;
-            }
-
-            .mobile-card {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
+        /* Mobile-first touch targets */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Responsive table improvements */
-        @media (max-width: 768px) {
-            .responsive-table {
-                font-size: 0.75rem;
-            }
+        /* Sidebar improvements */
+        .sidebar-link {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+        
+        .sidebar-link:hover {
+            transform: translateX(2px);
+        }
 
+        /* Responsive typography - mobile first */
+        .responsive-heading {
+            font-size: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .responsive-subheading {
+            font-size: 1.125rem;
+            line-height: 1.4;
+        }
+        
+        .responsive-text {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Card improvements */
+        .mobile-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table responsiveness */
+        .responsive-table {
+            font-size: 0.75rem;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .responsive-table th,
+        .responsive-table td {
+            padding: 0.5rem 0.25rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Form improvements */
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Button improvements */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Sticky header improvements */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Grid improvements */
+        .responsive-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+
+        /* Tablet and up */
+        @media (min-width: 640px) {
+            .responsive-heading {
+                font-size: 1.875rem;
+            }
+            
+            .responsive-subheading {
+                font-size: 1.25rem;
+            }
+            
+            .responsive-text {
+                font-size: 1rem;
+            }
+            
+            .mobile-card {
+                padding: 1.5rem;
+            }
+            
+            .responsive-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+            
+            .responsive-table {
+                font-size: 0.875rem;
+            }
+            
             .responsive-table th,
             .responsive-table td {
-                padding: 0.5rem 0.25rem;
+                padding: 0.75rem 0.5rem;
             }
         }
 
-        /* Touch-friendly improvements for mobile */
-        @media (max-width: 640px) {
-            .touch-target {
-                min-height: 44px;
-                min-width: 44px;
+        /* Desktop and up */
+        @media (min-width: 1024px) {
+            .responsive-heading {
+                font-size: 2.25rem;
             }
+            
+            .responsive-subheading {
+                font-size: 1.5rem;
+            }
+            
+            .mobile-card {
+                padding: 2rem;
+            }
+            
+            .responsive-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+            }
+            
+            .responsive-table {
+                font-size: 1rem;
+            }
+            
+            .responsive-table th,
+            .responsive-table td {
+                padding: 1rem 0.75rem;
+            }
+        }
 
-            .sidebar-link {
-                padding: 0.75rem 1rem;
+        /* Large desktop */
+        @media (min-width: 1280px) {
+            .responsive-heading {
+                font-size: 3rem;
+            }
+        }
+
+        /* Prevent horizontal scroll */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .container {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .container {
+                padding-left: 2rem;
+                padding-right: 2rem;
             }
         }
     </style>
@@ -99,13 +270,13 @@
 @endphp
 
     <!-- Mobile header with menu toggle -->
-    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-sm shadow-sm lg:hidden">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm lg:hidden border-b border-slate-200">
+        <div class="container mx-auto py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 w-auto">
-                <span class="font-bold text-lg text-slate-800">RCS Guide</span>
+                <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 w-auto flex-shrink-0">
+                <span class="font-bold text-lg text-slate-800 truncate">RCS Guide</span>
             </div>
-            <button @click="sidebarOpen = !sidebarOpen" class="text-slate-600 hover:text-indigo-600 p-2">
+            <button @click="sidebarOpen = !sidebarOpen" class="touch-target text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </div>
@@ -114,20 +285,20 @@
     <div class="relative flex min-h-screen">
         <!-- Sidebar Navigation -->
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform lg:transform-none lg:translate-x-0 transition-transform duration-300 ease-in-out"
+            class="fixed inset-y-0 left-0 z-40 w-72 sm:w-80 lg:w-64 bg-white shadow-xl lg:shadow-lg transform lg:transform-none lg:translate-x-0 transition-transform duration-300 ease-in-out"
             :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
 
             <div class="flex flex-col h-full">
                 <!-- Logo -->
-                <div class="h-16 lg:h-20 flex items-center justify-center border-b border-slate-200 px-4">
+                <div class="h-16 lg:h-20 flex items-center justify-center border-b border-slate-200 px-4 flex-shrink-0">
                      <div class="flex items-center space-x-2 lg:space-x-3">
-                        <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 lg:h-10 w-auto">
-                        <span class="font-bold text-lg lg:text-xl text-slate-800">RCS Guide</span>
+                        <img src="{{ $logoPath }}" alt="RCS Logo" class="h-8 lg:h-10 w-auto flex-shrink-0">
+                        <span class="font-bold text-lg lg:text-xl text-slate-800 truncate">RCS Guide</span>
                     </div>
                 </div>
 
                 <!-- Nav Links -->
-                <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 lg:space-y-2 overflow-y-auto">
+                <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 lg:space-y-2 overflow-y-auto overscroll-contain">
                     <a href="#introduction" @click="sidebarOpen = false" class="sidebar-link touch-target flex items-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'introduction' }">
                         <i class="fas fa-book-open w-5 lg:w-6 text-center text-slate-400 mr-2 lg:mr-3"></i> Welcome
                     </a>
@@ -164,8 +335,8 @@
                 </nav>
 
                 <!-- Back button -->
-                <div class="px-4 lg:px-6 py-3 lg:py-4 border-t border-slate-200">
-                    <a href="{{ url('/') }}" class="w-full flex items-center justify-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors font-semibold text-sm lg:text-base touch-target">
+                <div class="px-4 lg:px-6 py-3 lg:py-4 border-t border-slate-200 flex-shrink-0">
+                    <a href="{{ url('/') }}" class="w-full btn flex items-center justify-center px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors font-semibold text-sm lg:text-base">
                         <i class="fas fa-arrow-left mr-2"></i> Go Back
                     </a>
                 </div>
@@ -173,11 +344,11 @@
         </aside>
 
         <!-- Backdrop for mobile sidebar -->
-        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/60 z-30 lg:hidden"></div>
 
     <!-- Main Content -->
-        <main class="flex-1 lg:ml-64">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+        <main class="flex-1 lg:ml-64 min-h-screen">
+            <div class="container mx-auto py-6 lg:py-12">
 
                 <!-- Introduction Section -->
                 <section id="introduction" class="mb-16 lg:mb-24 guide-section">
