@@ -22,6 +22,7 @@ yarn-error.log
 docker-compose.yml
 docker-compose.old.yml
 Dockerfile
+Dockerfile.prod
 DockerfileOld
 /docker
 .bash_history

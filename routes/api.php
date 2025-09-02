@@ -40,6 +40,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Ratings are handled under web-auth session routes in routes/web.php
+
 Route::prefix('v1')->group(function () {
     require __DIR__.'/api_v1.php';
 });

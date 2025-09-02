@@ -66,6 +66,9 @@ Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.'
     Route::post('system-settings', [SystemSettingController::class, 'store'])->name('system-settings.store');
     Route::get('system-settings/mail', [SystemSettingController::class, 'mail'])->name('system-settings.mail');
     Route::post('system-settings/mail', [SystemSettingController::class, 'updateMail'])->name('system-settings.mail.update');
+
+    // Ratings Monitor (SYSTEM_ADMIN only)
+    Route::get('ratings', [\App\Http\Controllers\RatingController::class, 'adminIndex'])->name('ratings.index');
 });
 
 // Profile routes
@@ -108,6 +111,11 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     Route::get('notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::post('notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
+
+    // Ratings (session-auth via web guard)
+    Route::post('ratings', [\App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');
+    Route::get('ratings', [\App\Http\Controllers\RatingController::class, 'index'])->name('ratings.index');
+    Route::get('ratings/stats', [\App\Http\Controllers\RatingController::class, 'getUserStats'])->name('ratings.stats');
 });
 
 // Test route for debugging notifications (remove in production)

@@ -113,6 +113,12 @@
                             <span>System Logs</span>
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.ratings.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.ratings.index') ? 'active' : '' }}" data-title="Ratings Monitor">
+                            <i class="fas fa-star"></i>
+                            <span>Ratings Monitor</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
 

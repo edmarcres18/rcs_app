@@ -1064,6 +1064,502 @@
         .notification-toggle {
             position: relative;
         }
+
+        /* Rate Us Button Styles - Professional & Responsive */
+        .rate-us-container {
+            position: fixed;
+            bottom: clamp(16px, 4vw, 24px);
+            right: clamp(16px, 4vw, 24px);
+            z-index: 1050;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .rate-us-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1e3a8a 100%);
+            border: none;
+            border-radius: clamp(24px, 6vw, 28px);
+            color: white;
+            cursor: pointer;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            outline: none;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 
+                0 4px 14px rgba(30, 64, 175, 0.25),
+                0 2px 6px rgba(30, 64, 175, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            width: clamp(48px, 12vw, 56px);
+            height: clamp(48px, 12vw, 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0.75;
+        }
+
+        .rate-us-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .rate-us-btn i {
+            font-size: clamp(16px, 4vw, 20px);
+            color: #fbbf24;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+            z-index: 2;
+            position: relative;
+        }
+
+        .rate-us-text {
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+            border-radius: clamp(6px, 1.5vw, 8px);
+            font-size: clamp(11px, 2.5vw, 13px);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-50%) translateX(-10px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 
+                0 4px 12px rgba(30, 64, 175, 0.25),
+                0 2px 6px rgba(30, 64, 175, 0.15);
+            margin-right: clamp(8px, 2vw, 12px);
+            z-index: 1;
+        }
+
+        .rate-us-text::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid #1e40af;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+
+        /* Advanced Hover & Interaction States */
+        .rate-us-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 12px 32px rgba(30, 64, 175, 0.35),
+                0 6px 16px rgba(30, 64, 175, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
+            border-radius: clamp(6px, 1.5vw, 8px);
+            width: auto;
+            min-width: clamp(110px, 25vw, 140px);
+            padding: 0 clamp(12px, 3vw, 16px);
+            justify-content: space-between;
+            opacity: 1;
+        }
+
+        .rate-us-btn:hover::after {
+            opacity: 1;
+        }
+
+        .rate-us-btn:hover i {
+            color: #fcd34d;
+            transform: rotate(72deg) scale(1.1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            margin-left: clamp(8px, 2vw, 12px);
+        }
+
+        .rate-us-btn:hover .rate-us-text {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(0);
+            position: relative;
+            right: auto;
+            top: auto;
+            transform: none;
+            background: transparent;
+            box-shadow: none;
+            margin-right: 0;
+            padding: 0;
+        }
+
+        .rate-us-btn:hover .rate-us-text::after {
+            display: none;
+        }
+
+        .rate-us-btn:active {
+            transform: translateY(-1px) scale(0.98);
+            box-shadow: 
+                0 6px 20px rgba(30, 64, 175, 0.3),
+                0 3px 8px rgba(30, 64, 175, 0.15),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        .rate-us-btn:focus {
+            box-shadow: 
+                0 4px 14px rgba(30, 64, 175, 0.25),
+                0 2px 6px rgba(30, 64, 175, 0.15),
+                0 0 0 3px rgba(59, 130, 246, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .rate-us-btn:focus:not(:focus-visible) {
+            box-shadow: 
+                0 4px 14px rgba(30, 64, 175, 0.25),
+                0 2px 6px rgba(30, 64, 175, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Enhanced Ripple Effect */
+        .rate-us-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 70%, transparent 100%);
+            transform: translate(-50%, -50%);
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .rate-us-btn:active::before {
+            width: 200%;
+            height: 200%;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Responsive Design System */
+        
+        /* Large Desktop (1200px+) */
+        @media (min-width: 1200px) {
+            .rate-us-container {
+                bottom: 32px;
+                right: 32px;
+            }
+            
+            .rate-us-btn:hover {
+                transform: translateY(-4px) scale(1.03);
+            }
+        }
+
+        /* Desktop (992px - 1199px) */
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .rate-us-container {
+                bottom: 28px;
+                right: 28px;
+            }
+        }
+
+        /* Tablet Landscape (768px - 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .rate-us-container {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .rate-us-btn:hover {
+                transform: translateY(-2px) scale(1.01);
+                box-shadow: 
+                    0 8px 24px rgba(30, 64, 175, 0.3),
+                    0 4px 12px rgba(30, 64, 175, 0.15);
+            }
+        }
+
+        /* Mobile & Tablet Portrait (≤767px) */
+        @media (max-width: 767px) {
+            .rate-us-container {
+                bottom: clamp(12px, 3vw, 18px);
+                right: clamp(12px, 3vw, 18px);
+                transition: all 0.3s ease;
+            }
+
+            .rate-us-btn {
+                box-shadow: 
+                    0 3px 12px rgba(30, 64, 175, 0.25),
+                    0 1px 4px rgba(30, 64, 175, 0.15);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+
+            .rate-us-btn:hover {
+                transform: translateY(-1px) scale(1.01);
+                box-shadow: 
+                    0 6px 20px rgba(30, 64, 175, 0.3),
+                    0 3px 8px rgba(30, 64, 175, 0.2);
+            }
+
+            .rate-us-btn:active {
+                transform: translateY(0) scale(0.99);
+            }
+
+            /* Smart sidebar interaction */
+            .sidebar.active ~ .main-content .rate-us-container,
+            .notification-sidebar.active ~ .rate-us-container {
+                opacity: 0.6;
+                transform: scale(0.9);
+                pointer-events: none;
+            }
+
+            /* Touch-friendly adjustments */
+            .rate-us-btn {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+        }
+
+        /* Small Mobile (≤480px) */
+        @media (max-width: 480px) {
+            .rate-us-container {
+                bottom: clamp(10px, 2.5vw, 16px);
+                right: clamp(10px, 2.5vw, 16px);
+            }
+            
+            .rate-us-btn {
+                border-radius: clamp(5px, 1.2vw, 8px);
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .rate-us-container {
+                bottom: clamp(8px, 2vw, 12px);
+                right: clamp(12px, 3vw, 18px);
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .rate-us-btn {
+                box-shadow: 
+                    0 4px 14px rgba(30, 64, 175, 0.25),
+                    0 2px 6px rgba(30, 64, 175, 0.15),
+                    inset 0 0.5px 0 rgba(255, 255, 255, 0.1);
+            }
+            
+            .rate-us-icon i {
+                filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.2));
+            }
+        }
+
+        /* Advanced Accessibility & Performance */
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .rate-us-btn {
+                border: 2px solid #1e40af;
+                background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            }
+            
+            .rate-us-icon {
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .rate-us-btn,
+            .rate-us-icon,
+            .rate-us-icon i,
+            .rate-us-btn::before,
+            .rate-us-btn::after,
+            .rate-us-container {
+                transition: none !important;
+                animation: none !important;
+            }
+
+            .rate-us-btn:hover {
+                transform: none;
+                box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
+            }
+
+            .rate-us-btn:hover .rate-us-icon {
+                transform: none;
+            }
+
+            .rate-us-btn:hover .rate-us-icon i {
+                transform: none;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .rate-us-btn {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+                box-shadow: 
+                    0 4px 14px rgba(59, 130, 246, 0.3),
+                    0 2px 6px rgba(59, 130, 246, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            }
+            
+            .rate-us-btn:hover {
+                background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+                box-shadow: 
+                    0 12px 32px rgba(59, 130, 246, 0.4),
+                    0 6px 16px rgba(59, 130, 246, 0.25);
+            }
+        }
+
+        /* Enhanced pulse animation */
+        @keyframes pulse-rate {
+            0% {
+                box-shadow: 
+                    0 4px 14px rgba(30, 64, 175, 0.25),
+                    0 2px 6px rgba(30, 64, 175, 0.15);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 
+                    0 8px 24px rgba(30, 64, 175, 0.4),
+                    0 4px 12px rgba(30, 64, 175, 0.25),
+                    0 0 0 4px rgba(59, 130, 246, 0.1);
+                transform: scale(1.02);
+            }
+            100% {
+                box-shadow: 
+                    0 4px 14px rgba(30, 64, 175, 0.25),
+                    0 2px 6px rgba(30, 64, 175, 0.15);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes star-twinkle {
+            0%, 100% { 
+                color: #fbbf24;
+                filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+            }
+            50% { 
+                color: #fcd34d;
+                filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.4));
+            }
+        }
+
+        .rate-us-btn.pulse {
+            animation: pulse-rate 2.5s ease-in-out infinite;
+        }
+
+        .rate-us-btn.pulse .rate-us-icon i {
+            animation: star-twinkle 1.5s ease-in-out infinite;
+        }
+
+        /* Performance optimizations */
+        .rate-us-btn {
+            will-change: transform, box-shadow;
+            contain: layout style paint;
+        }
+
+        .rate-us-icon {
+            will-change: transform, background;
+        }
+
+        .rate-us-icon i {
+            will-change: transform, color;
+        }
+
+        /* Print styles */
+        @media print {
+            .rate-us-container {
+                display: none !important;
+            }
+        }
+
+        /* Screen reader support */
+        .rate-us-btn .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Rating Modal Styles */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .star-rating i {
+            font-size: 2rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+
+        .star-rating i:hover,
+        .star-rating i.active {
+            color: #fbbf24;
+            transform: scale(1.1);
+        }
+
+        .star-rating i:hover ~ i {
+            color: #e5e7eb;
+        }
+
+        .rating-text {
+            min-height: 24px;
+            font-weight: 500;
+        }
+
+        #ratingModal .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        #ratingModal .modal-header {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1.5rem;
+        }
+
+        #ratingModal .modal-body {
+            padding: 1.5rem;
+        }
+
+        #ratingModal .modal-footer {
+            border-top: 1px solid #f1f5f9;
+            padding: 1.5rem;
+        }
+
+        #reviewComment {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        #reviewComment:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -1129,6 +1625,74 @@
         <!-- Sidebar Collapse Button -->
         <div class="sidebar-collapse-btn" id="sidebar-collapse-btn">
             <i class="fas fa-chevron-left"></i>
+        </div>
+
+        <!-- Rate Us Button (visible to EMPLOYEE, SUPERVISOR, ADMIN only) -->
+        @auth
+            @php($role = Auth::user()->roles)
+            @if(in_array($role, [\App\Enums\UserRole::EMPLOYEE, \App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN], true))
+                <div class="rate-us-container">
+                    <button type="button" class="rate-us-btn" id="rate-us-button" aria-label="Rate our service - Click to provide feedback">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <span class="rate-us-text">RATE US</span>
+                        <span class="sr-only">Click to rate our service and provide feedback</span>
+                    </button>
+                </div>
+            @endif
+        @endauth
+
+        <!-- Rating Modal -->
+        <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ratingModalLabel">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Rate Our Service
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="ratingForm">
+                            @csrf
+                            <div class="text-center mb-4">
+                                <p class="text-muted mb-3">How would you rate your experience with us?</p>
+                                <div class="star-rating" id="starRating">
+                                    <i class="fas fa-star" data-rating="1"></i>
+                                    <i class="fas fa-star" data-rating="2"></i>
+                                    <i class="fas fa-star" data-rating="3"></i>
+                                    <i class="fas fa-star" data-rating="4"></i>
+                                    <i class="fas fa-star" data-rating="5"></i>
+                                </div>
+                                <div class="rating-text mt-2">
+                                    <span id="ratingText" class="text-muted">Click a star to rate</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="reviewComment" class="form-label">
+                                    <i class="fas fa-comment me-1"></i>
+                                    Tell us about your experience (optional)
+                                </label>
+                                <textarea class="form-control" id="reviewComment" name="comment" rows="4" 
+                                    placeholder="Share your thoughts about our service..."></textarea>
+                            </div>
+
+                            <input type="hidden" id="ratingValue" name="rating" value="0">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" id="submitRating" disabled>
+                            <i class="fas fa-paper-plane me-1"></i>
+                            Submit Rating
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1498,6 +2062,220 @@
         });
     </script>
     @endauth
+
+    <!-- Rate Us Button Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rateUsButton = document.getElementById('rate-us-button');
+            const ratingModal = new bootstrap.Modal(document.getElementById('ratingModal'));
+            const starRating = document.getElementById('starRating');
+            const ratingText = document.getElementById('ratingText');
+            const ratingValue = document.getElementById('ratingValue');
+            const submitButton = document.getElementById('submitRating');
+            const reviewComment = document.getElementById('reviewComment');
+            
+            let selectedRating = 0;
+            
+            // Rating text messages
+            const ratingMessages = {
+                1: 'Poor - We\'re sorry to hear that',
+                2: 'Fair - We can do better',
+                3: 'Good - Thanks for your feedback',
+                4: 'Very Good - We\'re glad you liked it',
+                5: 'Excellent - Thank you so much!'
+            };
+
+            if (rateUsButton) {
+                // Rate Us button click handler
+                rateUsButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    ratingModal.show();
+                });
+
+                // Star rating functionality
+                const stars = starRating.querySelectorAll('i');
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('mouseenter', function() {
+                        highlightStars(index + 1);
+                    });
+                    
+                    star.addEventListener('click', function() {
+                        selectedRating = index + 1;
+                        ratingValue.value = selectedRating;
+                        ratingText.textContent = ratingMessages[selectedRating];
+                        ratingText.className = 'text-primary fw-bold';
+                        submitButton.disabled = false;
+                        
+                        // Keep stars highlighted
+                        highlightStars(selectedRating);
+                    });
+                });
+                
+                starRating.addEventListener('mouseleave', function() {
+                    if (selectedRating > 0) {
+                        highlightStars(selectedRating);
+                    } else {
+                        highlightStars(0);
+                    }
+                });
+                
+                function highlightStars(rating) {
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active');
+                            star.style.color = '#fbbf24';
+                        } else {
+                            star.classList.remove('active');
+                            star.style.color = '#e5e7eb';
+                        }
+                    });
+                }
+                
+                // Submit rating
+                submitButton.addEventListener('click', function() {
+                    const formData = new FormData();
+                    formData.append('rating', selectedRating);
+                    formData.append('comment', reviewComment.value);
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    
+                    // Show loading state
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+                    submitButton.disabled = true;
+                    
+                    // Submit to your rating endpoint (session-auth with cookies)
+                    fetch('/api/ratings', {
+                        method: 'POST',
+                        credentials: 'same-origin', // ensure session cookie is sent
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(async response => {
+                        let data = null;
+                        try { data = await response.json(); } catch (e) {}
+
+                        if (response.status === 401) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Please sign in',
+                                text: 'You need to be logged in to submit a rating.',
+                                confirmButtonColor: '#2563eb'
+                            });
+                            throw new Error('Unauthenticated');
+                        }
+
+                        if (response.status === 419) { // CSRF token mismatch / expired
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Session expired',
+                                text: 'Please refresh the page and try again.',
+                                confirmButtonColor: '#2563eb'
+                            });
+                            throw new Error('CSRF token mismatch');
+                        }
+
+                        if (response.status === 422) { // validation error
+                            const msg = data?.message || 'Invalid input.';
+                            const errors = data?.errors ? Object.values(data.errors).flat().join(' ') : '';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validation error',
+                                text: (msg + (errors ? ' ' + errors : '')).trim(),
+                                confirmButtonColor: '#2563eb'
+                            });
+                            throw new Error('Validation error');
+                        }
+
+                        if (response.status === 429) { // rate limited
+                            const msg = data?.message || 'Too many requests. Please try again later.';
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Please wait',
+                                text: msg,
+                                confirmButtonColor: '#2563eb'
+                            });
+                            throw new Error('Rate limited');
+                        }
+
+                        if (!response.ok || !(data && data.success)) {
+                            const msg = (data && data.message) ? data.message : 'Failed to submit rating. Please try again.';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: msg,
+                                confirmButtonColor: '#2563eb'
+                            });
+                            throw new Error(msg);
+                        }
+
+                        return data;
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thank You!',
+                                text: 'Your rating has been submitted successfully.',
+                                confirmButtonColor: '#2563eb'
+                            });
+                            
+                            // Reset form
+                            resetRatingForm();
+                            ratingModal.hide();
+                        } else {
+                            throw new Error(data.message || 'Failed to submit rating');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to submit rating. Please try again.',
+                            confirmButtonColor: '#2563eb'
+                        });
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Rating';
+                        submitButton.disabled = selectedRating === 0;
+                    });
+                });
+                
+                // Reset form when modal is hidden
+                document.getElementById('ratingModal').addEventListener('hidden.bs.modal', function() {
+                    resetRatingForm();
+                });
+                
+                function resetRatingForm() {
+                    selectedRating = 0;
+                    ratingValue.value = 0;
+                    reviewComment.value = '';
+                    ratingText.textContent = 'Click a star to rate';
+                    ratingText.className = 'text-muted';
+                    submitButton.disabled = true;
+                    highlightStars(0);
+                }
+
+                // Auto-show pulse animation after user interaction
+                let interactionCount = 0;
+                document.addEventListener('click', function() {
+                    interactionCount++;
+                    if (interactionCount === 10) {
+                        rateUsButton.classList.add('pulse');
+                        setTimeout(() => {
+                            rateUsButton.classList.remove('pulse');
+                        }, 4000);
+                    }
+                });
+            }
+        });
+    </script>
 
     @stack('scripts')
     <script>
