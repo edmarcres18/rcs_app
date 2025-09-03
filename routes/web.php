@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\InstructionController;
 use App\Http\Controllers\InstructionMonitorController;
 use App\Http\Controllers\PendingUpdateController;
@@ -69,6 +70,16 @@ Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.'
 
     // Ratings Monitor (SYSTEM_ADMIN only)
     Route::get('ratings', [\App\Http\Controllers\RatingController::class, 'adminIndex'])->name('ratings.index');
+});
+
+// Database Backup Routes for SYSTEM_ADMIN only
+Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->group(function () {
+    Route::get('database/backups', [DatabaseBackupController::class, 'index'])->name('database.backups');
+    Route::get('database/backup/create', [DatabaseBackupController::class, 'create'])->name('database.backup.create');
+    Route::get('database/backup/download/{filename}', [DatabaseBackupController::class, 'download'])->name('database.backup.download');
+    Route::delete('database/backup/delete/{filename}', [DatabaseBackupController::class, 'delete'])->name('database.backup.delete');
+    Route::post('database/backup/restore/{filename}', [DatabaseBackupController::class, 'restore'])->name('database.backup.restore');
+    Route::delete('database/backup/destroy/{filename}', [DatabaseBackupController::class, 'destroy'])->name('database.backup.destroy');
 });
 
 // Profile routes

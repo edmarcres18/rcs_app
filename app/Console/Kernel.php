@@ -32,6 +32,8 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('instructions:send-reminders')->daily();
         $schedule->command('telegram:verify-webhook')->everyFifteenMinutes();
+        // Daily database backup
+        $schedule->command('database:backup')->daily();
     }
 
     /**

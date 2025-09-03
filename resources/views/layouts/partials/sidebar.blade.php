@@ -158,6 +158,12 @@
                             <span>System Settings</span>
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('database.backups') }}" class="sidebar-nav-link {{ Request::routeIs('database.*') ? 'active' : '' }}" data-title="Database Backups">
+                            <i class="fas fa-database"></i>
+                            <span>Database Backups</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         @endif
