@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('instructions:send-reminders')->daily();
         $schedule->command('telegram:verify-webhook')->everyFifteenMinutes();
         // Daily database backup
-        $schedule->command('database:backup')->daily();
+        $schedule->command('database:backup')->dailyAt('04:00')->timezone('Asia/Manila');
     }
 
     /**
