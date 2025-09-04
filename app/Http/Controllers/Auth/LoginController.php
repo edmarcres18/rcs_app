@@ -226,8 +226,8 @@ class LoginController extends Controller
                     'redirect_error' => $redirectError->getMessage()
                 ]);
 
-                // Return a basic response as last resort
-                return response('Login error occurred', 500);
+                // Return a user-friendly error view as last resort
+                return response()->view('errors.500', ['message' => 'Login error occurred'], 500);
             }
         }
     }
@@ -281,8 +281,8 @@ class LoginController extends Controller
                     'force_logout_error' => $forceLogoutError->getMessage()
                 ]);
 
-                // Return a basic response as last resort
-                return response('Logout error occurred', 500);
+                // Return a user-friendly error view as last resort
+                return response()->view('errors.500', ['message' => 'Logout error occurred'], 500);
             }
         }
     }

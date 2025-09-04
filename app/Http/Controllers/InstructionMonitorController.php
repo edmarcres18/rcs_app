@@ -19,7 +19,7 @@ class InstructionMonitorController extends Controller
         $this->middleware('auth');
         $this->middleware(function ($request, $next) {
             if (!Auth::check() || !in_array(Auth::user()->roles, [UserRole::ADMIN, UserRole::SYSTEM_ADMIN])) {
-                abort(403, 'Only Administrators can access this page.');
+                return response()->view('errors.403', ['message' => 'Only Administrators can access this page.'], 403);
             }
             return $next($request);
         });

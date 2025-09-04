@@ -277,7 +277,7 @@ class InstructionController extends Controller
 
         // Check if user has access to this instruction
         if (!$instruction->canBeAccessedBy($user)) {
-            abort(403, 'You do not have permission to view this instruction.');
+            return response()->view('errors.403', ['message' => 'You do not have permission to view this instruction.'], 403);
         }
 
         // Load instruction with all necessary relationships
@@ -399,7 +399,7 @@ class InstructionController extends Controller
             if ($request->ajax()) {
                 return response()->json(['message' => $message], 403);
             }
-            abort(403, $message);
+            return response()->view('errors.403', ['message' => $message], 403);
         }
 
         // System admin can't reply, handle AJAX appropriately
@@ -514,7 +514,7 @@ class InstructionController extends Controller
 
         // Check if user has access to this instruction
         if (!$instruction->canBeAccessedBy($user)) {
-            abort(403, 'You do not have permission to forward this instruction.');
+            return response()->view('errors.403', ['message' => 'You do not have permission to forward this instruction.'], 403);
         }
 
         // Check if user is eligible to forward
@@ -544,7 +544,7 @@ class InstructionController extends Controller
 
         // Check if user has access to this instruction
         if (!$instruction->canBeAccessedBy($user)) {
-            abort(403, 'You do not have permission to forward this instruction.');
+            return response()->view('errors.403', ['message' => 'You do not have permission to forward this instruction.'], 403);
         }
 
         // Check if user is eligible to forward

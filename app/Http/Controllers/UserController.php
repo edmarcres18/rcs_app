@@ -24,7 +24,7 @@ class UserController extends Controller
         // Only ADMIN and SYSTEM_ADMIN can access all user management functions
         $this->middleware(function ($request, $next) {
             if (!Auth::check() || !in_array(Auth::user()->roles, [UserRole::ADMIN, UserRole::SYSTEM_ADMIN])) {
-                abort(403, 'Unauthorized action.');
+                return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
             }
             return $next($request);
         });
@@ -104,7 +104,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         if (Auth::user()->roles !== UserRole::SYSTEM_ADMIN) {
-            abort(403, 'Only System Administrators can edit user details directly.');
+            return response()->view('errors.403', ['message' => 'Only System Administrators can edit user details directly.'], 403);
         }
         return view('users.edit', compact('user'));
     }
@@ -168,7 +168,7 @@ class UserController extends Controller
                 ->with('success', 'User update request submitted for approval.');
         }
 
-        abort(403, 'Unauthorized action.');
+        return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
     }
 
     /**
@@ -212,7 +212,7 @@ class UserController extends Controller
                 ->with('success', 'Request to delete user has been submitted for approval.');
         }
 
-        abort(403, 'Unauthorized action.');
+        return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
     }
 
     /**
@@ -235,7 +235,7 @@ class UserController extends Controller
         // This is already protected by the constructor middleware
         // But keeping the check for explicit clarity
         if (!Auth::check() || !in_array(Auth::user()->roles, [UserRole::ADMIN, UserRole::SYSTEM_ADMIN])) {
-            abort(403, 'Unauthorized action.');
+            return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
         }
 
         $query = UserActivity::with('user')
