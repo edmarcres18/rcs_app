@@ -35,106 +35,16 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query()
-            ->where('roles', '!=', UserRole::SYSTEM_ADMIN);
-
-        // Enhanced search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
-            });
-        }
-
-        // Role filter
-        if ($request->filled('role')) {
-            $query->where('roles', $request->role);
-        }
-
-        // Email verification filter
-        if ($request->filled('email_verified')) {
-            if ($request->email_verified === 'verified') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($request->email_verified === 'pending') {
-                $query->whereNull('email_verified_at');
-            }
-        }
-
-        // Date range filter
-        if ($request->filled('date_range')) {
-            switch ($request->date_range) {
-                case 'today':
-                    $query->whereDate('created_at', today());
-                    break;
-                case 'week':
-                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereMonth('created_at', now()->month)
-                          ->whereYear('created_at', now()->year);
-                    break;
-                case 'year':
-                    $query->whereYear('created_at', now()->year);
-                    break;
-            }
-        }
-
-        // Sorting
-        $sortBy = $request->sort_by ?? 'created_at';
-        $sortOrder = $request->sort_order ?? 'desc';
-        
-        switch ($sortBy) {
-            case 'name':
-                $query->orderBy('first_name', $sortOrder)->orderBy('last_name', $sortOrder);
-                break;
-            case 'email':
-                $query->orderBy('email', $sortOrder);
-                break;
-            case 'role':
-                $query->orderBy('roles', $sortOrder);
-                break;
-            case 'email_verified':
-                if ($sortOrder === 'desc') {
-                    $query->orderByRaw('email_verified_at IS NULL, email_verified_at DESC');
-                } else {
-                    $query->orderByRaw('email_verified_at IS NOT NULL, email_verified_at ASC');
-                }
-                break;
-            default:
-                $query->orderBy('created_at', $sortOrder);
-                break;
-        }
-
-        // Default to 15 users per page, but allow customization
-        $perPage = $request->per_page ?? 15;
-        $users = $query->paginate($perPage);
-
-        // Handle AJAX requests for real-time search
-        if ($request->ajax() || $request->has('ajax')) {
-            $html = '';
-            
-            if ($users->count() > 0) {
-                foreach ($users as $user) {
-                    $html .= view('users.partials.user-row', compact('user'))->render();
-                }
-            } else {
-                $html = view('users.partials.no-results', [
-                    'hasFilters' => $request->hasAny(['search', 'role', 'email_verified'])
-                ])->render();
-            }
-
-            return response()->json([
-                'html' => $html,
-                'pagination_info' => "Showing {$users->firstItem()} to {$users->lastItem()} of {$users->total()} users",
-                'total' => $users->total(),
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage()
-            ]);
-        }
+        $users = User::query()
+            ->where('roles', '!=', UserRole::SYSTEM_ADMIN)
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->paginate($request->per_page ?? 15);
 
         return view('users.index', compact('users'));
     }
