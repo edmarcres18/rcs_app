@@ -894,7 +894,7 @@
                                         <div class="flex-shrink-0 w-10 h-10 bg-sky-500 text-white font-bold rounded-full flex items-center justify-center mr-4">1</div>
                             <div>
                                             <h4 class="font-bold text-slate-800">Find the Bot</h4>
-                                            <p class="text-slate-600">Search for <span class="font-mono bg-slate-200 px-2 py-1 rounded">@mhr_rcs_bot</span> in Telegram.</p>
+                                            <p class="text-slate-600">Search for <a href="https://t.me/mhrcs_notif_bot" target="_blank" class="font-mono bg-slate-200 px-2 py-1 rounded hover:bg-slate-300 transition-colors cursor-pointer text-blue-600 hover:text-blue-800">@mhrcs_notif_bot</a> in Telegram.</p>
                             </div>
                         </div>
                                     <div class="flex items-start">
@@ -947,7 +947,7 @@
                                         </div>
                             <div>
                                             <span class="font-bold text-slate-800">RCS Notifications</span>
-                                            <span class="text-xs text-slate-500 block">via @mhr_rcs_bot</span>
+                                            <span class="text-xs text-slate-500 block">via <a href="https://t.me/mhrcs_notif_bot" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">@mhrcs_notif_bot</a></span>
                             </div>
                                         <span class="text-xs text-slate-500 ml-auto">12:34 PM</span>
                         </div>
