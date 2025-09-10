@@ -44,7 +44,26 @@ class UserController extends Controller
                       ->orWhere('email', 'like', "%{$search}%");
                 });
             })
-            ->paginate($request->per_page ?? 15);
+            ->when($request->role, function ($query, $role) {
+                // Filter by specific role (excluding SYSTEM_ADMIN which is already excluded)
+                $query->where('roles', $role);
+            })
+            ->when($request->email_status, function ($query, $status) {
+                // Filter by email verification status
+                if ($status === 'verified') {
+                    $query->whereNotNull('email_verified_at');
+                } elseif ($status === 'pending') {
+                    $query->whereNull('email_verified_at');
+                }
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        // If request is AJAX, return partial HTML for dynamic updates
+        if ($request->ajax()) {
+            return response()->view('users.partials.table', compact('users'));
+        }
 
         return view('users.index', compact('users'));
     }
