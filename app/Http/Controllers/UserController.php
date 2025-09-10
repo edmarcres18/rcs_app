@@ -64,9 +64,54 @@ class UserController extends Controller
             }
         }
 
+        // Date range filter
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+                case 'year':
+                    $query->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->sort_by ?? 'created_at';
+        $sortOrder = $request->sort_order ?? 'desc';
+        
+        switch ($sortBy) {
+            case 'name':
+                $query->orderBy('first_name', $sortOrder)->orderBy('last_name', $sortOrder);
+                break;
+            case 'email':
+                $query->orderBy('email', $sortOrder);
+                break;
+            case 'role':
+                $query->orderBy('roles', $sortOrder);
+                break;
+            case 'email_verified':
+                if ($sortOrder === 'desc') {
+                    $query->orderByRaw('email_verified_at IS NULL, email_verified_at DESC');
+                } else {
+                    $query->orderByRaw('email_verified_at IS NOT NULL, email_verified_at ASC');
+                }
+                break;
+            default:
+                $query->orderBy('created_at', $sortOrder);
+                break;
+        }
+
         // Default to 15 users per page, but allow customization
         $perPage = $request->per_page ?? 15;
-        $users = $query->latest()->paginate($perPage);
+        $users = $query->paginate($perPage);
 
         // Handle AJAX requests for real-time search
         if ($request->ajax() || $request->has('ajax')) {

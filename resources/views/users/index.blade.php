@@ -47,34 +47,126 @@
                         </div>
 
                         <!-- Role Filter -->
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="role" class="form-label">Role</label>
                             <select id="role" name="role" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
                                 <option value="">All Roles</option>
-                                <option value="EMPLOYEE" {{ request('role') === 'EMPLOYEE' ? 'selected' : '' }}>Employee</option>
-                                <option value="SUPERVISOR" {{ request('role') === 'SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
-                                <option value="ADMIN" {{ request('role') === 'ADMIN' ? 'selected' : '' }}>Admin</option>
-                                <option value="SYSTEM_ADMIN" {{ request('role') === 'SYSTEM_ADMIN' ? 'selected' : '' }}>System Admin</option>
+                                <option value="EMPLOYEE" {{ request('role') === 'EMPLOYEE' ? 'selected' : '' }}>
+                                    <i class="fas fa-user"></i> Employee
+                                </option>
+                                <option value="SUPERVISOR" {{ request('role') === 'SUPERVISOR' ? 'selected' : '' }}>
+                                    <i class="fas fa-user-tie"></i> Supervisor
+                                </option>
+                                <option value="ADMIN" {{ request('role') === 'ADMIN' ? 'selected' : '' }}>
+                                    <i class="fas fa-user-shield"></i> Admin
+                                </option>
+                                <option value="SYSTEM_ADMIN" {{ request('role') === 'SYSTEM_ADMIN' ? 'selected' : '' }}>
+                                    <i class="fas fa-crown"></i> System Admin
+                                </option>
                             </select>
                         </div>
 
                         <!-- Email Verification Filter -->
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="email_verified" class="form-label">Email Status</label>
                             <select id="email_verified" name="email_verified" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
                                 <option value="">All Status</option>
-                                <option value="verified" {{ request('email_verified') === 'verified' ? 'selected' : '' }}>Verified</option>
-                                <option value="pending" {{ request('email_verified') === 'pending' ? 'selected' : '' }}>Pending Verification</option>
+                                <option value="verified" {{ request('email_verified') === 'verified' ? 'selected' : '' }}>
+                                    ✅ Verified
+                                </option>
+                                <option value="pending" {{ request('email_verified') === 'pending' ? 'selected' : '' }}>
+                                    ⏳ Pending
+                                </option>
                             </select>
                         </div>
 
-                        <!-- Actions -->
+                        <!-- Date Range Filter -->
                         <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-flex gap-2">
-                                <button type="button" id="resetFilters" class="btn btn-outline-secondary">
-                                    <i class="fas fa-undo"></i> Reset
+                            <label for="date_range" class="form-label">Created Date</label>
+                            <select id="date_range" name="date_range" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                                <option value="">All Time</option>
+                                <option value="today" {{ request('date_range') === 'today' ? 'selected' : '' }}>Today</option>
+                                <option value="week" {{ request('date_range') === 'week' ? 'selected' : '' }}>This Week</option>
+                                <option value="month" {{ request('date_range') === 'month' ? 'selected' : '' }}>This Month</option>
+                                <option value="year" {{ request('date_range') === 'year' ? 'selected' : '' }}>This Year</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="col-md-2">
+                            <label for="sort_by" class="form-label">Sort By</label>
+                            <select id="sort_by" name="sort_by" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                                <option value="created_at" {{ request('sort_by', 'created_at') === 'created_at' ? 'selected' : '' }}>Created Date</option>
+                                <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>Name (A-Z)</option>
+                                <option value="email" {{ request('sort_by') === 'email' ? 'selected' : '' }}>Email</option>
+                                <option value="role" {{ request('sort_by') === 'role' ? 'selected' : '' }}>Role</option>
+                                <option value="email_verified" {{ request('sort_by') === 'email_verified' ? 'selected' : '' }}>Email Status</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options Row -->
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label for="per_page" class="form-label">Results Per Page</label>
+                            <select id="per_page" name="per_page" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                                <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10 per page</option>
+                                <option value="15" {{ request('per_page', '15') == '15' ? 'selected' : '' }}>15 per page</option>
+                                <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25 per page</option>
+                                <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 per page</option>
+                                <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 per page</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sort_order" class="form-label">Sort Order</label>
+                            <select id="sort_order" name="sort_order" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                                <option value="desc" {{ request('sort_order', 'desc') === 'desc' ? 'selected' : '' }}>Newest First</option>
+                                <option value="asc" {{ request('sort_order') === 'asc' ? 'selected' : '' }}>Oldest First</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quick Filters</label>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-success quick-filter" data-filter="verified">
+                                    <i class="fas fa-check-circle me-1"></i>Verified Only
                                 </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning quick-filter" data-filter="pending">
+                                    <i class="fas fa-clock me-1"></i>Pending Only
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info quick-filter" data-filter="admins">
+                                    <i class="fas fa-user-shield me-1"></i>Admins Only
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary quick-filter" data-filter="recent">
+                                    <i class="fas fa-calendar-day me-1"></i>Recent (7 days)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Actions Row -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2">
+                                    <button type="button" id="resetFilters" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-1"></i> Reset All Filters
+                                    </button>
+                                    <button type="button" id="applyFilters" class="btn btn-primary">
+                                        <i class="fas fa-filter me-1"></i> Apply Filters
+                                    </button>
+                                    <button type="button" id="saveFilters" class="btn btn-outline-info">
+                                        <i class="fas fa-bookmark me-1"></i> Save Filters
+                                    </button>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-muted small" id="filterStatus">
+                                        <span id="activeFiltersCount">0</span> active filters
+                                    </div>
+                                    <div id="filterError" class="text-danger small" style="display: none;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        <span id="filterErrorMessage"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -549,12 +641,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingSpinner = document.getElementById('loadingSpinner');
     const roleFilter = document.getElementById('role');
     const emailVerifiedFilter = document.getElementById('email_verified');
+    const dateRangeFilter = document.getElementById('date_range');
+    const sortByFilter = document.getElementById('sort_by');
+    const perPageFilter = document.getElementById('per_page');
+    const sortOrderFilter = document.getElementById('sort_order');
     const resetFiltersBtn = document.getElementById('resetFilters');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const saveFiltersBtn = document.getElementById('saveFilters');
     const clearAllFiltersBtn = document.getElementById('clearAllFilters');
+    const quickFilterBtns = document.querySelectorAll('.quick-filter');
     const selectAllCheckbox = document.getElementById('selectAll');
     const userCheckboxes = document.querySelectorAll('.user-checkbox');
     const bulkActionsBar = document.getElementById('bulkActionsBar');
     const selectedCountSpan = document.getElementById('selectedCount');
+    const activeFiltersCount = document.getElementById('activeFiltersCount');
+    const filterError = document.getElementById('filterError');
+    const filterErrorMessage = document.getElementById('filterErrorMessage');
 
     // Show/hide clear search button
     function toggleClearButton() {
@@ -587,15 +689,105 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter change handlers
     roleFilter.addEventListener('change', performSearch);
     emailVerifiedFilter.addEventListener('change', performSearch);
+    dateRangeFilter.addEventListener('change', performSearch);
+    sortByFilter.addEventListener('change', performSearch);
+    perPageFilter.addEventListener('change', performSearch);
+    sortOrderFilter.addEventListener('change', performSearch);
+
+    // Apply filters button
+    applyFiltersBtn.addEventListener('click', performSearch);
+
+    // Quick filter buttons
+    quickFilterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            applyQuickFilter(filter);
+        });
+    });
+
+    // Save filters functionality
+    saveFiltersBtn.addEventListener('click', function() {
+        const filters = getCurrentFilters();
+        localStorage.setItem('userFilters', JSON.stringify(filters));
+        showNotification('Filters saved successfully!', 'success');
+    });
 
     // Reset filters
     resetFiltersBtn.addEventListener('click', function() {
         searchInput.value = '';
         roleFilter.value = '';
         emailVerifiedFilter.value = '';
+        dateRangeFilter.value = '';
+        sortByFilter.value = 'created_at';
+        perPageFilter.value = '15';
+        sortOrderFilter.value = 'desc';
         toggleClearButton();
+        updateActiveFiltersCount();
+        clearQuickFilterStates();
         performSearch();
     });
+
+    // Quick filter functions
+    function applyQuickFilter(filterType) {
+        clearQuickFilterStates();
+        
+        switch(filterType) {
+            case 'verified':
+                emailVerifiedFilter.value = 'verified';
+                break;
+            case 'pending':
+                emailVerifiedFilter.value = 'pending';
+                break;
+            case 'admins':
+                roleFilter.value = 'ADMIN';
+                break;
+            case 'recent':
+                dateRangeFilter.value = 'week';
+                break;
+        }
+        
+        // Highlight active quick filter
+        document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+        performSearch();
+    }
+
+    function clearQuickFilterStates() {
+        quickFilterBtns.forEach(btn => btn.classList.remove('active'));
+    }
+
+    function getCurrentFilters() {
+        return {
+            search: searchInput.value,
+            role: roleFilter.value,
+            email_verified: emailVerifiedFilter.value,
+            date_range: dateRangeFilter.value,
+            sort_by: sortByFilter.value,
+            per_page: perPageFilter.value,
+            sort_order: sortOrderFilter.value
+        };
+    }
+
+    // Update active filters count
+    function updateActiveFiltersCount() {
+        let count = 0;
+        if (searchInput.value) count++;
+        if (roleFilter.value) count++;
+        if (emailVerifiedFilter.value) count++;
+        if (dateRangeFilter.value) count++;
+        if (sortByFilter.value && sortByFilter.value !== 'created_at') count++;
+        
+        activeFiltersCount.textContent = count;
+        
+        // Update filter status styling
+        const filterStatus = document.getElementById('filterStatus');
+        if (count > 0) {
+            filterStatus.classList.add('text-primary');
+            filterStatus.classList.remove('text-muted');
+        } else {
+            filterStatus.classList.add('text-muted');
+            filterStatus.classList.remove('text-primary');
+        }
+    }
 
     if (clearAllFiltersBtn) {
         clearAllFiltersBtn.addEventListener('click', function() {
@@ -606,19 +798,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Perform search/filter
     function performSearch() {
         showLoading(true);
+        updateActiveFiltersCount();
         
-        const formData = new FormData();
-        formData.append('search', searchInput.value);
-        formData.append('role', roleFilter.value);
-        formData.append('email_verified', emailVerifiedFilter.value);
-        formData.append('ajax', '1');
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (searchInput.value) params.append('search', searchInput.value);
+        if (roleFilter.value) params.append('role', roleFilter.value);
+        if (emailVerifiedFilter.value) params.append('email_verified', emailVerifiedFilter.value);
+        if (dateRangeFilter.value) params.append('date_range', dateRangeFilter.value);
+        if (sortByFilter.value) params.append('sort_by', sortByFilter.value);
+        if (perPageFilter.value) params.append('per_page', perPageFilter.value);
+        if (sortOrderFilter.value) params.append('sort_order', sortOrderFilter.value);
+        params.append('ajax', '1');
 
-        fetch('{{ route("users.index") }}', {
-            method: 'POST',
-            body: formData,
+        fetch('{{ route("users.index") }}?' + params.toString(), {
+            method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
         })
         .then(response => response.json())
@@ -629,9 +826,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update URL without page reload
                 const url = new URL(window.location);
-                url.searchParams.set('search', searchInput.value);
-                url.searchParams.set('role', roleFilter.value);
-                url.searchParams.set('email_verified', emailVerifiedFilter.value);
+                if (searchInput.value) url.searchParams.set('search', searchInput.value);
+                else url.searchParams.delete('search');
+                
+                if (roleFilter.value) url.searchParams.set('role', roleFilter.value);
+                else url.searchParams.delete('role');
+                
+                if (emailVerifiedFilter.value) url.searchParams.set('email_verified', emailVerifiedFilter.value);
+                else url.searchParams.delete('email_verified');
+                
+                if (dateRangeFilter.value) url.searchParams.set('date_range', dateRangeFilter.value);
+                else url.searchParams.delete('date_range');
+                
+                if (sortByFilter.value) url.searchParams.set('sort_by', sortByFilter.value);
+                else url.searchParams.delete('sort_by');
+                
                 window.history.pushState({}, '', url);
                 
                 // Reinitialize checkboxes
@@ -640,6 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Search error:', error);
+            showFilterError('Failed to load results. Please try again.');
         })
         .finally(() => {
             showLoading(false);
@@ -710,9 +920,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Error handling functions
+    function showFilterError(message) {
+        filterErrorMessage.textContent = message;
+        filterError.style.display = 'block';
+        setTimeout(() => {
+            filterError.style.display = 'none';
+        }, 5000);
+    }
+
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Load saved filters on page load
+    function loadSavedFilters() {
+        const savedFilters = localStorage.getItem('userFilters');
+        if (savedFilters) {
+            try {
+                const filters = JSON.parse(savedFilters);
+                if (filters.search) searchInput.value = filters.search;
+                if (filters.role) roleFilter.value = filters.role;
+                if (filters.email_verified) emailVerifiedFilter.value = filters.email_verified;
+                if (filters.date_range) dateRangeFilter.value = filters.date_range;
+                if (filters.sort_by) sortByFilter.value = filters.sort_by;
+                if (filters.per_page) perPageFilter.value = filters.per_page;
+                if (filters.sort_order) sortOrderFilter.value = filters.sort_order;
+            } catch (e) {
+                console.error('Error loading saved filters:', e);
+            }
+        }
+    }
+
     // Initialize on page load
     toggleClearButton();
     initializeCheckboxes();
+    updateActiveFiltersCount();
+    
+    // Load saved filters if available
+    if (!window.location.search) {
+        loadSavedFilters();
+    }
 
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
