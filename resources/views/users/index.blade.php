@@ -16,35 +16,125 @@
     </div>
 
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
             <h5 class="mb-0">All Users</h5>
-            <div class="d-flex mt-2 mt-md-0 gap-2 flex-wrap align-items-center" id="users-filter-bar">
-                <div class="input-group" style="min-width: 280px;">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search by name or email..." value="{{ request('search') }}" style="background-color: var(--bg-input); color: var(--text-color);">
-                </div>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-user-shield"></i></span>
-                    <select id="roleFilter" name="role" class="form-select">
-                        <option value="">All Roles</option>
-                        <option value="EMPLOYEE" {{ request('role')==='EMPLOYEE' ? 'selected' : '' }}>Employee</option>
-                        <option value="SUPERVISOR" {{ request('role')==='SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
-                        <option value="ADMIN" {{ request('role')==='ADMIN' ? 'selected' : '' }}>Admin</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                    <select id="emailStatusFilter" name="email_status" class="form-select">
-                        <option value="">All Email Status</option>
-                        <option value="verified" {{ request('email_status')==='verified' ? 'selected' : '' }}>Email Verified</option>
-                        <option value="pending" {{ request('email_status')==='pending' ? 'selected' : '' }}>Email Pending</option>
-                    </select>
-                </div>
+            <div class="d-flex mt-2 mt-md-0">
+                <form method="GET" action="{{ route('users.index') }}" class="d-flex">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search users..."
+                               value="{{ request('search') }}" style="background-color: var(--bg-input); color: var(--text-color);">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
         <div class="card-body">
-            <div id="users-table-wrapper">
-                @include('users.partials.table', ['users' => $users])
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Avatar</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($users as $user)
+                            <tr>
+                                <td>
+                                    @if($user->avatar)
+                                        <img src="{{ $user->avatar }}" alt="Avatar" class="rounded-circle" width="40" height="40">
+                                    @else
+                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name . ' ' . $user->last_name) }}&background=4070f4&color=fff"
+                                             alt="Avatar" class="rounded-circle" width="40" height="40">
+                                    @endif
+                                </td>
+                                <td>
+                                    <div>{{ $user->first_name }} {{ $user->last_name }}</div>
+                                    @if($user->nickname)
+                                        <small class="text-muted">({{ $user->nickname }})</small>
+                                    @endif
+                                </td>
+                                <td>{{ $user->email }}</td>
+                                <td>
+                                    <span class="badge rounded-pill
+                                        @switch($user->roles->value)
+                                            @case('SYSTEM_ADMIN')
+                                                bg-danger
+                                                @break
+                                            @case('ADMIN')
+                                                bg-warning
+                                                @break
+                                            @case('SUPERVISOR')
+                                                bg-info
+                                                @break
+                                            @default
+                                                bg-success
+                                        @endswitch
+                                    ">
+                                        {{ $user->roles->value }}
+                                    </span>
+                                </td>
+                                <td>{{ $user->created_at->format('M d, Y') }}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if(Auth::user()->roles === \App\Enums\UserRole::SYSTEM_ADMIN)
+                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @endif
+                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                                        <h5>No users found</h5>
+                                        @if(request('search'))
+                                            <p>Try adjusting your search criteria</p>
+                                            <a href="{{ route('users.index') }}" class="btn btn-outline-primary mt-2">
+                                                <i class="fas fa-redo me-2"></i>Reset Search
+                                            </a>
+                                        @else
+                                            <p>Start by adding a new user</p>
+                                            <a href="{{ route('users.create') }}" class="btn btn-primary mt-2">
+                                                <i class="fas fa-plus-circle me-2"></i>Add New User
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
+                <div class="mb-2 mb-md-0">
+                    <span class="text-muted">
+                        Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ $users->total() }} users
+                    </span>
+                </div>
+                <div>
+                    {{ $users->withQueryString()->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -90,71 +180,4 @@
         }
     }
 </style>
-<script>
-    (function() {
-        const wrapper = document.getElementById('users-table-wrapper');
-        const searchInput = document.getElementById('searchInput');
-        const roleFilter = document.getElementById('roleFilter');
-        const emailStatusFilter = document.getElementById('emailStatusFilter');
-
-        let controller = null;
-        function debounce(fn, delay) {
-            let t; return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), delay); };
-        }
-
-        function buildQuery(params) {
-            const url = new URL(window.location.href);
-            // Always enforce 15 per page server-side; but we keep params for state
-            Object.entries(params).forEach(([k, v]) => {
-                if (v !== null && v !== undefined && v !== '') { url.searchParams.set(k, v); }
-                else { url.searchParams.delete(k); }
-            });
-            return url;
-        }
-
-        async function fetchUsers(url) {
-            try {
-                if (controller) controller.abort();
-                controller = new AbortController();
-                const res = await fetch(url.toString(), {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
-                    signal: controller.signal
-                });
-                const html = await res.text();
-                wrapper.innerHTML = html;
-                // update URL without full reload
-                window.history.replaceState({}, '', url);
-            } catch (e) {
-                if (e.name !== 'AbortError') { console.error(e); }
-            }
-        }
-
-        const triggerSearch = debounce(() => {
-            const url = buildQuery({
-                search: searchInput.value.trim(),
-                role: roleFilter.value,
-                email_status: emailStatusFilter.value
-            });
-            fetchUsers(url);
-        }, 300);
-
-        searchInput && searchInput.addEventListener('input', triggerSearch);
-        roleFilter && roleFilter.addEventListener('change', triggerSearch);
-        emailStatusFilter && emailStatusFilter.addEventListener('change', triggerSearch);
-
-        // Handle pagination clicks via event delegation
-        document.addEventListener('click', function(e) {
-            const a = e.target.closest('.pagination a');
-            if (a) {
-                e.preventDefault();
-                const url = new URL(a.getAttribute('href'), window.location.origin);
-                // preserve active filters
-                if (searchInput) url.searchParams.set('search', searchInput.value.trim());
-                if (roleFilter && roleFilter.value) url.searchParams.set('role', roleFilter.value);
-                if (emailStatusFilter && emailStatusFilter.value) url.searchParams.set('email_status', emailStatusFilter.value);
-                fetchUsers(url);
-            }
-        });
-    })();
-</script>
 @endsection
