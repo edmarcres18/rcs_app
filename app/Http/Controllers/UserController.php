@@ -41,12 +41,38 @@ class UserController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
                       ->orWhere('last_name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('nickname', 'like', "%{$search}%");
                 });
             })
-            ->paginate($request->per_page ?? 15);
+            ->when($request->role, function ($query, $role) {
+                $query->where('roles', $role);
+            })
+            ->when($request->email_verified, function ($query, $verified) {
+                if ($verified === 'verified') {
+                    $query->whereNotNull('email_verified_at');
+                } elseif ($verified === 'pending') {
+                    $query->whereNull('email_verified_at');
+                }
+            })
+            ->orderBy($request->sort_by ?? 'created_at', $request->sort_order ?? 'desc')
+            ->paginate(15);
 
-        return view('users.index', compact('users'));
+        // Get role counts for filter badges
+        $roleCounts = [
+            'all' => User::where('roles', '!=', UserRole::SYSTEM_ADMIN)->count(),
+            'employee' => User::where('roles', UserRole::EMPLOYEE)->count(),
+            'supervisor' => User::where('roles', UserRole::SUPERVISOR)->count(),
+            'admin' => User::where('roles', UserRole::ADMIN)->count(),
+        ];
+
+        // Get email verification counts
+        $verificationCounts = [
+            'verified' => User::where('roles', '!=', UserRole::SYSTEM_ADMIN)->whereNotNull('email_verified_at')->count(),
+            'pending' => User::where('roles', '!=', UserRole::SYSTEM_ADMIN)->whereNull('email_verified_at')->count(),
+        ];
+
+        return view('users.index', compact('users', 'roleCounts', 'verificationCounts'));
     }
 
     /**
