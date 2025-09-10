@@ -32,44 +32,66 @@
                     <div class="row g-3">
                         <!-- Real-time Search -->
                         <div class="col-md-4">
-                            <label for="search" class="form-label">Search Users</label>
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-1"></i>Search Users
+                                <span class="badge bg-info ms-2" id="searchResultsCount" style="display: none;">0 results</span>
+                            </label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <span class="input-group-text" id="searchIcon">
+                                    <i class="fas fa-search" aria-hidden="true"></i>
+                                </span>
                                 <input type="text" id="search" name="search" class="form-control" 
-                                       placeholder="Name, email, or nickname..." 
+                                       placeholder="Search by name, email, or nickname..." 
                                        value="{{ request('search') }}"
-                                       style="background-color: var(--bg-input); color: var(--text-color);">
-                                <button type="button" id="clearSearch" class="btn btn-outline-secondary" style="display: none;">
-                                    <i class="fas fa-times"></i>
+                                       style="background-color: var(--bg-input); color: var(--text-color);"
+                                       aria-label="Search users"
+                                       aria-describedby="searchIcon searchHelp"
+                                       autocomplete="off"
+                                       spellcheck="false">
+                                <button type="button" id="clearSearch" class="btn btn-outline-secondary" 
+                                        style="display: none;" 
+                                        aria-label="Clear search"
+                                        title="Clear search">
+                                    <i class="fas fa-times" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <small class="text-muted">Search updates automatically as you type</small>
+                            <small id="searchHelp" class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Search updates automatically as you type (minimum 2 characters)
+                            </small>
                         </div>
 
                         <!-- Role Filter -->
                         <div class="col-md-2">
-                            <label for="role" class="form-label">Role</label>
-                            <select id="role" name="role" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-tag me-1"></i>Role
+                            </label>
+                            <select id="role" name="role" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Filter by user role">
                                 <option value="">All Roles</option>
                                 <option value="EMPLOYEE" {{ request('role') === 'EMPLOYEE' ? 'selected' : '' }}>
-                                    <i class="fas fa-user"></i> Employee
+                                    👤 Employee
                                 </option>
                                 <option value="SUPERVISOR" {{ request('role') === 'SUPERVISOR' ? 'selected' : '' }}>
-                                    <i class="fas fa-user-tie"></i> Supervisor
+                                    👔 Supervisor
                                 </option>
                                 <option value="ADMIN" {{ request('role') === 'ADMIN' ? 'selected' : '' }}>
-                                    <i class="fas fa-user-shield"></i> Admin
+                                    🛡️ Admin
                                 </option>
                                 <option value="SYSTEM_ADMIN" {{ request('role') === 'SYSTEM_ADMIN' ? 'selected' : '' }}>
-                                    <i class="fas fa-crown"></i> System Admin
+                                    👑 System Admin
                                 </option>
                             </select>
                         </div>
 
                         <!-- Email Verification Filter -->
                         <div class="col-md-2">
-                            <label for="email_verified" class="form-label">Email Status</label>
-                            <select id="email_verified" name="email_verified" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                            <label for="email_verified" class="form-label">
+                                <i class="fas fa-envelope-check me-1"></i>Email Status
+                            </label>
+                            <select id="email_verified" name="email_verified" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Filter by email verification status">
                                 <option value="">All Status</option>
                                 <option value="verified" {{ request('email_verified') === 'verified' ? 'selected' : '' }}>
                                     ✅ Verified
@@ -82,25 +104,33 @@
 
                         <!-- Date Range Filter -->
                         <div class="col-md-2">
-                            <label for="date_range" class="form-label">Created Date</label>
-                            <select id="date_range" name="date_range" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                            <label for="date_range" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>Created Date
+                            </label>
+                            <select id="date_range" name="date_range" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Filter by creation date">
                                 <option value="">All Time</option>
-                                <option value="today" {{ request('date_range') === 'today' ? 'selected' : '' }}>Today</option>
-                                <option value="week" {{ request('date_range') === 'week' ? 'selected' : '' }}>This Week</option>
-                                <option value="month" {{ request('date_range') === 'month' ? 'selected' : '' }}>This Month</option>
-                                <option value="year" {{ request('date_range') === 'year' ? 'selected' : '' }}>This Year</option>
+                                <option value="today" {{ request('date_range') === 'today' ? 'selected' : '' }}>📅 Today</option>
+                                <option value="week" {{ request('date_range') === 'week' ? 'selected' : '' }}>📊 This Week</option>
+                                <option value="month" {{ request('date_range') === 'month' ? 'selected' : '' }}>📆 This Month</option>
+                                <option value="year" {{ request('date_range') === 'year' ? 'selected' : '' }}>🗓️ This Year</option>
                             </select>
                         </div>
 
                         <!-- Sort Options -->
                         <div class="col-md-2">
-                            <label for="sort_by" class="form-label">Sort By</label>
-                            <select id="sort_by" name="sort_by" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
-                                <option value="created_at" {{ request('sort_by', 'created_at') === 'created_at' ? 'selected' : '' }}>Created Date</option>
-                                <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>Name (A-Z)</option>
-                                <option value="email" {{ request('sort_by') === 'email' ? 'selected' : '' }}>Email</option>
-                                <option value="role" {{ request('sort_by') === 'role' ? 'selected' : '' }}>Role</option>
-                                <option value="email_verified" {{ request('sort_by') === 'email_verified' ? 'selected' : '' }}>Email Status</option>
+                            <label for="sort_by" class="form-label">
+                                <i class="fas fa-sort me-1"></i>Sort By
+                            </label>
+                            <select id="sort_by" name="sort_by" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Sort users by">
+                                <option value="created_at" {{ request('sort_by', 'created_at') === 'created_at' ? 'selected' : '' }}>🕒 Created Date</option>
+                                <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>🔤 Name (A-Z)</option>
+                                <option value="email" {{ request('sort_by') === 'email' ? 'selected' : '' }}>📧 Email</option>
+                                <option value="role" {{ request('sort_by') === 'role' ? 'selected' : '' }}>👥 Role</option>
+                                <option value="email_verified" {{ request('sort_by') === 'email_verified' ? 'selected' : '' }}>✅ Email Status</option>
                             </select>
                         </div>
                     </div>
@@ -108,36 +138,59 @@
                     <!-- Advanced Options Row -->
                     <div class="row mt-3">
                         <div class="col-md-3">
-                            <label for="per_page" class="form-label">Results Per Page</label>
-                            <select id="per_page" name="per_page" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
-                                <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10 per page</option>
-                                <option value="15" {{ request('per_page', '15') == '15' ? 'selected' : '' }}>15 per page</option>
-                                <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25 per page</option>
-                                <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 per page</option>
-                                <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100 per page</option>
+                            <label for="per_page" class="form-label">
+                                <i class="fas fa-list-ol me-1"></i>Results Per Page
+                            </label>
+                            <select id="per_page" name="per_page" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Number of results per page">
+                                <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>📄 10 per page</option>
+                                <option value="15" {{ request('per_page', '15') == '15' ? 'selected' : '' }}>📋 15 per page</option>
+                                <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>📊 25 per page</option>
+                                <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>📈 50 per page</option>
+                                <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>📚 100 per page</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="sort_order" class="form-label">Sort Order</label>
-                            <select id="sort_order" name="sort_order" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
-                                <option value="desc" {{ request('sort_order', 'desc') === 'desc' ? 'selected' : '' }}>Newest First</option>
-                                <option value="asc" {{ request('sort_order') === 'asc' ? 'selected' : '' }}>Oldest First</option>
+                            <label for="sort_order" class="form-label">
+                                <i class="fas fa-sort-amount-down me-1"></i>Sort Order
+                            </label>
+                            <select id="sort_order" name="sort_order" class="form-select" 
+                                    style="background-color: var(--bg-input); color: var(--text-color);"
+                                    aria-label="Sort order">
+                                <option value="desc" {{ request('sort_order', 'desc') === 'desc' ? 'selected' : '' }}>⬇️ Newest First</option>
+                                <option value="asc" {{ request('sort_order') === 'asc' ? 'selected' : '' }}>⬆️ Oldest First</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Quick Filters</label>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button type="button" class="btn btn-sm btn-outline-success quick-filter" data-filter="verified">
-                                    <i class="fas fa-check-circle me-1"></i>Verified Only
+                            <label class="form-label">
+                                <i class="fas fa-bolt me-1"></i>Quick Filters
+                                <small class="text-muted">(Click for instant filtering)</small>
+                            </label>
+                            <div class="d-flex gap-2 flex-wrap" role="group" aria-label="Quick filter buttons">
+                                <button type="button" class="btn btn-sm btn-outline-success quick-filter" 
+                                        data-filter="verified" 
+                                        aria-label="Show only verified users"
+                                        title="Show only users with verified email addresses">
+                                    <i class="fas fa-check-circle me-1" aria-hidden="true"></i>Verified Only
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-warning quick-filter" data-filter="pending">
-                                    <i class="fas fa-clock me-1"></i>Pending Only
+                                <button type="button" class="btn btn-sm btn-outline-warning quick-filter" 
+                                        data-filter="pending"
+                                        aria-label="Show only pending users"
+                                        title="Show only users with pending email verification">
+                                    <i class="fas fa-clock me-1" aria-hidden="true"></i>Pending Only
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-info quick-filter" data-filter="admins">
-                                    <i class="fas fa-user-shield me-1"></i>Admins Only
+                                <button type="button" class="btn btn-sm btn-outline-info quick-filter" 
+                                        data-filter="admins"
+                                        aria-label="Show only admin users"
+                                        title="Show only users with admin privileges">
+                                    <i class="fas fa-user-shield me-1" aria-hidden="true"></i>Admins Only
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary quick-filter" data-filter="recent">
-                                    <i class="fas fa-calendar-day me-1"></i>Recent (7 days)
+                                <button type="button" class="btn btn-sm btn-outline-primary quick-filter" 
+                                        data-filter="recent"
+                                        aria-label="Show recent users"
+                                        title="Show users created in the last 7 days">
+                                    <i class="fas fa-calendar-day me-1" aria-hidden="true"></i>Recent (7 days)
                                 </button>
                             </div>
                         </div>
@@ -147,24 +200,41 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex gap-2">
-                                    <button type="button" id="resetFilters" class="btn btn-outline-secondary">
-                                        <i class="fas fa-undo me-1"></i> Reset All Filters
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" id="resetFilters" class="btn btn-outline-secondary"
+                                            aria-label="Reset all filters to default values"
+                                            title="Clear all active filters">
+                                        <i class="fas fa-undo me-1" aria-hidden="true"></i> 
+                                        <span class="d-none d-sm-inline">Reset All Filters</span>
+                                        <span class="d-sm-none">Reset</span>
                                     </button>
-                                    <button type="button" id="applyFilters" class="btn btn-primary">
-                                        <i class="fas fa-filter me-1"></i> Apply Filters
+                                    <button type="button" id="applyFilters" class="btn btn-primary"
+                                            aria-label="Apply current filter settings"
+                                            title="Apply all selected filters">
+                                        <i class="fas fa-filter me-1" aria-hidden="true"></i> 
+                                        <span class="d-none d-sm-inline">Apply Filters</span>
+                                        <span class="d-sm-none">Apply</span>
                                     </button>
-                                    <button type="button" id="saveFilters" class="btn btn-outline-info">
-                                        <i class="fas fa-bookmark me-1"></i> Save Filters
+                                    <button type="button" id="saveFilters" class="btn btn-outline-info"
+                                            aria-label="Save current filter settings"
+                                            title="Save these filter settings for future use">
+                                        <i class="fas fa-bookmark me-1" aria-hidden="true"></i> 
+                                        <span class="d-none d-sm-inline">Save Filters</span>
+                                        <span class="d-sm-none">Save</span>
                                     </button>
                                 </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-muted small" id="filterStatus">
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <div class="text-muted small" id="filterStatus" role="status" aria-live="polite">
+                                        <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
                                         <span id="activeFiltersCount">0</span> active filters
                                     </div>
-                                    <div id="filterError" class="text-danger small" style="display: none;">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                    <div id="filterError" class="text-danger small" style="display: none;" role="alert" aria-live="assertive">
+                                        <i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>
                                         <span id="filterErrorMessage"></span>
+                                    </div>
+                                    <div id="filterSuccess" class="text-success small" style="display: none;" role="status" aria-live="polite">
+                                        <i class="fas fa-check-circle me-1" aria-hidden="true"></i>
+                                        <span id="filterSuccessMessage"></span>
                                     </div>
                                 </div>
                             </div>
@@ -204,16 +274,36 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th width="60">
-                                <input type="checkbox" id="selectAll" class="form-check-input">
+                            <th width="60" scope="col">
+                                <input type="checkbox" id="selectAll" class="form-check-input"
+                                       aria-label="Select all users on this page"
+                                       title="Select/deselect all users">
                             </th>
-                            <th width="80">Avatar</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th width="120">Email Status</th>
-                            <th width="120">Role</th>
-                            <th width="100">Created</th>
-                            <th width="150">Actions</th>
+                            <th width="80" scope="col">
+                                <span class="d-none d-md-inline">Avatar</span>
+                                <i class="fas fa-user-circle d-md-none" aria-label="Avatar" title="User Avatar"></i>
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-user me-1 d-none d-sm-inline" aria-hidden="true"></i>Name
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-envelope me-1 d-none d-sm-inline" aria-hidden="true"></i>Email
+                            </th>
+                            <th width="120" scope="col">
+                                <span class="d-none d-lg-inline">Email Status</span>
+                                <span class="d-lg-none">Status</span>
+                            </th>
+                            <th width="120" scope="col">
+                                <i class="fas fa-user-tag me-1 d-none d-sm-inline" aria-hidden="true"></i>Role
+                            </th>
+                            <th width="100" scope="col">
+                                <span class="d-none d-md-inline">Created</span>
+                                <i class="fas fa-calendar d-md-none" aria-label="Created date" title="Creation Date"></i>
+                            </th>
+                            <th width="150" scope="col">
+                                <span class="d-none d-sm-inline">Actions</span>
+                                <i class="fas fa-cog d-sm-none" aria-label="Actions" title="User Actions"></i>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
@@ -542,11 +632,47 @@
         color: #000;
     }
 
-    /* Responsive improvements */
+    /* Enhanced Responsive Design */
+    @media (max-width: 1200px) {
+        .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        .row.g-3 > * {
+            margin-bottom: 1rem;
+        }
+    }
+
+    @media (max-width: 992px) {
+        /* Tablet optimizations */
+        .col-md-4 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        .col-md-2, .col-md-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        
+        .quick-filter {
+            font-size: 0.8rem;
+            padding: 0.375rem 0.75rem;
+        }
+        
+        .table-responsive {
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    }
+
     @media (max-width: 768px) {
+        /* Mobile tablet optimizations */
         .card-header {
             flex-direction: column;
             align-items: flex-start;
+            padding: 1rem;
         }
 
         .card-header .d-flex {
@@ -554,48 +680,280 @@
             margin-top: 10px;
         }
 
+        .col-md-2, .col-md-3, .col-md-4, .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-group {
+            flex-direction: row;
+            width: auto;
+            gap: 2px;
+        }
+
+        .btn-group .btn {
+            margin-right: 0;
+            margin-bottom: 0;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .pagination-wrapper {
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+
+        .table-responsive {
+            font-size: 0.875rem;
+            border: none;
+            box-shadow: none;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Mobile-friendly filter collapse */
+        .collapse.show {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Improved mobile table */
+        .table th {
+            font-size: 0.8rem;
+            padding: 0.75rem 0.5rem;
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 0.75rem 0.5rem;
+            vertical-align: middle;
+        }
+
+        /* Mobile-specific quick filters */
+        .quick-filter {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+        }
+
+        /* Mobile pagination */
+        .pagination .page-link {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        /* Small mobile optimizations */
+        .container-fluid {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .card {
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .card-header {
+            padding: 0.75rem;
+        }
+
+        /* Compact table for small screens */
+        .table th,
+        .table td {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        .table th:first-child,
+        .table td:first-child {
+            padding-left: 0.5rem;
+        }
+
+        .table th:last-child,
+        .table td:last-child {
+            padding-right: 0.5rem;
+        }
+
+        /* Stack action buttons vertically on very small screens */
         .btn-group {
             flex-direction: column;
             width: 100%;
         }
 
         .btn-group .btn {
-            margin-right: 0;
             margin-bottom: 2px;
             border-radius: 0.375rem;
-        }
-
-        .pagination-wrapper {
-            overflow-x: auto;
-        }
-
-        .table-responsive {
-            font-size: 0.875rem;
-        }
-
-        .badge {
-            font-size: 0.7rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .container-fluid {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-
-        .card-body {
-            padding: 1rem 0.5rem;
-        }
-
-        .table th,
-        .table td {
-            padding: 0.5rem 0.25rem;
+            width: 100%;
         }
 
         .btn-sm {
-            padding: 0.25rem 0.5rem;
+            padding: 0.375rem 0.5rem;
             font-size: 0.75rem;
+        }
+
+        /* Mobile-friendly form controls */
+        .form-control, .form-select {
+            font-size: 16px; /* Prevents zoom on iOS */
+            padding: 0.75rem;
+        }
+
+        .input-group-text {
+            padding: 0.75rem;
+        }
+
+        /* Improved mobile search */
+        .input-group {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Mobile filter actions */
+        .d-flex.gap-2 {
+            flex-direction: column;
+            gap: 0.5rem !important;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Mobile quick filters - horizontal scroll */
+        .d-flex.gap-2.flex-wrap {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            gap: 0.5rem !important;
+        }
+
+        .quick-filter {
+            flex-shrink: 0;
+            font-size: 0.7rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        /* Mobile pagination improvements */
+        .pagination {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pagination .page-item {
+            margin: 0.125rem;
+        }
+
+        .pagination .page-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            min-width: 2rem;
+            text-align: center;
+        }
+
+        /* Mobile bulk actions */
+        #bulkActionsBar {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+        }
+
+        #bulkActionsBar .btn-group {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        #bulkActionsBar .btn {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            width: auto;
+            margin-bottom: 0;
+        }
+    }
+
+    /* Touch-friendly improvements */
+    @media (hover: none) and (pointer: coarse) {
+        .btn, .form-control, .form-select {
+            min-height: 44px; /* Apple's recommended touch target size */
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: transparent; /* Disable hover on touch devices */
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+
+        .quick-filter:active {
+            transform: scale(0.95);
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .table {
+            border: 2px solid;
+        }
+        
+        .btn-outline-secondary,
+        .btn-outline-primary,
+        .btn-outline-info {
+            border-width: 2px;
+        }
+        
+        .badge {
+            border: 1px solid;
+        }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .collapse,
+        .btn,
+        .table-hover tbody tr,
+        .quick-filter {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+
+    /* Print styles */
+    @media print {
+        .card-header .btn,
+        .btn-group,
+        #bulkActionsBar,
+        .pagination-wrapper {
+            display: none !important;
+        }
+        
+        .table {
+            font-size: 0.8rem;
+        }
+        
+        .card {
+            border: 1px solid #000;
+            box-shadow: none;
         }
     }
 
@@ -775,6 +1133,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (emailVerifiedFilter.value) count++;
         if (dateRangeFilter.value) count++;
         if (sortByFilter.value && sortByFilter.value !== 'created_at') count++;
+        if (perPageFilter.value && perPageFilter.value !== '15') count++;
+        if (sortOrderFilter.value && sortOrderFilter.value !== 'desc') count++;
         
         activeFiltersCount.textContent = count;
         
@@ -786,6 +1146,28 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             filterStatus.classList.add('text-muted');
             filterStatus.classList.remove('text-primary');
+        }
+    }
+
+    // Show success message
+    function showFilterSuccess(message) {
+        const filterSuccess = document.getElementById('filterSuccess');
+        const filterSuccessMessage = document.getElementById('filterSuccessMessage');
+        filterSuccessMessage.textContent = message;
+        filterSuccess.style.display = 'block';
+        setTimeout(() => {
+            filterSuccess.style.display = 'none';
+        }, 3000);
+    }
+
+    // Enhanced search result counter
+    function updateSearchResultsCount(total) {
+        const searchResultsCount = document.getElementById('searchResultsCount');
+        if (searchInput.value && total !== undefined) {
+            searchResultsCount.textContent = `${total} results`;
+            searchResultsCount.style.display = 'inline';
+        } else {
+            searchResultsCount.style.display = 'none';
         }
     }
 
