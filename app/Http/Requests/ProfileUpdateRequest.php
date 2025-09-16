@@ -29,7 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'middle_name' => ['nullable', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
             'telegram_username' => ['nullable', 'string', 'max:255'],
             'telegram_notifications_enabled' => ['nullable', 'boolean'],
         ];

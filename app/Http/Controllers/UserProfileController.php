@@ -64,15 +64,36 @@ class UserProfileController extends Controller
 
         // Handle the avatar upload if provided
         if ($request->hasFile('avatar')) {
+            // Validate file size (10MB = 10240KB)
+            $avatar = $request->file('avatar');
+            if ($avatar->getSize() > 10485760) { // 10MB in bytes
+                return back()->withErrors([
+                    'avatar' => 'The avatar file size must not exceed 10MB.'
+                ]);
+            }
+
+            // Create uploads/avatars directory if it doesn't exist
+            $uploadPath = public_path('uploads/avatars');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
             // Delete old avatar if exists
             if ($user->avatar && file_exists(public_path($user->avatar))) {
                 unlink(public_path($user->avatar));
             }
 
-            $avatar = $request->file('avatar');
-            $filename = time() . '_' . Str::slug($validated['first_name']) . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('uploads/avatars'), $filename);
-            $validated['avatar'] = 'uploads/avatars/' . $filename;
+            // Generate unique filename
+            $filename = time() . '_' . Str::random(10) . '.' . $avatar->getClientOriginalExtension();
+            
+            // Move the uploaded file
+            if ($avatar->move($uploadPath, $filename)) {
+                $validated['avatar'] = '/uploads/avatars/' . $filename;
+            } else {
+                return back()->withErrors([
+                    'avatar' => 'Failed to upload avatar. Please try again.'
+                ]);
+            }
         }
 
         $user->update($validated);

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div class="col-12 col-lg-10">
             <!-- Form Card -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -20,13 +20,13 @@
                         @method('PUT')
 
                         <div class="row">
-                            <div class="col-md-4 text-center mb-4">
+                            <div class="col-12 col-md-4 text-center mb-4">
                                 <div class="position-relative mb-3 mx-auto">
                                     <div class="profile-image-container" style="width: 150px; height: 150px; margin: 0 auto;">
                                         @if ($user->avatar)
-                                            <img id="avatar-preview" src="{{ $user->avatar }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                                            <img id="avatar-preview" src="{{ asset($user->avatar) }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
                                         @else
-                                            <img id="avatar-preview" src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=150" alt="Avatar Preview" class="rounded-circle img-fluid">
+                                            <img id="avatar-preview" src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name) }}+{{ urlencode($user->last_name) }}&background=4070f4&color=fff&size=150" alt="Avatar Preview" class="rounded-circle img-fluid">
                                         @endif
                                     </div>
                                 </div>
@@ -35,15 +35,15 @@
                                     <label for="avatar" class="btn btn-outline-primary">
                                         <i class="fas fa-upload me-1"></i> Change Photo
                                     </label>
-                                    <input type="file" name="avatar" id="avatar" class="d-none" accept="image/*">
+                                    <input type="file" name="avatar" id="avatar" class="d-none" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
                                     @error('avatar')
                                     <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
-                                    <div class="small text-muted mt-1">Max file size: 2MB. Supported formats: JPG, PNG, GIF</div>
+                                    <div class="small text-muted mt-1">Max file size: 10MB. Supported formats: JPG, PNG, GIF, WEBP</div>
                                 </div>
                             </div>
 
-                            <div class="col-md-8">
+                            <div class="col-12 col-md-8">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="first_name" class="form-label">First Name</label>
@@ -109,8 +109,13 @@
 
 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save me-1"></i> Save Changes
+                                    <button type="submit" class="btn btn-primary" id="save-btn">
+                                        <span class="btn-text">
+                                            <i class="fas fa-save me-1"></i> Save Changes
+                                        </span>
+                                        <span class="btn-loading d-none">
+                                            <i class="fas fa-spinner fa-spin me-1"></i> Saving...
+                                        </span>
                                     </button>
                                     <a href="{{ route('profile.show') }}" class="btn btn-secondary">
                                         Cancel
@@ -127,22 +132,70 @@
 
 @push('scripts')
 <script>
-    // Image preview functionality
+    // Image preview functionality and form handling
     document.addEventListener('DOMContentLoaded', function() {
         const avatarInput = document.getElementById('avatar');
         const avatarPreview = document.getElementById('avatar-preview');
+        const saveBtn = document.getElementById('save-btn');
+        const form = document.querySelector('form');
 
+        // Avatar preview functionality
         avatarInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                const reader = new FileReader();
+                const file = this.files[0];
+                
+                // Validate file size (10MB)
+                if (file.size > 10485760) {
+                    showAlert('File size must not exceed 10MB.', 'danger');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert('Please select a valid image file (JPG, PNG, GIF, WEBP).', 'danger');
+                    this.value = '';
+                    return;
+                }
 
+                const reader = new FileReader();
                 reader.onload = function(e) {
                     avatarPreview.src = e.target.result;
                 }
-
-                reader.readAsDataURL(this.files[0]);
+                reader.readAsDataURL(file);
             }
         });
+
+        // Form submission with loading state
+        form.addEventListener('submit', function() {
+            const btnText = saveBtn.querySelector('.btn-text');
+            const btnLoading = saveBtn.querySelector('.btn-loading');
+            
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            saveBtn.disabled = true;
+        });
+
+        // Alert function
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.card-body');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
     });
 </script>
 @endpush
