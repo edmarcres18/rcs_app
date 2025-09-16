@@ -1,94 +1,75 @@
 {
-  "name": "MHR Reporting Compliance System",
+  "name": "MHR RCS",
   "short_name": "MHR RCS",
-  "description": "MHR Reporting Compliance System - Streamlined instruction management and compliance tracking",
+  "description": "MHR Reporting Compliance System",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
   "background_color": "#f0f5ff",
   "theme_color": "#4070f4",
-  "orientation": "portrait-primary",
-  "categories": ["business", "productivity", "utilities"],
+  "orientation": "portrait",
+  "scope": "/",
   "lang": "en",
-  "dir": "ltr",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/app_logo/logo.png",
+      "src": "/images/app_logo/logo-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Dashboard",
-      "short_name": "Home",
-      "description": "Go to the main dashboard",
-      "url": "/home",
-      "icons": [
-        {
-          "src": "/images/app_logo/logo.png",
-          "sizes": "96x96"
-        }
-      ]
+      "purpose": "any"
     },
     {
-      "name": "Instructions",
-      "short_name": "Tasks",
-      "description": "View and manage instructions",
-      "url": "/instructions",
-      "icons": [
-        {
-          "src": "/images/app_logo/logo.png",
-          "sizes": "96x96"
-        }
-      ]
+      "src": "/images/app_logo/logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/app_logo/logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ],
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }
