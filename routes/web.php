@@ -20,9 +20,6 @@ Route::get('/offline', function () {
 });
 
 Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->route('home');
-    }
     return view('auth.login');
 });
 
