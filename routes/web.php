@@ -20,7 +20,10 @@ Route::get('/offline', function () {
 });
 
 Route::get('/', function () {
-    return view('home');
+    if (Auth::check()) {
+        return redirect()->route('home');
+    }
+    return view('auth.login');
 });
 
 Route::get('/help', function () {

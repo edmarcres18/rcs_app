@@ -1,42 +1,46 @@
 {
-  "name": "MHR RCS",
+  "name": "MHR Reporting Compliance System",
   "short_name": "MHR RCS",
-  "description": "MHR Reporting ComplianceSystem",
+  "description": "MHR Reporting Compliance System - Streamlined instruction management and compliance tracking",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f0f5ff",
   "theme_color": "#4070f4",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/images/app_logo/logo.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
@@ -48,7 +52,7 @@
       "src": "/images/app_logo/logo.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/images/app_logo/logo.png",
@@ -56,5 +60,35 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Home",
+      "description": "Go to the main dashboard",
+      "url": "/home",
+      "icons": [
+        {
+          "src": "/images/app_logo/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Instructions",
+      "short_name": "Tasks",
+      "description": "View and manage instructions",
+      "url": "/instructions",
+      "icons": [
+        {
+          "src": "/images/app_logo/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
