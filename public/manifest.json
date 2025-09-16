@@ -2,7 +2,7 @@
   "name": "MHR RCS",
   "short_name": "MHR RCS",
   "description": "MHR Reporting ComplianceSystem",
-  "start_url": "/",
+  "start_url": "/home",
   "display": "standalone",
   "background_color": "#f0f5ff",
   "theme_color": "#4070f4",
