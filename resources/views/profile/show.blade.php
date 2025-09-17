@@ -9,11 +9,7 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <div class="position-relative mb-4 mx-auto" style="width: 150px; height: 150px;">
-                        @if ($user->avatar)
-                            <img src="{{ asset($user->avatar) }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
-                        @else
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name) }}+{{ urlencode($user->last_name) }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid">
-                        @endif
+                        <img src="{{ $user->avatar_url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
                     </div>
 
                     <h5 class="my-3">{{ $user->getFullNameAttribute() }}</h5>

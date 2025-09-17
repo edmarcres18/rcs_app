@@ -79,8 +79,8 @@ class UserProfileController extends Controller
             }
 
             // Delete old avatar if exists
-            if ($user->avatar && file_exists(public_path($user->avatar))) {
-                unlink(public_path($user->avatar));
+            if ($user->avatar && file_exists(public_path('uploads/avatars/' . $user->avatar))) {
+                unlink(public_path('uploads/avatars/' . $user->avatar));
             }
 
             // Generate unique filename
@@ -88,7 +88,7 @@ class UserProfileController extends Controller
             
             // Move the uploaded file
             if ($avatar->move($uploadPath, $filename)) {
-                $validated['avatar'] = '/uploads/avatars/' . $filename;
+                $validated['avatar'] = $filename;
             } else {
                 return back()->withErrors([
                     'avatar' => 'Failed to upload avatar. Please try again.'

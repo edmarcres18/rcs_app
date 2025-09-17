@@ -23,11 +23,7 @@
                             <div class="col-12 col-md-4 text-center mb-4">
                                 <div class="position-relative mb-3 mx-auto">
                                     <div class="profile-image-container" style="width: 150px; height: 150px; margin: 0 auto;">
-                                        @if ($user->avatar)
-                                            <img id="avatar-preview" src="{{ asset($user->avatar) }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
-                                        @else
-                                            <img id="avatar-preview" src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name) }}+{{ urlencode($user->last_name) }}&background=4070f4&color=fff&size=150" alt="Avatar Preview" class="rounded-circle img-fluid">
-                                        @endif
+                                        <img id="avatar-preview" src="{{ $user->avatar_url }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
                                     </div>
                                 </div>
 
