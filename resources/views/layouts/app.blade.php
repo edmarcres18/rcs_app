@@ -2228,7 +2228,7 @@
                             resetRatingForm();
                             ratingModal.hide();
                         } else {
-                            throw new Error(data.message || 'Failed to submit rating');
+                            throw new Error(data.message || 'You already submitted a rating for this service. Thanks for your feedback!');
                         }
                     })
                     .catch(error => {
@@ -2236,7 +2236,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Failed to submit rating. Please try again.',
+                            text: 'You already submitted a rating for this service. Thanks for your feedback!',
                             confirmButtonColor: '#2563eb'
                         });
                     })
