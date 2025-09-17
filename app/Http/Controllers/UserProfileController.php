@@ -64,32 +64,34 @@ class UserProfileController extends Controller
 
         // Handle the avatar upload if provided
         if ($request->hasFile('avatar')) {
-            // Validate file size (10MB = 10240KB)
-            $avatar = $request->file('avatar');
-            if ($avatar->getSize() > 10485760) { // 10MB in bytes
-                return back()->withErrors([
-                    'avatar' => 'The avatar file size must not exceed 10MB.'
+            try {
+                $avatar = $request->file('avatar');
+                
+                // Delete old avatar if exists
+                if ($user->avatar && Storage::disk('public')->exists('avatars/' . $user->avatar)) {
+                    Storage::disk('public')->delete('avatars/' . $user->avatar);
+                }
+
+                // Generate unique filename
+                $filename = time() . '_' . Str::random(10) . '.' . $avatar->getClientOriginalExtension();
+                
+                // Store the uploaded file using Laravel Storage
+                $path = $avatar->storeAs('avatars', $filename, 'public');
+                
+                if ($path) {
+                    $validated['avatar'] = $filename;
+                } else {
+                    return back()->withErrors([
+                        'avatar' => 'Failed to upload avatar. Please try again.'
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Avatar upload failed: ' . $e->getMessage(), [
+                    'user_id' => $user->id,
+                    'file_size' => $avatar->getSize(),
+                    'file_type' => $avatar->getMimeType(),
+                    'original_name' => $avatar->getClientOriginalName()
                 ]);
-            }
-
-            // Create uploads/avatars directory if it doesn't exist
-            $uploadPath = public_path('uploads/avatars');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
-            // Delete old avatar if exists
-            if ($user->avatar && file_exists(public_path('uploads/avatars/' . $user->avatar))) {
-                unlink(public_path('uploads/avatars/' . $user->avatar));
-            }
-
-            // Generate unique filename
-            $filename = time() . '_' . Str::random(10) . '.' . $avatar->getClientOriginalExtension();
-            
-            // Move the uploaded file
-            if ($avatar->move($uploadPath, $filename)) {
-                $validated['avatar'] = $filename;
-            } else {
                 return back()->withErrors([
                     'avatar' => 'Failed to upload avatar. Please try again.'
                 ]);
