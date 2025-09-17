@@ -29,7 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'middle_name' => ['nullable', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'], // 10MB in KB
             'telegram_username' => ['nullable', 'string', 'max:255'],
             'telegram_notifications_enabled' => ['nullable', 'boolean'],
         ];
@@ -51,20 +51,6 @@ class ProfileUpdateRequest extends FormRequest
             'avatar' => 'profile picture',
             'telegram_username' => 'telegram username',
             'telegram_notifications_enabled' => 'telegram notifications',
-        ];
-    }
-
-    /**
-     * Get custom validation messages.
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'avatar.max' => 'The profile picture must not be larger than 10MB.',
-            'avatar.image' => 'The profile picture must be a valid image file.',
-            'avatar.mimes' => 'The profile picture must be a file of type: jpeg, png, jpg, gif, webp.',
         ];
     }
 }

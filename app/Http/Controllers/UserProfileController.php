@@ -9,10 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use Exception;
 
 class UserProfileController extends Controller
 {
@@ -68,14 +67,13 @@ class UserProfileController extends Controller
 
             // Handle the avatar upload if provided
             if ($request->hasFile('avatar')) {
-                $avatarPath = $this->handleAvatarUpload($request->file('avatar'), $user, $validated['first_name']);
-                if ($avatarPath) {
-                    $validated['avatar'] = $avatarPath;
-                } else {
-                    return redirect()->back()
-                        ->withErrors(['avatar' => 'Failed to upload avatar. Please try again.'])
-                        ->withInput();
+                $avatarResult = $this->handleAvatarUpload($request, $user, $validated);
+
+                if (!$avatarResult['success']) {
+                    return back()->withErrors(['avatar' => $avatarResult['message']]);
                 }
+
+                $validated['avatar'] = $avatarResult['path'];
             }
 
             $user->update($validated);
@@ -92,17 +90,201 @@ class UserProfileController extends Controller
             return redirect()->route('profile.show')
                 ->with('success', 'Your profile has been successfully updated.');
 
-        } catch (Exception $e) {
-            Log::error('Profile update failed', [
+        } catch (\Exception $e) {
+            Log::error('Profile update failed: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getTraceAsString()
             ]);
 
-            return redirect()->back()
-                ->withErrors(['general' => 'An error occurred while updating your profile. Please try again.'])
-                ->withInput();
+            return back()->withErrors(['error' => 'An error occurred while updating your profile. Please try again.']);
         }
+    }
+
+    /**
+     * Handle avatar upload with optimization and error handling.
+     *
+     * @param  \App\Http\Requests\ProfileUpdateRequest  $request
+     * @param  \App\Models\User  $user
+     * @param  array  $validated
+     * @return array
+     */
+    private function handleAvatarUpload(ProfileUpdateRequest $request, User $user, array &$validated): array
+    {
+        try {
+            $avatar = $request->file('avatar');
+
+            // Validate file size (double check)
+            if ($avatar->getSize() > 10 * 1024 * 1024) { // 10MB
+                return [
+                    'success' => false,
+                    'message' => 'The avatar file is too large. Maximum size is 10MB.'
+                ];
+            }
+
+            // Validate image dimensions
+            $imageInfo = getimagesize($avatar->getPathname());
+            if (!$imageInfo) {
+                return [
+                    'success' => false,
+                    'message' => 'The uploaded file is not a valid image.'
+                ];
+            }
+
+            // Check image dimensions (max 4000x4000)
+            if ($imageInfo[0] > 4000 || $imageInfo[1] > 4000) {
+                return [
+                    'success' => false,
+                    'message' => 'Image dimensions are too large. Maximum size is 4000x4000 pixels.'
+                ];
+            }
+
+            // Delete old avatar if exists
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                try {
+                    unlink(public_path($user->avatar));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete old avatar: ' . $e->getMessage());
+                }
+            }
+
+            // Ensure upload directory exists
+            $uploadDir = public_path('uploads/avatars');
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Generate unique filename
+            $filename = time() . '_' . Str::slug($validated['first_name']) . '_' . Str::random(8) . '.jpg';
+            $filePath = $uploadDir . '/' . $filename;
+
+            // Process and optimize image
+            $this->optimizeImage($avatar->getPathname(), $filePath);
+
+            // Verify the file was created successfully
+            if (!file_exists($filePath)) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to save the avatar. Please try again.'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'path' => 'uploads/avatars/' . $filename
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Avatar upload failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'file_size' => $avatar->getSize() ?? 'unknown',
+                'error' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'An error occurred while uploading the avatar. Please try again.'
+            ];
+        }
+    }
+
+    /**
+     * Optimize and resize image for avatar.
+     *
+     * @param  string  $sourcePath
+     * @param  string  $destinationPath
+     * @return void
+     */
+    private function optimizeImage(string $sourcePath, string $destinationPath): void
+    {
+        try {
+            // Use Intervention Image if available, otherwise fallback to GD
+            if (class_exists('Intervention\Image\Facades\Image')) {
+                Image::make($sourcePath)
+                    ->resize(500, 500, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })
+                    ->encode('jpg', 85)
+                    ->save($destinationPath);
+            } else {
+                // Fallback to GD functions
+                $this->optimizeImageWithGD($sourcePath, $destinationPath);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Image optimization failed, using original: ' . $e->getMessage());
+            // Fallback: just copy the original file
+            copy($sourcePath, $destinationPath);
+        }
+    }
+
+    /**
+     * Optimize image using GD functions as fallback.
+     *
+     * @param  string  $sourcePath
+     * @param  string  $destinationPath
+     * @return void
+     */
+    private function optimizeImageWithGD(string $sourcePath, string $destinationPath): void
+    {
+        $imageInfo = getimagesize($sourcePath);
+        $sourceImage = null;
+
+        // Create image resource based on type
+        switch ($imageInfo[2]) {
+            case IMAGETYPE_JPEG:
+                $sourceImage = imagecreatefromjpeg($sourcePath);
+                break;
+            case IMAGETYPE_PNG:
+                $sourceImage = imagecreatefrompng($sourcePath);
+                break;
+            case IMAGETYPE_GIF:
+                $sourceImage = imagecreatefromgif($sourcePath);
+                break;
+            case IMAGETYPE_WEBP:
+                $sourceImage = imagecreatefromwebp($sourcePath);
+                break;
+            default:
+                throw new \Exception('Unsupported image type');
+        }
+
+        if (!$sourceImage) {
+            throw new \Exception('Failed to create image resource');
+        }
+
+        // Calculate new dimensions (max 500x500, maintain aspect ratio)
+        $maxSize = 500;
+        $width = $imageInfo[0];
+        $height = $imageInfo[1];
+
+        if ($width > $maxSize || $height > $maxSize) {
+            $ratio = min($maxSize / $width, $maxSize / $height);
+            $newWidth = (int)($width * $ratio);
+            $newHeight = (int)($height * $ratio);
+        } else {
+            $newWidth = $width;
+            $newHeight = $height;
+        }
+
+        // Create new image
+        $newImage = imagecreatetruecolor($newWidth, $newHeight);
+
+        // Preserve transparency for PNG and GIF
+        if ($imageInfo[2] == IMAGETYPE_PNG || $imageInfo[2] == IMAGETYPE_GIF) {
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+            imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
+        }
+
+        // Resize image
+        imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+        // Save as JPEG with 85% quality
+        imagejpeg($newImage, $destinationPath, 85);
+
+        // Clean up memory
+        imagedestroy($sourceImage);
+        imagedestroy($newImage);
     }
 
     /**
@@ -150,103 +332,5 @@ class UserProfileController extends Controller
 
         return redirect()->route('profile.show')
             ->with('success', 'Your password has been successfully updated.');
-    }
-
-    /**
-     * Handle avatar upload with optimization and security checks.
-     *
-     * @param  \Illuminate\Http\UploadedFile  $file
-     * @param  \App\Models\User  $user
-     * @param  string  $firstName
-     * @return string|null
-     */
-    private function handleAvatarUpload($file, $user, $firstName)
-    {
-        try {
-            // Validate file size (double-check server-side)
-            if ($file->getSize() > 10485760) { // 10MB in bytes
-                Log::warning('Avatar upload failed: File too large', [
-                    'user_id' => $user->id,
-                    'file_size' => $file->getSize()
-                ]);
-                return null;
-            }
-
-            // Validate MIME type for security
-            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-            if (!in_array($file->getMimeType(), $allowedMimes)) {
-                Log::warning('Avatar upload failed: Invalid MIME type', [
-                    'user_id' => $user->id,
-                    'mime_type' => $file->getMimeType()
-                ]);
-                return null;
-            }
-
-            // Create uploads directory if it doesn't exist
-            $uploadPath = public_path('uploads/avatars');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
-            // Delete old avatar if exists
-            if ($user->avatar && file_exists(public_path($user->avatar))) {
-                unlink(public_path($user->avatar));
-            }
-
-            // Generate secure filename
-            $extension = $file->getClientOriginalExtension();
-            $filename = time() . '_' . Str::slug($firstName) . '_' . Str::random(8) . '.' . $extension;
-            $relativePath = 'uploads/avatars/' . $filename;
-            $fullPath = public_path($relativePath);
-
-            // Move the uploaded file
-            if (!$file->move($uploadPath, $filename)) {
-                Log::error('Avatar upload failed: Could not move file', [
-                    'user_id' => $user->id,
-                    'filename' => $filename
-                ]);
-                return null;
-            }
-
-            // Optimize image if Intervention Image is available
-            if (class_exists('Intervention\\Image\\Facades\\Image')) {
-                try {
-                    $image = Image::make($fullPath);
-                    
-                    // Resize if too large (max 800x800 for avatars)
-                    if ($image->width() > 800 || $image->height() > 800) {
-                        $image->resize(800, 800, function ($constraint) {
-                            $constraint->aspectRatio();
-                            $constraint->upsize();
-                        });
-                    }
-                    
-                    // Optimize quality
-                    $image->save($fullPath, 85);
-                    
-                    Log::info('Avatar optimized successfully', [
-                        'user_id' => $user->id,
-                        'filename' => $filename,
-                        'original_size' => $file->getSize(),
-                        'optimized_size' => filesize($fullPath)
-                    ]);
-                } catch (Exception $e) {
-                    Log::warning('Avatar optimization failed, using original', [
-                        'user_id' => $user->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-
-            return $relativePath;
-
-        } catch (Exception $e) {
-            Log::error('Avatar upload failed with exception', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return null;
-        }
     }
 }
