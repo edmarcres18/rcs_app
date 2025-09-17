@@ -53,4 +53,23 @@ class ProfileUpdateRequest extends FormRequest
             'telegram_notifications_enabled' => 'telegram notifications',
         ];
     }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'avatar.image' => 'The profile picture must be an image file.',
+            'avatar.mimes' => 'The profile picture must be a file of type: jpeg, png, jpg, gif, webp.',
+            'avatar.max' => 'The profile picture must not be larger than 10MB.',
+            'first_name.required' => 'The first name field is required.',
+            'last_name.required' => 'The last name field is required.',
+            'email.required' => 'The email address field is required.',
+            'email.email' => 'The email address must be a valid email address.',
+            'email.unique' => 'The email address has already been taken.',
+        ];
+    }
 }
