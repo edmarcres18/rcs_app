@@ -39,20 +39,7 @@
                                     @error('avatar')
                                     <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
-                                    <div class="small text-muted mt-1">
-                                        Max file size: 10MB. Supported formats: JPG, PNG, GIF, WebP<br>
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        <small>Images will be automatically optimized and resized to 500x500px for best performance.</small>
-                                    </div>
-
-                                    <!-- Upload Progress Bar -->
-                                    <div id="upload-progress" class="mt-2" style="display: none;">
-                                        <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                                 role="progressbar" style="width: 0%"></div>
-                                        </div>
-                                        <small class="text-muted">Uploading image...</small>
-                                    </div>
+                                    <div class="small text-muted mt-1">Max file size: 10MB. Supported formats: JPG, PNG, GIF</div>
                                 </div>
                             </div>
 
@@ -140,115 +127,20 @@
 
 @push('scripts')
 <script>
-    // Enhanced image preview and validation functionality
+    // Image preview functionality
     document.addEventListener('DOMContentLoaded', function() {
         const avatarInput = document.getElementById('avatar');
         const avatarPreview = document.getElementById('avatar-preview');
-        const fileSizeInfo = document.createElement('div');
-        fileSizeInfo.className = 'small text-muted mt-1';
-        avatarInput.parentNode.appendChild(fileSizeInfo);
-
-        // File size validation (10MB = 10 * 1024 * 1024 bytes)
-        const maxFileSize = 10 * 1024 * 1024;
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
         avatarInput.addEventListener('change', function() {
-            const file = this.files[0];
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
 
-            if (file) {
-                // Clear previous error messages
-                const existingError = avatarInput.parentNode.querySelector('.text-danger');
-                if (existingError) {
-                    existingError.remove();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
                 }
 
-                // Validate file size
-                if (file.size > maxFileSize) {
-                    showError('File size exceeds 10MB limit. Please choose a smaller image.');
-                    return;
-                }
-
-                // Validate file type
-                if (!allowedTypes.includes(file.type)) {
-                    showError('Invalid file type. Please choose JPG, PNG, GIF, or WebP image.');
-                    return;
-                }
-
-                // Validate image dimensions (max 4000x4000)
-                const img = new Image();
-                img.onload = function() {
-                    if (this.width > 4000 || this.height > 4000) {
-                        showError('Image dimensions too large. Maximum size is 4000x4000 pixels.');
-                        return;
-                    }
-
-                    // Show file info
-                    showFileInfo(file);
-
-                    // Update preview
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        avatarPreview.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                };
-                img.src = URL.createObjectURL(file);
-            }
-        });
-
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'text-danger mt-1';
-            errorDiv.textContent = message;
-            avatarInput.parentNode.appendChild(errorDiv);
-
-            // Clear file input
-            avatarInput.value = '';
-
-            // Hide file info
-            fileSizeInfo.style.display = 'none';
-        }
-
-        function showFileInfo(file) {
-            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            const dimensions = file.type.startsWith('image/') ? ' (checking dimensions...)' : '';
-
-            fileSizeInfo.innerHTML = `
-                <i class="fas fa-info-circle me-1"></i>
-                Selected: ${file.name} (${fileSizeMB} MB)${dimensions}
-            `;
-            fileSizeInfo.style.display = 'block';
-            fileSizeInfo.className = 'small text-info mt-1';
-        }
-
-        // Show loading state and progress during upload
-        const form = document.querySelector('form');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const uploadProgress = document.getElementById('upload-progress');
-        const progressBar = uploadProgress.querySelector('.progress-bar');
-
-        form.addEventListener('submit', function() {
-            if (avatarInput.files.length > 0) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
-                submitBtn.disabled = true;
-
-                // Show progress bar
-                uploadProgress.style.display = 'block';
-                progressBar.style.width = '0%';
-
-                // Simulate progress (since we can't track actual upload progress with standard form submission)
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += Math.random() * 15;
-                    if (progress > 90) progress = 90;
-                    progressBar.style.width = progress + '%';
-                }, 200);
-
-                // Clear interval after form submission
-                setTimeout(() => {
-                    clearInterval(progressInterval);
-                    progressBar.style.width = '100%';
-                }, 2000);
+                reader.readAsDataURL(this.files[0]);
             }
         });
     });
