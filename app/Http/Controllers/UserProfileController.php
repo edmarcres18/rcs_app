@@ -64,52 +64,15 @@ class UserProfileController extends Controller
 
         // Handle the avatar upload if provided
         if ($request->hasFile('avatar')) {
-            try {
-                // Delete old avatar if exists
-                if ($user->avatar && file_exists(public_path($user->avatar))) {
-                    unlink(public_path($user->avatar));
-                }
-
-                $avatar = $request->file('avatar');
-                
-                // Create directory if it doesn't exist
-                $uploadPath = public_path('uploads/avatars');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                
-                // Generate unique filename
-                $filename = time() . '_' . Str::slug($validated['first_name']) . '.' . $avatar->getClientOriginalExtension();
-                
-                // Optimize image if it's large (over 1MB)
-                if ($avatar->getSize() > 1024 * 1024) {
-                    // Use Intervention Image if available, otherwise use basic PHP
-                    if (class_exists('\Intervention\Image\Facades\Image')) {
-                        $img = \Intervention\Image\Facades\Image::make($avatar->getRealPath());
-                        $img->resize(800, 800, function ($constraint) {
-                            $constraint->aspectRatio();
-                            $constraint->upsize();
-                        });
-                        $img->save($uploadPath . '/' . $filename, 80);
-                    } else {
-                        // Fallback to basic move with no optimization
-                        $avatar->move($uploadPath, $filename);
-                    }
-                } else {
-                    // For smaller images, just move the file
-                    $avatar->move($uploadPath, $filename);
-                }
-                
-                $validated['avatar'] = 'uploads/avatars/' . $filename;
-            } catch (\Exception $e) {
-                // Log the error
-                \Illuminate\Support\Facades\Log::error('Avatar upload failed: ' . $e->getMessage());
-                
-                // Continue without avatar update
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['avatar' => 'Failed to upload avatar. Please try again with a smaller image.']);
+            // Delete old avatar if exists
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
             }
+
+            $avatar = $request->file('avatar');
+            $filename = time() . '_' . Str::slug($validated['first_name']) . '.' . $avatar->getClientOriginalExtension();
+            $avatar->move(public_path('uploads/avatars'), $filename);
+            $validated['avatar'] = 'uploads/avatars/' . $filename;
         }
 
         $user->update($validated);

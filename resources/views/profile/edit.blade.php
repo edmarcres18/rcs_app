@@ -39,7 +39,7 @@
                                     @error('avatar')
                                     <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
-                                    <div class="small text-muted mt-1">Max file size: 10MB. Supported formats: JPG, PNG, GIF</div>
+                                    <div class="small text-muted mt-1">Max file size: 2MB. Supported formats: JPG, PNG, GIF</div>
                                 </div>
                             </div>
 
