@@ -5,20 +5,24 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12 col-lg-4 mb-4">
+        <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <div class="position-relative mb-4 mx-auto" style="width: 150px; height: 150px;">
-                        <img src="{{ $user->avatar_url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                        @if ($user->avatar)
+                            <img src="{{ $user->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                        @else
+                            <img src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid">
+                        @endif
                     </div>
 
                     <h5 class="my-3">{{ $user->getFullNameAttribute() }}</h5>
                     <p class="text-muted mb-1">{{ ucfirst(strtolower(str_replace('_', ' ', $user->roles->name))) }}</p>
                     <p class="text-muted mb-4">{{ $user->email }}</p>
 
-                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-2">
-                        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
-                        <a href="{{ route('profile.change-password') }}" class="btn btn-outline-primary">Change Password</a>
+                    <div class="d-flex justify-content-center mb-2">
+                        <a href="{{ route('profile.edit') }}" class="btn btn-primary me-2">Edit Profile</a>
+                        <a href="{{ route('profile.change-password') }}" class="btn btn-outline-primary ms-1">Change Password</a>
                     </div>
                 </div>
             </div>
@@ -77,7 +81,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-lg-8">
+        <div class="col-lg-8">
             <!-- Personal Information Card -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">

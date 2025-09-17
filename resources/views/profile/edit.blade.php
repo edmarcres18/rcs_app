@@ -2,14 +2,10 @@
 
 @section('title', 'Edit Profile')
 
-@push('styles')
-<link href="{{ asset('css/avatar-upload.css') }}" rel="stylesheet">
-@endpush
-
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
+        <div class="col-lg-10">
             <!-- Form Card -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -19,47 +15,35 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Please check the form for errors:</h6>
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
                     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
                         <div class="row">
-                            <div class="col-12 col-md-4 text-center mb-4">
+                            <div class="col-md-4 text-center mb-4">
                                 <div class="position-relative mb-3 mx-auto">
                                     <div class="profile-image-container" style="width: 150px; height: 150px; margin: 0 auto;">
-                                        <img id="avatar-preview" src="{{ $user->avatar_url }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                                        @if ($user->avatar)
+                                            <img id="avatar-preview" src="{{ $user->avatar }}" alt="Avatar Preview" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                                        @else
+                                            <img id="avatar-preview" src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=150" alt="Avatar Preview" class="rounded-circle img-fluid">
+                                        @endif
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="avatar" class="btn btn-outline-primary btn-upload-avatar">
+                                    <label for="avatar" class="btn btn-outline-primary">
                                         <i class="fas fa-upload me-1"></i> Change Photo
                                     </label>
-                                    <input type="file" name="avatar" id="avatar" class="d-none" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" data-max-size="10485760">
+                                    <input type="file" name="avatar" id="avatar" class="d-none" accept="image/*">
                                     @error('avatar')
                                     <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
-                                    <div class="small text-muted mt-1">Max file size: 10MB. Supported formats: JPG, PNG, GIF, WEBP</div>
-                                    <div id="upload-progress" class="progress mt-2 d-none" style="height: 4px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-                                    </div>
-                                    <div id="file-info" class="small text-info mt-1 d-none"></div>
+                                    <div class="small text-muted mt-1">Max file size: 2MB. Supported formats: JPG, PNG, GIF</div>
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-8">
+                            <div class="col-md-8">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="first_name" class="form-label">First Name</label>
@@ -125,13 +109,8 @@
 
 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <button type="submit" class="btn btn-primary" id="save-btn">
-                                        <span class="btn-text">
-                                            <i class="fas fa-save me-1"></i> Save Changes
-                                        </span>
-                                        <span class="btn-loading d-none">
-                                            <i class="fas fa-spinner fa-spin me-1"></i> Saving...
-                                        </span>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i> Save Changes
                                     </button>
                                     <a href="{{ route('profile.show') }}" class="btn btn-secondary">
                                         Cancel
@@ -148,170 +127,22 @@
 
 @push('scripts')
 <script>
-    // Enhanced image preview functionality and form handling
+    // Image preview functionality
     document.addEventListener('DOMContentLoaded', function() {
         const avatarInput = document.getElementById('avatar');
         const avatarPreview = document.getElementById('avatar-preview');
-        const saveBtn = document.getElementById('save-btn');
-        const form = document.querySelector('form');
-        const uploadProgress = document.getElementById('upload-progress');
-        const fileInfo = document.getElementById('file-info');
-        const progressBar = uploadProgress.querySelector('.progress-bar');
 
-        // Enhanced avatar preview functionality
         avatarInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                const file = this.files[0];
-                
-                // Reset previous states
-                hideFileInfo();
-                hideProgress();
-                clearAlerts();
-                
-                // Comprehensive file validation
-                const validation = validateFile(file);
-                if (!validation.valid) {
-                    showAlert(validation.message, 'danger');
-                    this.value = '';
-                    return;
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
                 }
 
-                // Show file information
-                showFileInfo(file);
-                
-                // Show preview with loading state
-                showImagePreview(file);
+                reader.readAsDataURL(this.files[0]);
             }
         });
-
-        // Enhanced form submission with progress
-        form.addEventListener('submit', function(e) {
-            if (avatarInput.files.length > 0) {
-                showProgress();
-                simulateUploadProgress();
-            }
-            
-            const btnText = saveBtn.querySelector('.btn-text');
-            const btnLoading = saveBtn.querySelector('.btn-loading');
-            
-            btnText.classList.add('d-none');
-            btnLoading.classList.remove('d-none');
-            saveBtn.disabled = true;
-        });
-
-        // Comprehensive file validation
-        function validateFile(file) {
-            // Check file size (10MB = 10485760 bytes)
-            if (file.size > 10485760) {
-                return { valid: false, message: 'File size must not exceed 10MB. Current size: ' + formatFileSize(file.size) };
-            }
-            
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                return { valid: false, message: 'Please select a valid image file. Supported formats: JPG, PNG, GIF, WEBP.' };
-            }
-
-            // Check for minimum file size (1KB to avoid empty files)
-            if (file.size < 1024) {
-                return { valid: false, message: 'File is too small. Please select a valid image file.' };
-            }
-
-            return { valid: true };
-        }
-
-        // Show file information
-        function showFileInfo(file) {
-            const info = `Selected: ${file.name} (${formatFileSize(file.size)})`;
-            fileInfo.textContent = info;
-            fileInfo.classList.remove('d-none');
-        }
-
-        // Hide file information
-        function hideFileInfo() {
-            fileInfo.classList.add('d-none');
-        }
-
-        // Show image preview
-        function showImagePreview(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarPreview.src = e.target.result;
-                avatarPreview.style.opacity = '0.7';
-                setTimeout(() => {
-                    avatarPreview.style.opacity = '1';
-                }, 100);
-            }
-            reader.readAsDataURL(file);
-        }
-
-        // Show upload progress
-        function showProgress() {
-            uploadProgress.classList.remove('d-none');
-            progressBar.style.width = '0%';
-        }
-
-        // Hide upload progress
-        function hideProgress() {
-            uploadProgress.classList.add('d-none');
-        }
-
-        // Simulate upload progress for better UX
-        function simulateUploadProgress() {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 90) {
-                    clearInterval(interval);
-                }
-            }, 200);
-        }
-
-        // Format file size for display
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Clear existing alerts
-        function clearAlerts() {
-            const alerts = document.querySelectorAll('.alert:not(.alert-danger)');
-            alerts.forEach(alert => {
-                if (alert.textContent.includes('File size') || alert.textContent.includes('Please select')) {
-                    alert.remove();
-                }
-            });
-        }
-
-        // Enhanced alert function
-        function showAlert(message, type = 'info') {
-            clearAlerts();
-            
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                <i class="fas fa-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            const container = document.querySelector('.card-body');
-            const firstForm = container.querySelector('form');
-            container.insertBefore(alertDiv, firstForm);
-            
-            // Auto-dismiss after 7 seconds for better readability
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
-            }, 7000);
-        }
     });
 </script>
 @endpush

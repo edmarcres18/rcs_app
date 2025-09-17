@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
+        <div class="col-md-8 col-lg-6">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Change Password</h5>
@@ -74,13 +74,8 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-primary" id="update-password-btn">
-                                <span class="btn-text">
-                                    <i class="fas fa-key me-1"></i> Update Password
-                                </span>
-                                <span class="btn-loading d-none">
-                                    <i class="fas fa-spinner fa-spin me-1"></i> Updating...
-                                </span>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key me-1"></i> Update Password
                             </button>
                             <a href="{{ route('profile.show') }}" class="btn btn-secondary">
                                 Cancel
@@ -96,9 +91,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const updateBtn = document.getElementById('update-password-btn');
-        const form = document.querySelector('form');
-
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(button => {
             button.addEventListener('click', function() {
@@ -117,16 +109,6 @@
                     icon.classList.add('fa-eye');
                 }
             });
-        });
-
-        // Form submission with loading state
-        form.addEventListener('submit', function() {
-            const btnText = updateBtn.querySelector('.btn-text');
-            const btnLoading = updateBtn.querySelector('.btn-loading');
-            
-            btnText.classList.add('d-none');
-            btnLoading.classList.remove('d-none');
-            updateBtn.disabled = true;
         });
     });
 </script>
