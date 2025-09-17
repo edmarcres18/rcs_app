@@ -2220,7 +2220,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Thank You!',
-                                text: data.message || 'Your rating has been submitted successfully.',
+                                text: 'Your rating has been submitted successfully.',
                                 confirmButtonColor: '#2563eb'
                             });
                             

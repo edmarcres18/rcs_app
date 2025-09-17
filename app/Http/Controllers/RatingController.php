@@ -29,14 +29,6 @@ class RatingController extends Controller
                 ], 401);
             }
 
-            // Check if user has already submitted a rating
-            if ($user->ratings()->exists()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You have already submitted a rating. Only one rating is allowed per user.',
-                ], 403);
-            }
-            
             // Check if user can submit a rating (rate limiting)
             if (!$user->canSubmitRating()) {
                 $nextRatingTime = $user->getNextRatingTime();
