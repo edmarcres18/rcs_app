@@ -66,7 +66,7 @@ class DatabaseBackupController extends Controller
 
             // First try with mysqldump (preferred method)
             try {
-                // Build the mysqldump command
+                // Build the mysqldump command with better compatibility options
                 $command = [
                     'mysqldump',
                     "--host={$dbHost}",
@@ -77,24 +77,28 @@ class DatabaseBackupController extends Controller
                     '--single-transaction',
                     '--quick',
                     '--lock-tables=false',
+                    '--add-drop-table',
+                    '--add-locks',
+                    '--create-options',
+                    '--disable-keys',
+                    '--extended-insert',
+                    '--set-charset',
+                    '--default-character-set=utf8mb4',
                 ];
 
                 // Create the process
                 $process = new Process($command);
                 $process->setTimeout(300); // 5 minutes timeout
 
-                // Run the process and save the output to the backup file
-                $process->run(function ($type, $buffer) use ($fullBackupPath) {
-                    if ($type === Process::ERR) {
-                        throw new ProcessFailedException(new Process(['error' => $buffer]));
-                    } else {
-                        file_put_contents($fullBackupPath, $buffer, FILE_APPEND);
-                    }
-                });
+                // Run the process and capture output properly
+                $process->run();
 
                 if (!$process->isSuccessful()) {
                     throw new Exception('mysqldump failed: ' . $process->getErrorOutput());
                 }
+
+                // Write the complete output to file
+                file_put_contents($fullBackupPath, $process->getOutput());
             } 
             // If mysqldump fails, fall back to PHP-based backup method
             catch (Exception $e) {
@@ -188,10 +192,25 @@ class DatabaseBackupController extends Controller
                 \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false
             ]);
 
-            // Start the backup file with header comments
-            $output = "-- Database Backup for {$dbName}\n";
-            $output .= "-- Generated on " . date('Y-m-d H:i:s') . "\n";
-            $output .= "-- Using PHP PDO Backup Method\n\n";
+            // Start the backup file with proper SQL header for phpMyAdmin compatibility
+            $output = "-- phpMyAdmin SQL Dump\n";
+            $output .= "-- version 5.0.0\n";
+            $output .= "-- https://www.phpmyadmin.net/\n";
+            $output .= "--\n";
+            $output .= "-- Host: {$dbHost}:{$dbPort}\n";
+            $output .= "-- Generation Time: " . date('M d, Y \a\t h:i A') . "\n";
+            $output .= "-- Server version: " . $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION) . "\n";
+            $output .= "-- PHP Version: " . PHP_VERSION . "\n\n";
+            $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+            $output .= "START TRANSACTION;\n";
+            $output .= "SET time_zone = \"+00:00\";\n\n";
+            $output .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";
+            $output .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n";
+            $output .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n";
+            $output .= "/*!40101 SET NAMES utf8mb4 */;\n\n";
+            $output .= "--\n";
+            $output .= "-- Database: `{$dbName}`\n";
+            $output .= "--\n\n";
             $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
             
             file_put_contents($fullBackupPath, $output);
@@ -208,9 +227,15 @@ class DatabaseBackupController extends Controller
                     continue;
                 }
                 
-                $output = "\n-- Table structure for table `{$table}`\n\n";
+                $output = "-- --------------------------------------------------------\n\n";
+                $output .= "--\n";
+                $output .= "-- Table structure for table `{$table}`\n";
+                $output .= "--\n\n";
                 $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
-                $output .= $createTable . ";\n\n";
+                $output .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+                $output .= "/*!40101 SET character_set_client = utf8 */;\n";
+                $output .= $createTable . ";\n";
+                $output .= "/*!40101 SET character_set_client = @saved_cs_client */;\n\n";
                 
                 file_put_contents($fullBackupPath, $output, FILE_APPEND);
                 
@@ -227,7 +252,11 @@ class DatabaseBackupController extends Controller
                 $columnCount = $rows->columnCount();
                 
                 if ($columnCount > 0) {
-                    $output = "-- Data for table `{$table}`\n";
+                    $output = "--\n";
+                    $output .= "-- Dumping data for table `{$table}`\n";
+                    $output .= "--\n\n";
+                    $output .= "LOCK TABLES `{$table}` WRITE;\n";
+                    $output .= "/*!40000 ALTER TABLE `{$table}` DISABLE KEYS */;\n";
                     file_put_contents($fullBackupPath, $output, FILE_APPEND);
                     
                     $insertCounter = 0;
@@ -240,15 +269,21 @@ class DatabaseBackupController extends Controller
                             $insertHeader = "INSERT INTO `{$table}` VALUES";
                         }
                         
-                        // Format each row's values
+                        // Format each row's values with proper escaping
                         $rowValues = [];
                         foreach ($row as $value) {
                             if ($value === null) {
                                 $rowValues[] = 'NULL';
-                            } elseif (is_numeric($value)) {
+                            } elseif (is_numeric($value) && !is_string($value)) {
                                 $rowValues[] = $value;
                             } else {
-                                $rowValues[] = $pdo->quote($value);
+                                // Use proper MySQL escaping
+                                $escaped = str_replace(
+                                    ['\\', "\0", "\n", "\r", "'", '"', "\x1a"],
+                                    ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'],
+                                    $value
+                                );
+                                $rowValues[] = "'" . $escaped . "'";
                             }
                         }
                         
@@ -268,17 +303,22 @@ class DatabaseBackupController extends Controller
                     
                     // Insert any remaining rows
                     if ($insertHeader && !empty($insertValues)) {
-                        $output = $insertHeader . "\n" . implode(",\n", $insertValues) . ";\n\n";
-                        file_put_contents($fullBackupPath, $output, FILE_APPEND);
-                    } else {
-                        $output = "\n";
+                        $output = $insertHeader . "\n" . implode(",\n", $insertValues) . ";\n";
                         file_put_contents($fullBackupPath, $output, FILE_APPEND);
                     }
+                    
+                    $output = "/*!40000 ALTER TABLE `{$table}` ENABLE KEYS */;\n";
+                    $output .= "UNLOCK TABLES;\n\n";
+                    file_put_contents($fullBackupPath, $output, FILE_APPEND);
                 }
             }
             
-            // End the backup file
-            $output = "\nSET FOREIGN_KEY_CHECKS=1;\n";
+            // End the backup file with proper phpMyAdmin footer
+            $output = "SET FOREIGN_KEY_CHECKS=1;\n";
+            $output .= "COMMIT;\n\n";
+            $output .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n";
+            $output .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n";
+            $output .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n";
             file_put_contents($fullBackupPath, $output, FILE_APPEND);
             
         } catch (Exception $e) {

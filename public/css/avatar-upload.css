@@ -1,0 +1,212 @@
+/**
+ * Avatar Upload Styles
+ * Enhanced UI for avatar upload functionality
+ */
+
+/* Avatar preview styles */
+#avatar-preview {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 50%;
+    border: 3px solid #dee2e6;
+    object-fit: cover;
+    margin: 10px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#avatar-preview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Drop zone styles */
+#avatar-drop-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+#avatar-drop-zone:hover {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+#avatar-drop-zone.drag-over {
+    border-color: #28a745;
+    background-color: #d4edda;
+    transform: scale(1.02);
+}
+
+#avatar-drop-zone .drop-text {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+#avatar-drop-zone .drop-icon {
+    font-size: 24px;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+/* File input styling */
+.avatar-file-input {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    cursor: pointer;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.avatar-file-input:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+}
+
+.avatar-file-input input[type="file"] {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+}
+
+/* Progress bar container */
+#upload-progress {
+    margin: 15px 0;
+    display: none;
+}
+
+#upload-progress .progress {
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #e9ecef;
+}
+
+#upload-progress .progress-bar {
+    background: linear-gradient(90deg, #007bff, #28a745);
+    transition: width 0.3s ease;
+}
+
+/* Error and info messages */
+.avatar-error {
+    border-left: 4px solid #dc3545;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.avatar-info {
+    border-left: 4px solid #17a2b8;
+    background-color: #d1ecf1;
+    color: #0c5460;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+/* Loading state */
+.uploading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.uploading .avatar-file-input {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #avatar-preview {
+        max-width: 120px;
+        max-height: 120px;
+    }
+    
+    #avatar-drop-zone {
+        padding: 15px;
+    }
+    
+    .avatar-file-input {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Animation for successful upload */
+@keyframes uploadSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.upload-success {
+    animation: uploadSuccess 0.6s ease-in-out;
+}
+
+/* File size indicator */
+.file-size-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #e9ecef;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #495057;
+    margin-left: 10px;
+}
+
+.file-size-indicator.large {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.file-size-indicator.too-large {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Tooltip styles */
+.avatar-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.avatar-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
