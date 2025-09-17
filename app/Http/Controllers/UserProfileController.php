@@ -67,34 +67,79 @@ class UserProfileController extends Controller
             try {
                 $avatar = $request->file('avatar');
                 
+                // Comprehensive file validation
+                if (!$avatar->isValid()) {
+                    return back()->withErrors([
+                        'avatar' => 'The uploaded file is corrupted or invalid. Please try again.'
+                    ])->withInput();
+                }
+
+                // Check file size (10MB = 10485760 bytes)
+                if ($avatar->getSize() > 10485760) {
+                    return back()->withErrors([
+                        'avatar' => 'The avatar file size must not exceed 10MB.'
+                    ])->withInput();
+                }
+
+                // Validate MIME type
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                if (!in_array($avatar->getMimeType(), $allowedMimes)) {
+                    return back()->withErrors([
+                        'avatar' => 'The avatar must be a valid image file (JPEG, PNG, JPG, GIF, WEBP).'
+                    ])->withInput();
+                }
+
+                // Validate file extension
+                $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+                $extension = strtolower($avatar->getClientOriginalExtension());
+                if (!in_array($extension, $allowedExtensions)) {
+                    return back()->withErrors([
+                        'avatar' => 'The avatar file extension must be: jpeg, jpg, png, gif, or webp.'
+                    ])->withInput();
+                }
+
+                // Ensure storage directory exists
+                if (!Storage::disk('public')->exists('avatars')) {
+                    Storage::disk('public')->makeDirectory('avatars');
+                }
+                
                 // Delete old avatar if exists
                 if ($user->avatar && Storage::disk('public')->exists('avatars/' . $user->avatar)) {
                     Storage::disk('public')->delete('avatars/' . $user->avatar);
                 }
 
-                // Generate unique filename
-                $filename = time() . '_' . Str::random(10) . '.' . $avatar->getClientOriginalExtension();
+                // Generate secure unique filename
+                $filename = time() . '_' . Str::random(16) . '.' . $extension;
                 
                 // Store the uploaded file using Laravel Storage
                 $path = $avatar->storeAs('avatars', $filename, 'public');
                 
                 if ($path) {
                     $validated['avatar'] = $filename;
+                    
+                    // Log successful upload
+                    \Log::info('Avatar uploaded successfully', [
+                        'user_id' => $user->id,
+                        'filename' => $filename,
+                        'file_size' => $avatar->getSize(),
+                        'file_type' => $avatar->getMimeType()
+                    ]);
                 } else {
                     return back()->withErrors([
-                        'avatar' => 'Failed to upload avatar. Please try again.'
-                    ]);
+                        'avatar' => 'Failed to save avatar file. Please check storage permissions and try again.'
+                    ])->withInput();
                 }
             } catch (\Exception $e) {
                 \Log::error('Avatar upload failed: ' . $e->getMessage(), [
                     'user_id' => $user->id,
-                    'file_size' => $avatar->getSize(),
-                    'file_type' => $avatar->getMimeType(),
-                    'original_name' => $avatar->getClientOriginalName()
+                    'file_size' => $avatar->getSize() ?? 'unknown',
+                    'file_type' => $avatar->getMimeType() ?? 'unknown',
+                    'original_name' => $avatar->getClientOriginalName() ?? 'unknown',
+                    'trace' => $e->getTraceAsString()
                 ]);
                 return back()->withErrors([
-                    'avatar' => 'Failed to upload avatar. Please try again.'
-                ]);
+                    'avatar' => 'An error occurred while uploading your avatar. Please try again or contact support if the problem persists.'
+                ])->withInput();
             }
         }
 

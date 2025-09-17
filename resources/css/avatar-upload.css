@@ -1,0 +1,116 @@
+/* Avatar Upload Enhancement Styles */
+
+.profile-image-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.profile-image-container:hover {
+    transform: scale(1.02);
+}
+
+.profile-image-container img {
+    transition: all 0.3s ease;
+    border: 3px solid #e9ecef;
+}
+
+.profile-image-container:hover img {
+    border-color: #007bff;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Upload button enhancement */
+.btn-upload-avatar {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-avatar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Progress bar styling */
+#upload-progress {
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+#upload-progress .progress-bar {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    transition: width 0.3s ease;
+}
+
+/* File info styling */
+#file-info {
+    background-color: #e7f3ff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+    font-weight: 500;
+}
+
+/* Alert enhancements */
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+}
+
+/* Form field enhancements */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Button loading state */
+.btn-loading {
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-image-container {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .profile-image-container img {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .btn-upload-avatar {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-image-container {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    .profile-image-container img {
+        width: 100px !important;
+        height: 100px !important;
+    }
+}
