@@ -2202,7 +2202,7 @@
                         }
 
                         if (!response.ok || !(data && data.success)) {
-                            const msg = (data && data.message) ? data.message : 'Failed to submit rating. Please try again.';
+                            const msg = (data && data.message) ? data.message : 'You already submitted a rating for this service. Thanks for your feedback!';
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
