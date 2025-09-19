@@ -189,7 +189,7 @@ class User extends Authenticatable
         $this->checkRateLimit();
 
         DB::beginTransaction();
-        
+
         try {
             // Prepare rating data
             $ratingData = [
@@ -224,7 +224,7 @@ class User extends Authenticatable
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Log the error
             Log::error('Failed to submit rating', [
                 'user_id' => $this->id,
@@ -352,13 +352,13 @@ class User extends Authenticatable
     public function getNextRatingTime(): ?\Carbon\Carbon
     {
         $latestRating = $this->getLatestRating();
-        
+
         if (!$latestRating) {
             return null;
         }
 
         $nextAllowedTime = $latestRating->submitted_at->addDay();
-        
+
         return $nextAllowedTime->isFuture() ? $nextAllowedTime : null;
     }
 }

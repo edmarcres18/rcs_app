@@ -47,24 +47,57 @@ class InstructionController extends Controller
                 return 'No Recipients';
             }
 
-            $isGroup = $recipients->count() > 1;
-            $firstRole = $recipients->first()->roles;
-            $allHaveSameRole = $isGroup && $recipients->every(fn($r) => $r->roles === $firstRole);
+            // Check if all users with the same role are selected
+            $allHaveSameRole = $recipients->pluck('roles')->unique()->count() === 1;
+            $useGenericRecipient = false;
 
             if ($allHaveSameRole) {
-                if ($firstRole === UserRole::EMPLOYEE) return 'ALL EMPLOYEES';
-                if ($firstRole === UserRole::SUPERVISOR) return 'ALL SUPERVISORS';
-                if ($firstRole === UserRole::ADMIN) return 'ALL ADMINS';
+                $role = $recipients->first()->roles;
+
+                // Get all users in the system with this role (excluding SYSTEM_ADMIN)
+                $allUsersWithRole = User::where('roles', $role)
+                    ->where('roles', '!=', UserRole::SYSTEM_ADMIN->value)
+                    ->get();
+
+                // Check if all users with this role are selected
+                $allRoleUsersSelected = $allUsersWithRole->count() === $recipients->count() &&
+                    $allUsersWithRole->pluck('id')->sort()->values()->toArray() ===
+                    $recipients->pluck('id')->sort()->values()->toArray();
+
+                if ($allRoleUsersSelected) {
+                    switch ($role) {
+                        case UserRole::EMPLOYEE:
+                            return 'ALL EMPLOYEES';
+                        case UserRole::SUPERVISOR:
+                            return 'ALL SUPERVISORS';
+                        case UserRole::ADMIN:
+                            return 'ALL ADMINS';
+                    }
+                }
             }
 
+            // If not all users of a role are selected, show individual names
             return $recipients->map(function ($recipient) {
                 if ($recipient->roles === UserRole::EMPLOYEE) {
+                    // For employees, show first name only
                     return $recipient->first_name;
                 }
+
                 if ($recipient->roles === UserRole::SUPERVISOR || $recipient->roles === UserRole::ADMIN) {
-                    return getInitials($recipient->full_name);
+                    // For supervisors and admins, show first name + last name initial
+                    $firstName = $recipient->first_name;
+                    $lastName = $recipient->last_name;
+
+                    if (!empty($lastName)) {
+                        $lastInitial = mb_strtoupper(mb_substr(trim($lastName), 0, 1));
+                        return $firstName . ' ' . $lastInitial . '.';
+                    }
+
+                    return $firstName;
                 }
-                return $recipient->full_name; // Fallback
+
+                // Fallback for any other role
+                return $recipient->full_name;
             })->implode(', ');
         };
 
@@ -294,44 +327,66 @@ class InstructionController extends Controller
         $recipientDisplay = '';
 
         if ($recipients->isNotEmpty()) {
-            $isGroup = $recipients->count() > 1;
-            $allHaveSameRole = $isGroup && ($recipients->pluck('roles')->unique()->count() === 1);
+            // Check if all users with the same role are selected
+            $allHaveSameRole = $recipients->pluck('roles')->unique()->count() === 1;
             $useGenericRecipient = false;
 
             if ($allHaveSameRole) {
                 $role = $recipients->first()->roles;
-                if ($role === UserRole::EMPLOYEE) {
-                    $recipientDisplay = 'ALL EMPLOYEES';
-                    $useGenericRecipient = true;
-                } elseif ($role === UserRole::SUPERVISOR) {
-                    $recipientDisplay = 'ALL SUPERVISORS';
-                    $useGenericRecipient = true;
-                } elseif ($role === UserRole::ADMIN) {
-                    $recipientDisplay = 'ALL ADMINS';
-                    $useGenericRecipient = true;
+
+                // Get all users in the system with this role (excluding SYSTEM_ADMIN)
+                $allUsersWithRole = User::where('roles', $role)
+                    ->where('roles', '!=', UserRole::SYSTEM_ADMIN->value)
+                    ->get();
+
+                // Check if all users with this role are selected
+                $allRoleUsersSelected = $allUsersWithRole->count() === $recipients->count() &&
+                    $allUsersWithRole->pluck('id')->sort()->values()->toArray() ===
+                    $recipients->pluck('id')->sort()->values()->toArray();
+
+                if ($allRoleUsersSelected) {
+                    switch ($role) {
+                        case UserRole::EMPLOYEE:
+                            $recipientDisplay = 'ALL EMPLOYEES';
+                            $useGenericRecipient = true;
+                            break;
+                        case UserRole::SUPERVISOR:
+                            $recipientDisplay = 'ALL SUPERVISORS';
+                            $useGenericRecipient = true;
+                            break;
+                        case UserRole::ADMIN:
+                            $recipientDisplay = 'ALL ADMINS';
+                            $useGenericRecipient = true;
+                            break;
+                    }
                 }
             }
 
+            // If not all users of a role are selected, show individual names
             if (!$useGenericRecipient) {
                 $recipientNames = $recipients->map(function ($recipient) {
                     if ($recipient->roles === UserRole::EMPLOYEE) {
+                        // For employees, show first name only
                         return $recipient->first_name;
                     }
 
                     if ($recipient->roles === UserRole::SUPERVISOR || $recipient->roles === UserRole::ADMIN) {
-                        $fullName = trim($recipient->full_name);
-                        $nameParts = explode(' ', $fullName);
-                        $initials = '';
-                        foreach ($nameParts as $part) {
-                            if (!empty($part)) {
-                                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
-                            }
+                        // For supervisors and admins, show first name + last name initial
+                        $firstName = $recipient->first_name;
+                        $lastName = $recipient->last_name;
+
+                        if (!empty($lastName)) {
+                            $lastInitial = mb_strtoupper(mb_substr(trim($lastName), 0, 1));
+                            return $firstName . ' ' . $lastInitial . '.';
                         }
-                        return $initials;
+
+                        return $firstName;
                     }
 
-                    return $recipient->full_name; // Fallback
+                    // Fallback for any other role
+                    return $recipient->full_name;
                 });
+
                 $recipientDisplay = $recipientNames->implode(', ');
             }
         }
