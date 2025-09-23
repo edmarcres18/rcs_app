@@ -289,6 +289,16 @@
                                                        class="btn btn-outline-primary" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
+
+                                                    <form action="{{ route('admin.system-notifications.send-now', $notification) }}" method="POST" class="d-inline"
+                                                          onsubmit="return confirm('Send this notification now to all eligible Telegram users?');">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-outline-success" title="Send Now"
+                                                            {{ $notification->status !== 'active' ? 'disabled' : '' }}>
+                                                            <i class="fas fa-paper-plane"></i>
+                                                        </button>
+                                                    </form>
+
                                                     <button type="button" class="btn btn-outline-danger delete-btn" 
                                                             data-id="{{ $notification->id }}"
                                                             data-title="{{ $notification->title }}"

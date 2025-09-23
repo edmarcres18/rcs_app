@@ -61,11 +61,20 @@
                             <i class="fas fa-edit me-2 text-primary"></i>
                             <h5 class="card-title mb-0">Edit System Notification</h5>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-{{ $notification->status == 'active' ? 'success' : ($notification->status == 'inactive' ? 'secondary' : 'warning') }} me-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-{{ $notification->status == 'active' ? 'success' : ($notification->status == 'inactive' ? 'secondary' : 'warning') }}">
                                 {{ ucfirst($notification->status) }}
                             </span>
-                            <small class="text-muted">ID: {{ $notification->id }}</small>
+                            <small class="text-muted me-2">ID: {{ $notification->id }}</small>
+
+                            <form action="{{ route('admin.system-notifications.send-now', $notification) }}" method="POST" class="d-inline"
+                                  onsubmit="return confirm('Send this notification now to all eligible Telegram users?');">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-success"
+                                        title="Send Now" {{ $notification->status !== 'active' ? 'disabled' : '' }}>
+                                    <i class="fas fa-paper-plane me-1"></i> Send Now
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
