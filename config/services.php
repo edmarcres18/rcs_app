@@ -41,4 +41,9 @@ return [
         'webhook_url' => env('TELEGRAM_WEBHOOK_URL'),
     ],
 
+    'ai' => [
+        'api_key' => env('GOOGLE_AI_API_KEY'),
+        'model' => env('AI_MODEL', 'gemini-1.5-flash'),
+    ],
+
 ];

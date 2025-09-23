@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PresentationController;
 use App\Http\Controllers\Api\V1\SystemNotificationsController as ApiSystemNotificationsController;
+use App\Http\Controllers\AiAssistantController;
 
 // Offline fallback route for service worker
 Route::get('/offline', function () {
@@ -49,6 +50,9 @@ Route::post('/email/resend', [EmailVerificationController::class, 'resend'])
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// RCS Assistant (AI) endpoint
+Route::middleware(['auth', 'throttle:30,1'])->post('/ai/assistant', AiAssistantController::class)->name('ai.assistant');
 
 // User Management Routes
 Route::middleware('auth')->group(function () {

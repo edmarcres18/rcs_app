@@ -72,6 +72,87 @@
             --content-padding-desktop: 20px;
         }
 
+        /* Sidebar Rate Us button placement */
+        .sidebar .rate-us-container {
+            position: absolute;
+            left: 15px;
+            right: 15px;
+            bottom: 20px;
+            z-index: 150; /* within sidebar context */
+        }
+        .sidebar .rate-us-btn {
+            width: 100%;
+            height: 42px;
+            border-radius: 10px;
+            opacity: 1;
+        }
+        .sidebar .rate-us-btn .rate-us-text {
+            position: static;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            margin: 0 8px 0 8px;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+        }
+        .sidebar .rate-us-btn:hover {
+            transform: translateY(-1px);
+            min-width: 0;
+            width: 100%;
+        }
+
+        /* Professional micro-interactions for sidebar Rate Us */
+        @keyframes sidebarRateGradientShift {
+            0% { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); }
+            100% { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        }
+        @keyframes sidebarRatePulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.0); }
+            50% { box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.0); }
+        }
+        .sidebar .rate-us-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            transition: background 300ms ease, transform 200ms ease, box-shadow 300ms ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .sidebar .rate-us-btn i {
+            transition: transform 250ms ease, filter 250ms ease;
+        }
+        .sidebar .rate-us-btn:hover i {
+            transform: translateY(-1px) rotate(12deg);
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+        .sidebar .rate-us-btn:hover {
+            animation: sidebarRateGradientShift 400ms forwards ease;
+            box-shadow: 0 6px 14px rgba(37,99,235,0.18);
+        }
+        .sidebar .rate-us-btn:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 3px 8px rgba(37,99,235,0.15);
+        }
+        .sidebar .rate-us-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.35);
+        }
+        /* Gentle idle pulse every few seconds to attract attention without being noisy */
+        .sidebar .rate-us-container:not(:hover) .rate-us-btn {
+            animation: sidebarRatePulseGlow 3.2s ease-in-out infinite;
+            animation-delay: 1.2s;
+        }
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar .rate-us-btn,
+            .sidebar .rate-us-container:not(:hover) .rate-us-btn {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
 
 
         body {
@@ -1806,7 +1887,21 @@
                 </div>
             </div>
             <!-- Sidebar -->
-            @include('layouts.partials.sidebar')
+        @include('layouts.partials.sidebar')
+
+        <!-- Sidebar Rate Us Button -->
+        @auth
+            @php($role = Auth::user()->roles)
+            @if(in_array($role, [\App\Enums\UserRole::EMPLOYEE, \App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN], true))
+                <div class="rate-us-container">
+                    <button type="button" class="rate-us-btn" id="rate-us-button" aria-label="Rate our service - Click to provide feedback">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <span class="rate-us-text">Rate Us</span>
+                        <span class="sr-only">Click to rate our service and provide feedback</span>
+                    </button>
+                </div>
+            @endif
+        @endauth
         </div>
 
         <!-- Sidebar Backdrop for mobile -->
@@ -1908,19 +2003,7 @@
             <i class="fas fa-chevron-left"></i>
         </div>
 
-        <!-- Rate Us Button (visible to EMPLOYEE, SUPERVISOR, ADMIN only) -->
-        @auth
-            @php($role = Auth::user()->roles)
-            @if(in_array($role, [\App\Enums\UserRole::EMPLOYEE, \App\Enums\UserRole::SUPERVISOR, \App\Enums\UserRole::ADMIN], true))
-                <div class="rate-us-container">
-                    <button type="button" class="rate-us-btn" id="rate-us-button" aria-label="Rate our service - Click to provide feedback">
-                        <i class="fas fa-star" aria-hidden="true"></i>
-                        <span class="rate-us-text">RATE US</span>
-                        <span class="sr-only">Click to rate our service and provide feedback</span>
-                    </button>
-                </div>
-            @endif
-        @endauth
+        
 
         <!-- Rating Modal -->
         <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
@@ -2814,6 +2897,9 @@
             @endif
         });
     </script>
+
+    {{-- RCS Assistant Chat Widget --}}
+    @include('layouts.partials.ai-assistant')
 
     <!-- Service Worker Management -->
     <script>

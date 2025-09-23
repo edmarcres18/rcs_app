@@ -84,6 +84,9 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
+    // RCS Assistant feature flag
+    'ai_assistant_enabled' => env('AI_ASSISTANT_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Service Providers
