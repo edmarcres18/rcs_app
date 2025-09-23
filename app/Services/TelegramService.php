@@ -57,21 +57,29 @@ class TelegramService
      *
      * @param int|string $chatId
      * @param string $message
+     * @param array $options Additional options like parse_mode, disable_web_page_preview, etc.
      * @return array|null
      */
-    public function sendMessage($chatId, $message)
+    public function sendMessage($chatId, $message, array $options = [])
     {
         try {
-            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/sendMessage", [
+            $payload = array_merge([
                 'chat_id' => $chatId,
                 'text' => $message,
-                'parse_mode' => 'HTML',
-            ]);
+                'parse_mode' => $options['parse_mode'] ?? 'HTML',
+            ], $options);
+
+            // Ensure required keys are correct
+            $payload['chat_id'] = $chatId;
+            $payload['text'] = $message;
+
+            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/sendMessage", $payload);
 
             if ($this->debug) {
                 Log::debug('Telegram message sent', [
                     'chat_id' => $chatId,
                     'message' => $message,
+                    'options' => $options,
                     'response' => $response->json(),
                 ]);
             }
@@ -103,12 +111,12 @@ class TelegramService
      * @param string $message
      * @return array
      */
-    public function broadcastMessage(array $chatIds, $message)
+    public function broadcastMessage(array $chatIds, $message, array $options = [])
     {
         $results = [];
 
         foreach ($chatIds as $chatId) {
-            $results[$chatId] = $this->sendMessage($chatId, $message);
+            $results[$chatId] = $this->sendMessage($chatId, $message, $options);
         }
 
         return $results;

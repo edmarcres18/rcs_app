@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\SystemNotifications;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use App\Services\TelegramService;
 
 class SystemNotificationsController extends Controller
 {
@@ -178,6 +182,87 @@ class SystemNotificationsController extends Controller
 
         return redirect()->route('admin.system-notifications.index')
             ->with('success', 'System notification updated successfully.');
+    }
+
+    /**
+     * Immediately send this system notification to users who linked Telegram chat IDs.
+     */
+    public function sendNow(SystemNotifications $systemNotification, TelegramService $telegram)
+    {
+        // Validate status and date window
+        if ($systemNotification->status !== 'active') {
+            return back()->with('error', 'Notification must be active to send.');
+        }
+
+        $now = now();
+        if (($systemNotification->date_start && $systemNotification->date_start->isFuture()) ||
+            ($systemNotification->date_end && $systemNotification->date_end->isPast())) {
+            return back()->with('error', 'Notification is not within its active schedule window.');
+        }
+
+        // Build Telegram message using MarkdownV2 formatting similar to SystemBroadcastNotification
+        $title = (string) $systemNotification->title;
+        $type = (string) ($systemNotification->type ?? 'info');
+        $body = (string) $systemNotification->message;
+
+        $escape = function (string $text): string {
+            $chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+            foreach ($chars as $ch) {
+                $text = str_replace($ch, '\\' . $ch, $text);
+            }
+            return $text;
+        };
+
+        $lines = [
+            "\u{1F514} *System Notification*",
+            '*Title:* ' . $escape($title),
+            '*Type:* ' . ucfirst($type),
+            '',
+            $escape($body),
+        ];
+
+        $text = implode("\n", $lines);
+
+        // Collect recipients: all users except SYSTEM_ADMIN with telegram chat id and enabled
+        $recipients = User::query()
+            ->whereIn('roles', [
+                UserRole::EMPLOYEE->value,
+                UserRole::SUPERVISOR->value,
+                UserRole::ADMIN->value,
+            ])
+            ->whereNotNull('telegram_chat_id')
+            ->where('telegram_chat_id', '!=', '')
+            ->where('telegram_notifications_enabled', true)
+            ->pluck('telegram_chat_id')
+            ->all();
+
+        if (empty($recipients)) {
+            return back()->with('warning', 'No recipients with Telegram chat IDs found.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Broadcast via Telegram
+            $telegram->broadcastMessage($recipients, $text, [
+                'parse_mode' => 'MarkdownV2',
+                'disable_web_page_preview' => true,
+            ]);
+
+            // Mark as notified
+            $systemNotification->notified_at = now();
+            $systemNotification->save();
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to send system notification via Telegram', [
+                'notification_id' => $systemNotification->id,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Failed to send Telegram messages.');
+        }
+
+        return back()->with('success', 'System notification sent to Telegram recipients.');
     }
 
     public function destroy(SystemNotifications $systemNotification)

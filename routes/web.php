@@ -74,6 +74,8 @@ Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.'
 
     // System Notifications
     Route::resource('system-notifications', \App\Http\Controllers\SystemNotificationsController::class);
+    Route::post('system-notifications/{systemNotification}/send-now', [\App\Http\Controllers\SystemNotificationsController::class, 'sendNow'])
+        ->name('system-notifications.send-now');
 });
 
 // Database Backup Routes for SYSTEM_ADMIN only
