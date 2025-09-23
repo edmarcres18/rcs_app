@@ -40,14 +40,9 @@ class TelegramChannel
         } elseif (isset($notifiable->telegram_chat_id)) {
             $chatId = $notifiable->telegram_chat_id;
         } else {
-            $chatId = null;
-        }
-
-        // Guard: skip if no chat id (either not linked or disabled by routeNotificationForTelegram)
-        if (empty($chatId)) {
-            Log::info('Skipping Telegram send: no chat id or disabled for notifiable', [
+            Log::warning('No Telegram chat ID found for notifiable', [
                 'notifiable' => get_class($notifiable),
-                'id' => method_exists($notifiable, 'getKey') ? $notifiable->getKey() : null,
+                'id' => $notifiable->getKey(),
             ]);
             return;
         }
@@ -63,32 +58,14 @@ class TelegramChannel
 
         if (is_string($message)) {
             $this->telegram->sendMessage($chatId, $message);
-            return;
+        } elseif (is_array($message) && isset($message['content'])) {
+            $this->telegram->sendMessage($chatId, $message['content']);
+        } else {
+            Log::warning('Invalid Telegram notification format', [
+                'notification' => get_class($notification),
+                'message' => $message,
+            ]);
         }
-
-        if (is_array($message)) {
-            // Support either ['text' => '...', 'parse_mode' => '...'] or legacy ['content' => '...']
-            $text = $message['text'] ?? $message['content'] ?? null;
-            if ($text === null) {
-                Log::warning('Invalid Telegram notification array payload: missing text/content', [
-                    'notification' => get_class($notification),
-                    'message' => $message,
-                ]);
-                return;
-            }
-
-            // Pass through any additional options (e.g., parse_mode)
-            $options = $message;
-            unset($options['text'], $options['content']);
-
-            $this->telegram->sendMessage($chatId, $text, $options);
-            return;
-        }
-
-        Log::warning('Invalid Telegram notification format', [
-            'notification' => get_class($notification),
-            'message' => $message,
-        ]);
     }
 }
  
