@@ -42,8 +42,13 @@ class TelegramChannel
         } else {
             Log::warning('No Telegram chat ID found for notifiable', [
                 'notifiable' => get_class($notifiable),
-                'id' => $notifiable->getKey(),
+                'id' => method_exists($notifiable, 'getKey') ? $notifiable->getKey() : null,
             ]);
+            return;
+        }
+
+        if (!$chatId) {
+            // Respect user's preference: telegram notifications disabled
             return;
         }
 
@@ -58,14 +63,29 @@ class TelegramChannel
 
         if (is_string($message)) {
             $this->telegram->sendMessage($chatId, $message);
-        } elseif (is_array($message) && isset($message['content'])) {
-            $this->telegram->sendMessage($chatId, $message['content']);
-        } else {
-            Log::warning('Invalid Telegram notification format', [
-                'notification' => get_class($notification),
-                'message' => $message,
-            ]);
+            return;
         }
+
+        if (is_array($message)) {
+            // Support legacy ['content' => '...'] as well as Telegram-style ['text' => '...', 'parse_mode' => 'MarkdownV2']
+            if (isset($message['content'])) {
+                $this->telegram->sendMessage($chatId, $message['content']);
+                return;
+            }
+
+            if (isset($message['text'])) {
+                // Extract options except 'text'
+                $options = $message;
+                unset($options['text']);
+                $this->telegram->sendMessage($chatId, $message['text'], $options);
+                return;
+            }
+        }
+
+        Log::warning('Invalid Telegram notification format', [
+            'notification' => get_class($notification),
+            'message' => $message,
+        ]);
     }
 }
  
