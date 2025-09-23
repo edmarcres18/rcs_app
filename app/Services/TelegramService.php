@@ -57,21 +57,34 @@ class TelegramService
      *
      * @param int|string $chatId
      * @param string $message
+     * @param array $options Optional Telegram sendMessage parameters (e.g., parse_mode, disable_web_page_preview, reply_markup)
      * @return array|null
      */
-    public function sendMessage($chatId, $message)
+    public function sendMessage($chatId, $message, array $options = [])
     {
         try {
-            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/sendMessage", [
+            // Build payload with sensible defaults
+            $payload = [
                 'chat_id' => $chatId,
                 'text' => $message,
-                'parse_mode' => 'HTML',
-            ]);
+                'parse_mode' => $options['parse_mode'] ?? 'HTML',
+            ];
+
+            // Merge any additional options (e.g., disable_web_page_preview, disable_notification, reply_markup)
+            foreach ($options as $key => $value) {
+                // Avoid overwriting text/chat_id unintentionally
+                if (!in_array($key, ['chat_id', 'text'])) {
+                    $payload[$key] = $value;
+                }
+            }
+
+            $response = Http::timeout(10)->retry(2, 200)->post("https://api.telegram.org/bot{$this->token}/sendMessage", $payload);
 
             if ($this->debug) {
                 Log::debug('Telegram message sent', [
                     'chat_id' => $chatId,
                     'message' => $message,
+                    'options' => $options,
                     'response' => $response->json(),
                 ]);
             }
