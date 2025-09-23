@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\InstructionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\SystemNotificationsController as ApiSystemNotificationsController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -30,4 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/subscribe', [NotificationController::class, 'subscribe']);
+
+    // System Notifications (for non-SYSTEM_ADMIN users)
+    Route::get('/system-notifications', [ApiSystemNotificationsController::class, 'index']);
 });

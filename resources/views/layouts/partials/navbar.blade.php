@@ -14,6 +14,16 @@
                 <span class="notification-badge"></span>
             </div>
 
+            @auth
+                @php($role = Auth::user()->roles)
+                @if(!in_array($role, [\App\Enums\UserRole::SYSTEM_ADMIN], true))
+                    <div class="navbar-menu-item has-badge system-notification-toggle" id="system-notification-toggle">
+                        <i class="fas fa-bullhorn"></i>
+                        <span class="system-notification-badge"></span>
+                    </div>
+                @endif
+            @endauth
+
             @guest
                 <div class="navbar-menu">
                     @if (Route::has('login'))

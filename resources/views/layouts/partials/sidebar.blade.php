@@ -164,6 +164,12 @@
                             <span>Database Backups</span>
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.system-notifications.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.system-notifications.*') ? 'active' : '' }}" data-title="System Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span>System Notifications</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         @endif

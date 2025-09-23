@@ -1,0 +1,291 @@
+/* File Attachment Styles */
+.attachment-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid #e3e6f0 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(145deg, #ffffff, #f8f9fc);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.attachment-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--file-accent-color, #6c757d);
+    transition: width 0.3s ease;
+}
+
+.attachment-item:hover {
+    background: linear-gradient(145deg, #f8f9fc, #ffffff) !important;
+    border-color: var(--file-accent-color, #5a5c69) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.attachment-item:hover::before {
+    width: 6px;
+}
+
+.attachment-item a {
+    color: #2c3e50;
+    text-decoration: none !important;
+    font-weight: 600;
+}
+
+.attachment-item a:hover {
+    color: var(--file-accent-color, #3a3b45);
+}
+
+.attachment-item .btn {
+    border-radius: 8px !important;
+    transition: all 0.2s ease;
+}
+
+.attachment-item .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* File preview in form */
+#file-preview .alert {
+    border: none !important;
+    border-radius: 12px !important;
+    background: linear-gradient(145deg, #e8f4fd, #d1ecf1) !important;
+    border-left: 4px solid var(--file-accent-color, #36b9cc) !important;
+    box-shadow: 0 2px 8px rgba(54, 185, 204, 0.1);
+}
+
+/* Enhanced File Upload Area */
+.file-upload-area {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.file-upload-area .form-control[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.upload-placeholder {
+    border: 3px dashed #dee2e6;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-placeholder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(54, 185, 204, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.upload-placeholder:hover {
+    border-color: #36b9cc;
+    background: linear-gradient(145deg, #e8f4fd, #f0f8ff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(54, 185, 204, 0.15);
+}
+
+.upload-placeholder:hover::before {
+    left: 100%;
+}
+
+.upload-placeholder.drag-over {
+    border-color: #28a745;
+    background: linear-gradient(145deg, #e8f5e8, #f0fff0);
+    border-style: solid;
+    transform: scale(1.02);
+}
+
+.upload-placeholder.drag-over .fa-cloud-upload-alt {
+    animation: bounce 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+/* Microsoft Office Brand Colors */
+.text-word { 
+    color: #2b579a !important; 
+    --file-accent-color: #2b579a;
+}
+
+.text-excel { 
+    color: #217346 !important; 
+    --file-accent-color: #217346;
+}
+
+.text-powerpoint { 
+    color: #d24726 !important; 
+    --file-accent-color: #d24726;
+}
+
+/* Other File Type Colors */
+.text-pdf { 
+    color: #dc3545 !important; 
+    --file-accent-color: #dc3545;
+}
+
+.text-image { 
+    color: #6f42c1 !important; 
+    --file-accent-color: #6f42c1;
+}
+
+.text-archive { 
+    color: #fd7e14 !important; 
+    --file-accent-color: #fd7e14;
+}
+
+.text-code { 
+    color: #ffc107 !important; 
+    --file-accent-color: #ffc107;
+}
+
+.text-text { 
+    color: #6c757d !important; 
+    --file-accent-color: #6c757d;
+}
+
+/* File Category Specific Styling */
+.attachment-item.file-word {
+    border-color: #2b579a20 !important;
+}
+
+.attachment-item.file-excel {
+    border-color: #21734620 !important;
+}
+
+.attachment-item.file-powerpoint {
+    border-color: #d2472620 !important;
+}
+
+.attachment-item.file-pdf {
+    border-color: #dc354520 !important;
+}
+
+.attachment-item.file-image {
+    border-color: #6f42c120 !important;
+}
+
+.attachment-item.file-archive {
+    border-color: #fd7e1420 !important;
+}
+
+/* File size styling */
+.file-size {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* File name styling */
+.file-name {
+    font-size: 0.95rem;
+    line-height: 1.3;
+    margin-bottom: 2px;
+}
+
+/* Icon styling */
+.attachment-item i {
+    font-size: 1.5rem;
+    margin-right: 12px !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Animation for new attachments */
+@keyframes slideInAttachment {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.attachment-item.new-attachment {
+    animation: slideInAttachment 0.5s ease-out;
+}
+
+/* Loading state */
+.attachment-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.attachment-item.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .attachment-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        padding: 1rem !important;
+    }
+    
+    .attachment-item .btn {
+        margin-top: 0.75rem;
+        align-self: flex-end;
+        width: auto;
+        min-width: 100px;
+    }
+    
+    .attachment-item i {
+        font-size: 1.25rem;
+        margin-right: 8px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .attachment-item {
+        padding: 0.75rem !important;
+    }
+    
+    .file-name {
+        font-size: 0.9rem;
+    }
+    
+    .file-size {
+        font-size: 0.8rem;
+    }
+}

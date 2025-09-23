@@ -23,25 +23,30 @@
             <p class="mb-0" style="white-space: pre-wrap;">{{ $reply->content }}</p>
 
             {{-- Attachment --}}
-            @if ($reply->attachment_url)
-                <div class="reply-attachment">
-                    <a href="{{ $reply->attachment_url }}" target="_blank" class="attachment-link" download>
-                        @php
-                            $fileExt = pathinfo($reply->attachment, PATHINFO_EXTENSION);
-                            $fileIcon = 'fa-paperclip'; // Default icon
-                            if (in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif'])) {
-                                $fileIcon = 'fa-file-image';
-                            } elseif ($fileExt === 'pdf') {
-                                $fileIcon = 'fa-file-pdf';
-                            } elseif (in_array($fileExt, ['doc', 'docx'])) {
-                                $fileIcon = 'fa-file-word';
-                            } elseif (in_array($fileExt, ['xls', 'xlsx'])) {
-                                $fileIcon = 'fa-file-excel';
-                            }
-                        @endphp
-                        <i class="fas {{ $fileIcon }} me-2"></i>
-                        <span>{{ $reply->attachment }}</span>
-                    </a>
+            @if ($reply->hasAttachment())
+                @php
+                    $extension = pathinfo($reply->attachment_original_name, PATHINFO_EXTENSION);
+                    $category = \App\Services\FileUploadService::getFileCategory($extension, $reply->attachment_mime_type);
+                @endphp
+                <div class="mt-3">
+                    <div class="attachment-item file-{{ $category }} d-flex align-items-center p-3">
+                        <i class="{{ $reply->attachment_icon }} me-3"></i>
+                        <div class="flex-grow-1">
+                            <a href="{{ route('instructions.replies.download', $reply) }}" 
+                               class="file-name text-decoration-none" 
+                               target="_blank">
+                                {{ $reply->attachment_original_name }}
+                            </a>
+                            <br>
+                            <span class="file-size">{{ $reply->formatted_file_size }}</span>
+                        </div>
+                        <a href="{{ route('instructions.replies.download', $reply) }}" 
+                           class="btn btn-sm btn-outline-primary" 
+                           target="_blank"
+                           title="Download {{ $reply->attachment_original_name }}">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
                 </div>
             @endif
         </div>

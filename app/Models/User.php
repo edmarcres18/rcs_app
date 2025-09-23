@@ -13,6 +13,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\SystemNotifications;
 
 class User extends Authenticatable
 {
@@ -360,5 +362,10 @@ class User extends Authenticatable
         $nextAllowedTime = $latestRating->submitted_at->addDay();
 
         return $nextAllowedTime->isFuture() ? $nextAllowedTime : null;
+    }
+
+    public function systemNotifications(): BelongsTo
+    {
+        return $this->belongsTo(SystemNotifications::class, 'created_by');
     }
 }

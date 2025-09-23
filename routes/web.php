@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PresentationController;
+use App\Http\Controllers\Api\V1\SystemNotificationsController as ApiSystemNotificationsController;
 
 // Offline fallback route for service worker
 Route::get('/offline', function () {
@@ -70,6 +71,9 @@ Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.'
 
     // Ratings Monitor (SYSTEM_ADMIN only)
     Route::get('ratings', [\App\Http\Controllers\RatingController::class, 'adminIndex'])->name('ratings.index');
+
+    // System Notifications
+    Route::resource('system-notifications', \App\Http\Controllers\SystemNotificationsController::class);
 });
 
 // Database Backup Routes for SYSTEM_ADMIN only
@@ -108,6 +112,9 @@ Route::middleware('auth')->group(function () {
     // API routes for real-time updates
     Route::get('api/instructions/{instruction}/updates', [InstructionController::class, 'getUpdates']);
 
+    // Attachment download route
+    Route::get('instructions/replies/{reply}/download', [InstructionController::class, 'downloadAttachment'])->name('instructions.replies.download');
+
     // Monitor routes (Admin and System Admin only)
     Route::get('instructions/monitor/dashboard', [InstructionMonitorController::class, 'index'])->name('instructions.monitor');
     Route::get('instructions/monitor/activities/{instruction}', [InstructionMonitorController::class, 'showActivityLogs'])->name('instructions.monitor.activities');
@@ -122,6 +129,9 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     Route::get('notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::post('notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.read.all');
+
+    // System Notifications for session-authenticated users (non-SYSTEM_ADMIN will receive data)
+    Route::get('system-notifications', [ApiSystemNotificationsController::class, 'index'])->name('system-notifications.index');
 
     // Ratings (session-auth via web guard)
     Route::post('ratings', [\App\Http\Controllers\RatingController::class, 'store'])->name('ratings.store');

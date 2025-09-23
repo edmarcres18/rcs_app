@@ -1065,6 +1065,232 @@
             position: relative;
         }
 
+        /* System Notification Sidebar Styles */
+        .system-notification-sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: var(--bg-card);
+            z-index: 1000;
+            transition: all var(--transition-speed) ease;
+            box-shadow: -5px 0 15px var(--shadow-color);
+            overflow-y: auto;
+        }
+
+        .system-notification-sidebar.active {
+            right: 0;
+        }
+
+        .system-notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+        }
+
+        .system-notification-header h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .system-notification-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .system-notification-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .system-notification-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .system-notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .system-notification-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .system-notification-item.unread {
+            background-color: rgba(255, 107, 53, 0.05);
+            border-left: 4px solid #ff6b35;
+        }
+
+        .system-notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: #ff6b35;
+        }
+
+        .system-notification-content {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .system-notification-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .system-notification-text {
+            flex: 1;
+        }
+
+        .system-notification-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0 0 5px;
+        }
+
+        .system-notification-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .system-notification-time {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 5px;
+            display: block;
+        }
+
+        .system-notification-priority {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .system-notification-priority.urgent {
+            background: #ff3e3e;
+            color: white;
+        }
+
+        .system-notification-priority.high {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .system-notification-priority.medium {
+            background: #f7931e;
+            color: white;
+        }
+
+        .system-notification-priority.low {
+            background: #28a745;
+            color: white;
+        }
+
+        .system-notification-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .system-notification-backdrop.active {
+            display: block;
+        }
+
+        .system-notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b35;
+            border: 2px solid var(--bg-navbar);
+        }
+
+        /* System notification toggle styling */
+        .system-notification-toggle {
+            position: relative;
+        }
+
+        .system-notification-toggle i {
+            color: #ff6b35;
+        }
+
+        .system-notification-toggle:hover i {
+            color: #f7931e;
+        }
+
+        /* Mobile responsive adjustments for system notifications */
+        @media (max-width: 768px) {
+            .system-notification-sidebar {
+                width: 85%;
+                max-width: 320px;
+            }
+
+            .system-notification-item {
+                padding: 12px 15px;
+            }
+
+            .system-notification-icon {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .system-notification-sidebar {
+                width: 100%;
+                max-width: 100%;
+                right: -100%;
+            }
+        }
+
         /* Rate Us Button Styles - Professional & Responsive */
         .rate-us-container {
             position: fixed;
@@ -1087,7 +1313,7 @@
             overflow: hidden;
             position: relative;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 
+            box-shadow:
                 0 4px 14px rgba(30, 64, 175, 0.25),
                 0 2px 6px rgba(30, 64, 175, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1140,7 +1366,7 @@
             visibility: hidden;
             transform: translateY(-50%) translateX(-10px);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 
+            box-shadow:
                 0 4px 12px rgba(30, 64, 175, 0.25),
                 0 2px 6px rgba(30, 64, 175, 0.15);
             margin-right: clamp(8px, 2vw, 12px);
@@ -1163,7 +1389,7 @@
         /* Advanced Hover & Interaction States */
         .rate-us-btn:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 
+            box-shadow:
                 0 12px 32px rgba(30, 64, 175, 0.35),
                 0 6px 16px rgba(30, 64, 175, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -1207,7 +1433,7 @@
 
         .rate-us-btn:active {
             transform: translateY(-1px) scale(0.98);
-            box-shadow: 
+            box-shadow:
                 0 6px 20px rgba(30, 64, 175, 0.3),
                 0 3px 8px rgba(30, 64, 175, 0.15),
                 inset 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1215,7 +1441,7 @@
         }
 
         .rate-us-btn:focus {
-            box-shadow: 
+            box-shadow:
                 0 4px 14px rgba(30, 64, 175, 0.25),
                 0 2px 6px rgba(30, 64, 175, 0.15),
                 0 0 0 3px rgba(59, 130, 246, 0.4),
@@ -1224,7 +1450,7 @@
         }
 
         .rate-us-btn:focus:not(:focus-visible) {
-            box-shadow: 
+            box-shadow:
                 0 4px 14px rgba(30, 64, 175, 0.25),
                 0 2px 6px rgba(30, 64, 175, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1253,14 +1479,14 @@
         }
 
         /* Responsive Design System */
-        
+
         /* Large Desktop (1200px+) */
         @media (min-width: 1200px) {
             .rate-us-container {
                 bottom: 32px;
                 right: 32px;
             }
-            
+
             .rate-us-btn:hover {
                 transform: translateY(-4px) scale(1.03);
             }
@@ -1280,10 +1506,10 @@
                 bottom: 20px;
                 right: 20px;
             }
-            
+
             .rate-us-btn:hover {
                 transform: translateY(-2px) scale(1.01);
-                box-shadow: 
+                box-shadow:
                     0 8px 24px rgba(30, 64, 175, 0.3),
                     0 4px 12px rgba(30, 64, 175, 0.15);
             }
@@ -1298,7 +1524,7 @@
             }
 
             .rate-us-btn {
-                box-shadow: 
+                box-shadow:
                     0 3px 12px rgba(30, 64, 175, 0.25),
                     0 1px 4px rgba(30, 64, 175, 0.15);
                 backdrop-filter: blur(8px);
@@ -1307,7 +1533,7 @@
 
             .rate-us-btn:hover {
                 transform: translateY(-1px) scale(1.01);
-                box-shadow: 
+                box-shadow:
                     0 6px 20px rgba(30, 64, 175, 0.3),
                     0 3px 8px rgba(30, 64, 175, 0.2);
             }
@@ -1337,7 +1563,7 @@
                 bottom: clamp(10px, 2.5vw, 16px);
                 right: clamp(10px, 2.5vw, 16px);
             }
-            
+
             .rate-us-btn {
                 border-radius: clamp(5px, 1.2vw, 8px);
             }
@@ -1354,26 +1580,26 @@
         /* High DPI displays */
         @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .rate-us-btn {
-                box-shadow: 
+                box-shadow:
                     0 4px 14px rgba(30, 64, 175, 0.25),
                     0 2px 6px rgba(30, 64, 175, 0.15),
                     inset 0 0.5px 0 rgba(255, 255, 255, 0.1);
             }
-            
+
             .rate-us-icon i {
                 filter: drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.2));
             }
         }
 
         /* Advanced Accessibility & Performance */
-        
+
         /* High contrast mode support */
         @media (prefers-contrast: high) {
             .rate-us-btn {
                 border: 2px solid #1e40af;
                 background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
             }
-            
+
             .rate-us-icon {
                 border: 1px solid rgba(255, 255, 255, 0.3);
             }
@@ -1409,15 +1635,15 @@
         @media (prefers-color-scheme: dark) {
             .rate-us-btn {
                 background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
-                box-shadow: 
+                box-shadow:
                     0 4px 14px rgba(59, 130, 246, 0.3),
                     0 2px 6px rgba(59, 130, 246, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.15);
             }
-            
+
             .rate-us-btn:hover {
                 background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-                box-shadow: 
+                box-shadow:
                     0 12px 32px rgba(59, 130, 246, 0.4),
                     0 6px 16px rgba(59, 130, 246, 0.25);
             }
@@ -1426,20 +1652,20 @@
         /* Enhanced pulse animation */
         @keyframes pulse-rate {
             0% {
-                box-shadow: 
+                box-shadow:
                     0 4px 14px rgba(30, 64, 175, 0.25),
                     0 2px 6px rgba(30, 64, 175, 0.15);
                 transform: scale(1);
             }
             50% {
-                box-shadow: 
+                box-shadow:
                     0 8px 24px rgba(30, 64, 175, 0.4),
                     0 4px 12px rgba(30, 64, 175, 0.25),
                     0 0 0 4px rgba(59, 130, 246, 0.1);
                 transform: scale(1.02);
             }
             100% {
-                box-shadow: 
+                box-shadow:
                     0 4px 14px rgba(30, 64, 175, 0.25),
                     0 2px 6px rgba(30, 64, 175, 0.15);
                 transform: scale(1);
@@ -1447,11 +1673,11 @@
         }
 
         @keyframes star-twinkle {
-            0%, 100% { 
+            0%, 100% {
                 color: #fbbf24;
                 filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
             }
-            50% { 
+            50% {
                 color: #fcd34d;
                 filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.4));
             }
@@ -1622,6 +1848,61 @@
         </div>
         <div class="notification-backdrop"></div>
 
+        <!-- System Notification Sidebar -->
+        <div class="system-notification-sidebar">
+            <div class="system-notification-header">
+                <h4>System Notifications</h4>
+                <div class="system-notification-close" id="system-notification-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <ul class="system-notification-list" id="system-notification-list">
+                <div id="system-notification-loader" class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </ul>
+        </div>
+        <div class="system-notification-backdrop"></div>
+
+        <!-- System Notification Detail Modal -->
+        <div class="modal fade" id="systemNotificationModal" tabindex="-1" aria-labelledby="systemNotificationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="border-bottom: none;">
+                        <div class="d-flex align-items-center">
+                            <div class="system-notification-icon me-2" id="sysModalIcon"><i class="fa-solid fa-bullhorn"></i></div>
+                            <div>
+                                <h5 class="modal-title mb-1" id="systemNotificationModalLabel">System Notification</h5>
+                                <div class="small text-muted" id="sysModalTime">—</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-0">
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                            <span id="sysModalTypeBadge" class="badge rounded-pill" style="background:#ff6b35;color:#fff;">TYPE</span>
+                            <span id="sysModalStatusBadge" class="badge rounded-pill bg-secondary">STATUS</span>
+                        </div>
+
+                        <h4 class="fw-bold mb-2" id="sysModalTitle">Title</h4>
+                        <div class="text-muted mb-3" id="sysModalSubtitle" style="display:none;"></div>
+
+                        <div id="sysModalMessage" class="mb-2" style="white-space: pre-line; line-height: 1.7; font-size: 1.02rem;">Message</div>
+
+                        <hr class="mt-3 mb-2" />
+                        <div class="small text-muted">This announcement is provided by your system administrators.</div>
+                    </div>
+                    <div class="modal-footer" style="border-top: none;">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i> Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sidebar Collapse Button -->
         <div class="sidebar-collapse-btn" id="sidebar-collapse-btn">
             <i class="fas fa-chevron-left"></i>
@@ -1668,13 +1949,13 @@
                                     <span id="ratingText" class="text-muted">Click a star to rate</span>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="reviewComment" class="form-label">
                                     <i class="fas fa-comment me-1"></i>
                                     Tell us about your experience (optional)
                                 </label>
-                                <textarea class="form-control" id="reviewComment" name="comment" rows="4" 
+                                <textarea class="form-control" id="reviewComment" name="comment" rows="4"
                                     placeholder="Share your thoughts about our service..."></textarea>
                             </div>
 
@@ -1824,7 +2105,35 @@
                 preventScroll(false);
             });
 
+            // System notification sidebar functionality
+            const systemNotificationToggle = document.getElementById('system-notification-toggle');
+            const systemNotificationClose = document.getElementById('system-notification-close');
+            const systemNotificationSidebar = document.querySelector('.system-notification-sidebar');
+            const systemNotificationBackdrop = document.querySelector('.system-notification-backdrop');
 
+            if (systemNotificationToggle) {
+                systemNotificationToggle.addEventListener('click', () => {
+                    systemNotificationSidebar.classList.toggle('active');
+                    systemNotificationBackdrop.classList.toggle('active');
+                    preventScroll(systemNotificationSidebar.classList.contains('active'));
+                });
+            }
+
+            if (systemNotificationClose) {
+                systemNotificationClose.addEventListener('click', () => {
+                    systemNotificationSidebar.classList.remove('active');
+                    systemNotificationBackdrop.classList.remove('active');
+                    preventScroll(false);
+                });
+            }
+
+            if (systemNotificationBackdrop) {
+                systemNotificationBackdrop.addEventListener('click', () => {
+                    systemNotificationSidebar.classList.remove('active');
+                    systemNotificationBackdrop.classList.remove('active');
+                    preventScroll(false);
+                });
+            }
 
             // Active link highlighting
             const currentPath = window.location.pathname;
@@ -1843,9 +2152,17 @@
                 });
             });
 
+            // Make system notification items clickable
+            document.querySelectorAll('.system-notification-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.remove('unread');
+                    // Here you would typically make an AJAX call to mark the system notification as read
+                });
+            });
+
             // Add fastclick to eliminate 300ms delay on mobile browsers
             if (isTouchDevice()) {
-                document.querySelectorAll('a, button, .sidebar-nav-link, .navbar-menu-item, .dropdown-toggle, .notification-item')
+                document.querySelectorAll('a, button, .sidebar-nav-link, .navbar-menu-item, .dropdown-toggle, .notification-item, .system-notification-item')
                     .forEach(el => {
                         el.addEventListener('touchstart', function() {}, passiveIfSupported);
                     });
@@ -1884,6 +2201,23 @@
                         preventScroll(false);
                     }
                 }, passiveIfSupported);
+
+                // For system notification sidebar (swipe right to close)
+                const systemNotificationSidebar = document.querySelector('.system-notification-sidebar');
+                if (systemNotificationSidebar) {
+                    systemNotificationSidebar.addEventListener('touchstart', e => {
+                        touchStartX = e.changedTouches[0].screenX;
+                    }, passiveIfSupported);
+
+                    systemNotificationSidebar.addEventListener('touchend', e => {
+                        touchEndX = e.changedTouches[0].screenX;
+                        if (touchEndX - touchStartX > 50) { // Swipe right threshold
+                            systemNotificationSidebar.classList.remove('active');
+                            document.querySelector('.system-notification-backdrop').classList.remove('active');
+                            preventScroll(false);
+                        }
+                    }, passiveIfSupported);
+                }
             }
         });
     </script>
@@ -2056,9 +2390,177 @@
                     getUnreadCount();
                 });
 
-            // Initial fetch
+            // Initial fetch for user notifications
             getUnreadCount();
             loadNotifications();
+
+            // ==========================
+            // System Notifications (Right Sidebar)
+            // ==========================
+            const sysToggle = document.getElementById('system-notification-toggle');
+            const sysList = document.getElementById('system-notification-list');
+            const sysLoader = document.getElementById('system-notification-loader');
+            const sysSidebar = document.querySelector('.system-notification-sidebar');
+
+            const createSystemIcon = (type) => {
+                const iconMap = {
+                    info: 'fa-circle-info',
+                    update: 'fa-arrows-rotate',
+                    maintenance: 'fa-screwdriver-wrench',
+                    alert: 'fa-triangle-exclamation',
+                    default: 'fa-bullhorn'
+                };
+                const icon = iconMap[type] || iconMap.default;
+                return `<div class="system-notification-icon"><i class="fa-solid ${icon}"></i></div>`;
+            };
+
+            const renderSystemNotification = (n) => {
+                const li = document.createElement('li');
+                li.className = 'system-notification-item';
+                const createdAt = n.created_at || n.date_start || n.date_end || new Date().toISOString();
+
+                // Persist details for modal in dataset (simple and safe)
+                li.dataset.title = (n.title || '').toString();
+                li.dataset.message = (n.message || '').toString();
+                li.dataset.type = (n.type || 'info').toString();
+                li.dataset.status = (n.status || '').toString();
+                li.dataset.createdAt = createdAt;
+                // schedule fields removed from UX; do not store
+
+                li.innerHTML = `
+                    <div class="system-notification-content">
+                        ${createSystemIcon(n.type)}
+                        <div class="system-notification-text">
+                            <h5 class="system-notification-title">${(n.title || '').toString().trim()}</h5>
+                            <p class="system-notification-desc">${(n.message || '').toString().trim()}</p>
+                            <span class="system-notification-time">${moment(createdAt).fromNow()}</span>
+                        </div>
+                    </div>
+                `;
+                return li;
+            };
+
+            let sysFirstLoadDone = false;
+            async function loadSystemNotifications(initial = false) {
+                try {
+                    if (sysLoader && initial) {
+                        sysLoader.style.display = 'block';
+                    }
+                    const res = await fetch('/api/system-notifications', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    if (!sysList) return;
+                    sysList.innerHTML = '';
+                    const items = Array.isArray(data.data) ? data.data : [];
+                    if (items.length === 0) {
+                        sysList.innerHTML = `<li class="text-center text-muted p-4">No Available System Notifications</li>`;
+                    } else {
+                        items.forEach(n => sysList.appendChild(renderSystemNotification(n)));
+                    }
+                } catch (e) {
+                    // Avoid noisy console errors; provide graceful UI feedback
+                    if (sysList) {
+                        sysList.innerHTML = `<li class="text-center text-danger p-4">Failed to load system notifications</li>`;
+                    }
+                } finally {
+                    if (sysLoader) sysLoader.style.display = 'none';
+                    sysFirstLoadDone = true;
+                }
+            }
+
+            if (sysToggle) {
+                // Lazy-load on first open for responsiveness
+                sysToggle.addEventListener('click', () => {
+                    if (!sysFirstLoadDone) {
+                        loadSystemNotifications(true);
+                    }
+                });
+            }
+
+            // Click -> open modal with full details (event delegation)
+            if (sysList) {
+                sysList.addEventListener('click', (e) => {
+                    const item = e.target.closest('.system-notification-item');
+                    if (!item) return;
+
+                    try {
+                        const modalEl = document.getElementById('systemNotificationModal');
+                        if (!modalEl) return;
+                        const modal = new bootstrap.Modal(modalEl);
+
+                        const type = item.dataset.type || 'info';
+                        const status = (item.dataset.status || 'active').toLowerCase();
+                        const title = item.dataset.title || 'System Notification';
+                        const message = item.dataset.message || '';
+                        const createdAt = item.dataset.createdAt || new Date().toISOString();
+
+                        // Icon
+                        const iconMap = {
+                            info: 'fa-circle-info',
+                            update: 'fa-arrows-rotate',
+                            maintenance: 'fa-screwdriver-wrench',
+                            alert: 'fa-triangle-exclamation',
+                            default: 'fa-bullhorn'
+                        };
+                        const icon = iconMap[type] || iconMap.default;
+                        const iconWrap = document.getElementById('sysModalIcon');
+                        if (iconWrap) iconWrap.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+
+                        // Title & Message
+                        const elTitle = document.getElementById('sysModalTitle');
+                        const elMsg = document.getElementById('sysModalMessage');
+                        if (elTitle) elTitle.textContent = title;
+                        if (elMsg) elMsg.textContent = message;
+
+                        // Time and badges
+                        const elTime = document.getElementById('sysModalTime');
+                        const elType = document.getElementById('sysModalTypeBadge');
+                        const elStatus = document.getElementById('sysModalStatusBadge');
+                        if (elTime) elTime.textContent = `Posted ${moment(createdAt).fromNow()}`;
+                        if (elType) {
+                            elType.textContent = (type || 'info').toString().toUpperCase();
+                            elType.style.background = '#ff6b35';
+                            elType.style.color = '#fff';
+                        }
+                        if (elStatus) {
+                            elStatus.textContent = (status || 'active').toString().toUpperCase();
+                            elStatus.className = 'badge rounded-pill ms-2 ' + (status === 'active' ? 'bg-success' : (status === 'inactive' ? 'bg-secondary' : 'bg-dark'));
+                        }
+
+                        modal.show();
+                    } catch (_) { /* swallow errors to keep console clean */ }
+                });
+            }
+
+            // Realtime subscription (if Echo available), else polling fallback
+            (function initSystemNotificationsRealtime() {
+                try {
+                    if (window.Echo && typeof window.Echo.channel === 'function') {
+                        const channel = window.Echo.channel('system-notifications');
+                        channel.listen('.SystemNotificationCreated', (payload) => {
+                            if (!sysList) return;
+                            const n = payload?.notification || payload;
+                            const el = renderSystemNotification(n);
+                            sysList.prepend(el);
+                        });
+                        // Also listen for updates if emitted by backend (optional)
+                        channel.listen('.SystemNotificationUpdated', () => {
+                            // Refresh the list silently
+                            if (sysFirstLoadDone) loadSystemNotifications(false);
+                        });
+                        return; // Using Echo; no polling needed
+                    }
+                } catch(_) { /* swallow errors to avoid console issues */ }
+
+                // Fallback polling every 30s (only after first view)
+                setInterval(() => {
+                    if (sysFirstLoadDone) loadSystemNotifications(false);
+                }, 30000);
+            })();
         });
     </script>
     @endauth
@@ -2073,9 +2575,9 @@
             const ratingValue = document.getElementById('ratingValue');
             const submitButton = document.getElementById('submitRating');
             const reviewComment = document.getElementById('reviewComment');
-            
+
             let selectedRating = 0;
-            
+
             // Rating text messages
             const ratingMessages = {
                 1: 'Poor - We\'re sorry to hear that',
@@ -2094,24 +2596,24 @@
 
                 // Star rating functionality
                 const stars = starRating.querySelectorAll('i');
-                
+
                 stars.forEach((star, index) => {
                     star.addEventListener('mouseenter', function() {
                         highlightStars(index + 1);
                     });
-                    
+
                     star.addEventListener('click', function() {
                         selectedRating = index + 1;
                         ratingValue.value = selectedRating;
                         ratingText.textContent = ratingMessages[selectedRating];
                         ratingText.className = 'text-primary fw-bold';
                         submitButton.disabled = false;
-                        
+
                         // Keep stars highlighted
                         highlightStars(selectedRating);
                     });
                 });
-                
+
                 starRating.addEventListener('mouseleave', function() {
                     if (selectedRating > 0) {
                         highlightStars(selectedRating);
@@ -2119,7 +2621,7 @@
                         highlightStars(0);
                     }
                 });
-                
+
                 function highlightStars(rating) {
                     stars.forEach((star, index) => {
                         if (index < rating) {
@@ -2131,18 +2633,18 @@
                         }
                     });
                 }
-                
+
                 // Submit rating
                 submitButton.addEventListener('click', function() {
                     const formData = new FormData();
                     formData.append('rating', selectedRating);
                     formData.append('comment', reviewComment.value);
                     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-                    
+
                     // Show loading state
                     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
                     submitButton.disabled = true;
-                    
+
                     // Submit to your rating endpoint (session-auth with cookies)
                     fetch('/api/ratings', {
                         method: 'POST',
@@ -2223,7 +2725,7 @@
                                 text: 'Your rating has been submitted successfully.',
                                 confirmButtonColor: '#2563eb'
                             });
-                            
+
                             // Reset form
                             resetRatingForm();
                             ratingModal.hide();
@@ -2246,12 +2748,12 @@
                         submitButton.disabled = selectedRating === 0;
                     });
                 });
-                
+
                 // Reset form when modal is hidden
                 document.getElementById('ratingModal').addEventListener('hidden.bs.modal', function() {
                     resetRatingForm();
                 });
-                
+
                 function resetRatingForm() {
                     selectedRating = 0;
                     ratingValue.value = 0;

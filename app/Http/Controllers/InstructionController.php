@@ -12,10 +12,12 @@ use App\Notifications\InstructionAssigned;
 use App\Notifications\InstructionForwarded;
 use App\Notifications\InstructionReplied;
 use App\Services\UserActivityService;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\InstructionForwardedToSender;
 
@@ -467,10 +469,21 @@ class InstructionController extends Controller
                 ->with('error', $message);
         }
 
-        // Add MIME type validation for security and set max file size
-        $validator = Validator::make($request->all(), [
+        // Validation rules for reply content and file attachment
+        $rules = [
             'content' => 'required|string',
-        ]);
+        ];
+
+        // Add file validation rules if file is uploaded
+        if ($request->hasFile('attachment')) {
+            $rules['attachment'] = [
+                'file',
+                'max:25600', // 25MB in KB
+                'mimes:jpg,jpeg,png,gif,bmp,webp,svg,tiff,ico,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp,zip,rar,7z,csv,json,xml'
+            ];
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         // If validation fails, return JSON error for AJAX requests
         if ($validator->fails()) {
@@ -482,12 +495,42 @@ class InstructionController extends Controller
 
         DB::beginTransaction();
         try {
-            // Create the reply
-            $reply = InstructionReply::create([
+            // Prepare reply data
+            $replyData = [
                 'instruction_id' => $instruction->id,
                 'user_id' => $user->id,
                 'content' => $request->content,
-            ]);
+            ];
+
+            // Handle file upload if present
+            if ($request->hasFile('attachment')) {
+                try {
+                    $fileUploadService = new FileUploadService();
+                    $fileInfo = $fileUploadService->uploadFile($request->file('attachment'));
+                    
+                    $replyData['attachment_filename'] = $fileInfo['filename'];
+                    $replyData['attachment_original_name'] = $fileInfo['original_name'];
+                    $replyData['attachment_path'] = $fileInfo['path'];
+                    $replyData['attachment_mime_type'] = $fileInfo['mime_type'];
+                    $replyData['attachment_size'] = $fileInfo['size'];
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'File upload failed: ' . $e->getMessage()
+                        ], 422);
+                    }
+                    
+                    return back()
+                        ->with('error', 'File upload failed: ' . $e->getMessage())
+                        ->withInput();
+                }
+            }
+
+            // Create the reply
+            $reply = InstructionReply::create($replyData);
 
             // Log the activity
             InstructionActivity::create([
@@ -525,19 +568,34 @@ class InstructionController extends Controller
 
             // For AJAX requests, return a JSON response with all needed data
             if ($request->ajax()) {
+                $replyResponse = [
+                    'id' => $reply->id,
+                    'content' => $reply->content,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->full_name,
+                        'avatar_url' => $user->avatar_url
+                    ],
+                    'created_at' => $reply->created_at->toISOString(),
+                    'attachment' => null
+                ];
+
+                // Add attachment information if present
+                if ($reply->hasAttachment()) {
+                    $replyResponse['attachment'] = [
+                        'url' => $reply->attachment_url,
+                        'original_name' => $reply->attachment_original_name,
+                        'size' => $reply->formatted_file_size,
+                        'mime_type' => $reply->attachment_mime_type,
+                        'is_image' => $reply->isAttachmentImage(),
+                        'icon' => $reply->attachment_icon
+                    ];
+                }
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Reply added successfully.',
-                    'reply' => [
-                        'id' => $reply->id,
-                        'content' => $reply->content,
-                        'user' => [
-                            'id' => $user->id,
-                            'name' => $user->full_name,
-                            'avatar_url' => $user->avatar_url // Ensure avatar is sent
-                        ],
-                        'created_at' => $reply->created_at->toISOString() // Use ISO string for moment.js
-                    ]
+                    'reply' => $replyResponse
                 ]);
             }
 
@@ -714,16 +772,30 @@ class InstructionController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(function($reply) {
-                return [
+                $replyData = [
                     'id' => $reply->id,
                     'content' => $reply->content,
-                    'attachment' => $reply->attachment_url,
                     'user' => [
                         'id' => $reply->user->id,
                         'name' => $reply->user->full_name
                     ],
-                    'created_at' => $reply->created_at->format('M d, Y g:i A')
+                    'created_at' => $reply->created_at->format('M d, Y g:i A'),
+                    'attachment' => null
                 ];
+
+                // Add attachment information if present
+                if ($reply->hasAttachment()) {
+                    $replyData['attachment'] = [
+                        'url' => $reply->attachment_url,
+                        'original_name' => $reply->attachment_original_name,
+                        'size' => $reply->formatted_file_size,
+                        'mime_type' => $reply->attachment_mime_type,
+                        'is_image' => $reply->isAttachmentImage(),
+                        'icon' => $reply->attachment_icon
+                    ];
+                }
+
+                return $replyData;
             });
 
         // Get new activities
@@ -756,5 +828,41 @@ class InstructionController extends Controller
                 'activities' => $newActivities
             ]
         ]);
+    }
+
+    /**
+     * Download attachment from instruction reply
+     */
+    public function downloadAttachment(InstructionReply $reply)
+    {
+        $user = Auth::user();
+
+        // Check if user has access to the instruction
+        if (!$reply->instruction->canBeAccessedBy($user)) {
+            abort(403, 'You do not have permission to access this attachment.');
+        }
+
+        // Check if reply has attachment
+        if (!$reply->hasAttachment()) {
+            abort(404, 'Attachment not found.');
+        }
+
+        // Check if file exists
+        if (!Storage::disk('public')->exists($reply->attachment_path)) {
+            abort(404, 'File not found on server.');
+        }
+
+        // Log the download activity
+        UserActivityService::log(
+            'attachment_downloaded',
+            'Downloaded attachment: ' . $reply->attachment_original_name,
+            ['reply_id' => $reply->id, 'instruction_id' => $reply->instruction_id]
+        );
+
+        // Return file download response
+        return Storage::disk('public')->download(
+            $reply->attachment_path,
+            $reply->attachment_original_name
+        );
     }
 }

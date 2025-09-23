@@ -297,6 +297,46 @@
                                     <textarea name="content" id="reply-content" class="form-control" placeholder="Type your reply here..." required></textarea>
                                     <div id="content-error" class="invalid-feedback d-none"></div>
                                 </div>
+                                
+                                {{-- File Upload Section --}}
+                                <div class="mb-3">
+                                    <label for="attachment" class="form-label">
+                                        <i class="fas fa-paperclip me-1"></i> Attach File (Optional)
+                                    </label>
+                                    
+                                    {{-- Enhanced File Upload Area --}}
+                                    <div class="file-upload-area" id="file-upload-area">
+                                        <input type="file" name="attachment" id="attachment" class="form-control" 
+                                               accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.tiff,.ico,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.odp,.zip,.rar,.7z,.csv,.json,.xml">
+                                        <div class="upload-placeholder" id="upload-placeholder">
+                                            <div class="text-center p-4">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                                <p class="mb-2"><strong>Click to browse</strong> or drag and drop your file here</p>
+                                                <small class="text-muted">
+                                                    Maximum file size: 25MB<br>
+                                                    Supported: Images, PDF, Word, Excel, PowerPoint, Archives, Text files
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="attachment-error" class="invalid-feedback d-none"></div>
+                                    
+                                    {{-- File Preview --}}
+                                    <div id="file-preview" class="mt-3 d-none">
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i id="file-icon" class="fas fa-file me-3"></i>
+                                            <div class="flex-grow-1">
+                                                <div id="file-name" class="file-name"></div>
+                                                <div id="file-size" class="file-size"></div>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" id="remove-file" title="Remove file">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-paper-plane me-1"></i> Send Reply
@@ -351,11 +391,203 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentField = document.getElementById('reply-content');
     const contentError = document.getElementById('content-error');
     const timelineContainer = document.getElementById('timeline-container');
+    const attachmentField = document.getElementById('attachment');
+    const attachmentError = document.getElementById('attachment-error');
+    const filePreview = document.getElementById('file-preview');
+    const fileIcon = document.getElementById('file-icon');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const removeFileBtn = document.getElementById('remove-file');
+
+    // Enhanced file type icons and categories mapping
+    const fileIcons = {
+        // Microsoft Office - Brand colors
+        'doc': 'fas fa-file-word text-word',
+        'docx': 'fas fa-file-word text-word',
+        'xls': 'fas fa-file-excel text-excel',
+        'xlsx': 'fas fa-file-excel text-excel',
+        'ppt': 'fas fa-file-powerpoint text-powerpoint',
+        'pptx': 'fas fa-file-powerpoint text-powerpoint',
+        
+        // PDF
+        'pdf': 'fas fa-file-pdf text-pdf',
+        
+        // Images
+        'jpg': 'fas fa-image text-image',
+        'jpeg': 'fas fa-image text-image',
+        'png': 'fas fa-image text-image',
+        'gif': 'fas fa-image text-image',
+        'bmp': 'fas fa-image text-image',
+        'webp': 'fas fa-image text-image',
+        'svg': 'fas fa-image text-image',
+        'tiff': 'fas fa-image text-image',
+        'ico': 'fas fa-image text-image',
+        
+        // Text files
+        'txt': 'fas fa-file-alt text-text',
+        'rtf': 'fas fa-file-alt text-text',
+        'csv': 'fas fa-file-csv text-excel',
+        'json': 'fas fa-file-code text-code',
+        'xml': 'fas fa-file-code text-code',
+        
+        // Archives
+        'zip': 'fas fa-file-archive text-archive',
+        'rar': 'fas fa-file-archive text-archive',
+        '7z': 'fas fa-file-archive text-archive',
+        
+        // OpenDocument
+        'odt': 'fas fa-file-word text-word',
+        'ods': 'fas fa-file-excel text-excel',
+        'odp': 'fas fa-file-powerpoint text-powerpoint'
+    };
+
+    const fileCategories = {
+        'doc': 'word', 'docx': 'word', 'odt': 'word',
+        'xls': 'excel', 'xlsx': 'excel', 'ods': 'excel', 'csv': 'excel',
+        'ppt': 'powerpoint', 'pptx': 'powerpoint', 'odp': 'powerpoint',
+        'pdf': 'pdf',
+        'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image', 
+        'bmp': 'image', 'webp': 'image', 'svg': 'image', 'tiff': 'image', 'ico': 'image',
+        'zip': 'archive', 'rar': 'archive', '7z': 'archive',
+        'txt': 'text', 'rtf': 'text',
+        'json': 'code', 'xml': 'code'
+    };
 
     function resetValidationState() {
         contentField.classList.remove('is-invalid');
         contentError.classList.add('d-none');
+        attachmentField.classList.remove('is-invalid');
+        attachmentError.classList.add('d-none');
     }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function getFileIcon(extension) {
+        return fileIcons[extension.toLowerCase()] || 'fas fa-file text-secondary';
+    }
+
+    function getFileCategory(extension) {
+        return fileCategories[extension.toLowerCase()] || 'document';
+    }
+
+    // Handle file selection
+    attachmentField.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+            // Validate file size (25MB = 26214400 bytes)
+            if (file.size > 26214400) {
+                attachmentField.classList.add('is-invalid');
+                attachmentError.textContent = 'File size must be less than 25MB.';
+                attachmentError.classList.remove('d-none');
+                attachmentField.value = '';
+                filePreview.classList.add('d-none');
+                return;
+            }
+
+            // Show file preview with enhanced styling
+            const extension = file.name.split('.').pop();
+            const category = getFileCategory(extension);
+            
+            fileIcon.className = getFileIcon(extension);
+            fileName.textContent = file.name;
+            fileName.className = 'file-name';
+            fileSize.textContent = formatFileSize(file.size);
+            fileSize.className = 'file-size';
+            
+            // Add file category class to preview
+            const alertElement = filePreview.querySelector('.alert');
+            alertElement.className = `alert alert-info d-flex align-items-center file-${category}`;
+            
+            filePreview.classList.remove('d-none');
+            
+            // Add animation
+            setTimeout(() => {
+                filePreview.classList.add('new-attachment');
+            }, 10);
+            
+            // Clear any previous errors
+            attachmentField.classList.remove('is-invalid');
+            attachmentError.classList.add('d-none');
+        } else {
+            filePreview.classList.add('d-none');
+        }
+    });
+
+    // Handle file removal
+    removeFileBtn.addEventListener('click', function() {
+        attachmentField.value = '';
+        filePreview.classList.add('d-none');
+        filePreview.classList.remove('new-attachment');
+        attachmentField.classList.remove('is-invalid');
+        attachmentError.classList.add('d-none');
+        
+        // Show upload placeholder again
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        uploadPlaceholder.style.display = 'block';
+    });
+
+    // Enhanced drag and drop functionality
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Handle dropped files
+    fileUploadArea.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight(e) {
+        uploadPlaceholder.classList.add('drag-over');
+    }
+
+    function unhighlight(e) {
+        uploadPlaceholder.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+            attachmentField.files = files;
+            // Trigger change event
+            const event = new Event('change', { bubbles: true });
+            attachmentField.dispatchEvent(event);
+        }
+    }
+
+    // Hide upload placeholder when file is selected
+    attachmentField.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            uploadPlaceholder.style.display = 'none';
+        } else {
+            uploadPlaceholder.style.display = 'block';
+        }
+    });
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -423,6 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 timelineContainer.scrollTop = 0;
                 form.reset();
+                filePreview.classList.add('d-none');
             }
         })
         .catch(error => {
@@ -434,6 +667,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     contentField.classList.add('is-invalid');
                     contentError.textContent = errors.content[0];
                     contentError.classList.remove('d-none');
+                }
+                if (errors.attachment) {
+                    attachmentField.classList.add('is-invalid');
+                    attachmentError.textContent = errors.attachment[0];
+                    attachmentError.classList.remove('d-none');
                 }
                 errorMessage = Object.values(errors)[0][0];
             }
@@ -458,8 +696,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const relativeTime = moment(reply.created_at).fromNow();
         const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.name)}&color=7F9CF5&background=EBF4FF`;
 
-        // This is a simplified version of your partial. You'd include the full partial HTML here.
-        // For this example, I am creating a simplified version of _timeline_reply_item
+        let attachmentHtml = '';
+        if (reply.attachment) {
+            const downloadUrl = `/instructions/replies/${reply.id}/download`;
+            const extension = reply.attachment.original_name.split('.').pop().toLowerCase();
+            const category = getFileCategory(extension);
+            
+            attachmentHtml = `
+                <div class="mt-3">
+                    <div class="attachment-item file-${category} d-flex align-items-center p-3 new-attachment">
+                        <i class="${reply.attachment.icon} me-3"></i>
+                        <div class="flex-grow-1">
+                            <a href="${downloadUrl}" class="file-name text-decoration-none" target="_blank">
+                                ${reply.attachment.original_name}
+                            </a>
+                            <br>
+                            <span class="file-size">${reply.attachment.size}</span>
+                        </div>
+                        <a href="${downloadUrl}" class="btn btn-sm btn-outline-primary" target="_blank" title="Download ${reply.attachment.original_name}">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                </div>`;
+        }
+
         return `
         <div class="timeline-item mb-4">
             <div class="timeline-icon bg-primary-soft text-primary">
@@ -475,6 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="p-3 rounded" style="background-color: var(--bg-reply);">
                     <p class="mb-0" style="white-space: pre-wrap;">${reply.content}</p>
+                    ${attachmentHtml}
                 </div>
             </div>
         </div>`;
