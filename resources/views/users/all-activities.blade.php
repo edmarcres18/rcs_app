@@ -136,15 +136,15 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
+            <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
                 <div class="mb-2 mb-md-0">
                     <span class="text-muted">
                         Showing {{ $activities->firstItem() ?? 0 }} to {{ $activities->lastItem() ?? 0 }} of {{ $activities->total() }} activities
                     </span>
                 </div>
-                <div>
-                    {{ $activities->withQueryString()->links() }}
-                </div>
+                <nav aria-label="Activity pagination" class="ms-auto">
+                    {{ $activities->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </nav>
             </div>
         </div>
     </div>
@@ -188,6 +188,11 @@
         .card-header .input-group {
             width: 100%;
         }
+    }
+
+    /* Pagination spacing/alignment fixes */
+    .pagination {
+        margin-bottom: 0; /* keep pagination aligned inside flex row */
     }
 </style>
 @endsection
