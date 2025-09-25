@@ -267,46 +267,6 @@
         </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0">
-                <div class="card-body">
-                    <form class="row g-3 align-items-center" action="{{ route('instructions.index') }}" method="GET">
-                        <div class="col-md-3">
-                            <label class="visually-hidden" for="searchQuery">Search</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent"><i class="fas fa-search"></i></span>
-                                <input type="text" class="form-control" id="searchQuery" name="search" placeholder="Search instructions...">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="visually-hidden" for="statusFilter">Status</label>
-                            <select class="form-select" id="statusFilter" name="status">
-                                <option selected value="">Status: All</option>
-                                <option value="pending">Pending</option>
-                                <option value="completed">Completed</option>
-                                <option value="forwarded">Forwarded</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="visually-hidden" for="dateRange">Date Range</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent"><i class="fas fa-calendar"></i></span>
-                                <input type="text" class="form-control" id="dateRange" name="date_range" placeholder="Date range">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="reset" class="btn btn-outline-secondary w-100">Reset</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Main Content Sections -->
     <div class="row">
@@ -359,12 +319,21 @@
                                         $status = 'Pending';
                                         $badgeClass = 'bg-warning text-dark';
 
-                                        if ($instruction->activities()->where('action', 'completed')->exists()) {
+                                        // Check if instruction has been replied or forwarded by the current user
+                                        $hasUserActivity = $instruction->activities()
+                                            ->where('user_id', auth()->id())
+                                            ->whereIn('action', ['replied', 'forwarded'])
+                                            ->exists();
+
+                                        if ($hasUserActivity) {
                                             $status = 'Completed';
                                             $badgeClass = 'bg-success';
                                         } elseif ($instruction->replies()->exists()) {
                                             $status = 'In Progress';
                                             $badgeClass = 'bg-info';
+                                        } elseif ($instruction->target_deadline && $instruction->target_deadline < now()) {
+                                            $status = 'Delayed';
+                                            $badgeClass = 'bg-danger';
                                         }
                                         @endphp
                                         <span class="badge {{ $badgeClass }}">{{ $status }}</span>
@@ -481,12 +450,21 @@
                                 $status = 'Pending';
                                 $badgeClass = 'bg-warning text-dark';
 
-                                if ($forwarded->activities()->where('action', 'completed')->exists()) {
+                                // Check if instruction has been replied or forwarded by the current user
+                                $hasUserActivity = $forwarded->activities()
+                                    ->where('user_id', auth()->id())
+                                    ->whereIn('action', ['replied', 'forwarded'])
+                                    ->exists();
+
+                                if ($hasUserActivity) {
                                     $status = 'Completed';
                                     $badgeClass = 'bg-success';
                                 } elseif ($forwarded->replies()->exists()) {
                                     $status = 'In Review';
                                     $badgeClass = 'bg-info';
+                                } elseif ($forwarded->target_deadline && $forwarded->target_deadline < now()) {
+                                    $status = 'Delayed';
+                                    $badgeClass = 'bg-danger';
                                 }
                             @endphp
                             <span class="badge {{ $badgeClass }}">{{ $status }}</span>

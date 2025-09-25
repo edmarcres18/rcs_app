@@ -8,7 +8,6 @@ use App\Models\InstructionActivity;
 use App\Models\InstructionReply;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -55,7 +54,6 @@ class HomeController extends Controller
     /**
      * Get dashboard data for EMPLOYEE role.
      *
-     * @param \App\Models\User $user
      * @return array
      */
     private function getEmployeeDashboardData(User $user)
@@ -64,8 +62,12 @@ class HomeController extends Controller
         $receivedInstructions = $user->receivedInstructions;
 
         $totalInstructions = $receivedInstructions->count();
-        $pendingInstructions = $receivedInstructions->filter(function($instruction) {
-            return !$instruction->activities()->where('action', 'completed')->exists();
+        $pendingInstructions = $receivedInstructions->filter(function ($instruction) use ($user) {
+            // An instruction is pending if the user has not replied or forwarded it
+            return ! $instruction->activities()
+                ->where('user_id', $user->id)
+                ->whereIn('action', ['replied', 'forwarded'])
+                ->exists();
         })->count();
         $completedInstructions = $totalInstructions - $pendingInstructions;
 
@@ -75,19 +77,16 @@ class HomeController extends Controller
             ->count();
 
         // Total feedback (replies received on instructions)
-        $feedbackCount = InstructionReply::whereHas('instruction', function($query) use ($user) {
+        $feedbackCount = InstructionReply::whereHas('instruction', function ($query) use ($user) {
             $query->where('sender_id', $user->id);
         })->count();
 
-        // Get upcoming deadlines
+        // Get upcoming deadlines (instructions due within 5 days)
         $upcomingDeadlines = Instruction::join('instruction_user', 'instructions.id', '=', 'instruction_user.instruction_id')
             ->where('instruction_user.user_id', $user->id)
-            ->whereDate('instructions.created_at', '>=', now()->subDays(30))
-            ->whereNotIn('instructions.id', function($query) {
-                $query->select('instruction_id')
-                    ->from('instruction_activities')
-                    ->where('action', 'completed');
-            })
+            ->whereNotNull('instructions.target_deadline')
+            ->whereDate('instructions.target_deadline', '>=', now())
+            ->whereDate('instructions.target_deadline', '<=', now()->addDays(5))
             ->count();
 
         // Get trend data (last 7 entries)
@@ -104,23 +103,23 @@ class HomeController extends Controller
             ->get();
 
         // Get recent feedbacks (replies)
-        $recentFeedbacks = InstructionReply::whereHas('instruction', function($query) use ($user) {
-            $query->where(function($q) use ($user) {
+        $recentFeedbacks = InstructionReply::whereHas('instruction', function ($query) use ($user) {
+            $query->where(function ($q) use ($user) {
                 $q->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($r) use ($user) {
-                      $r->where('users.id', $user->id);
-                  });
+                    ->orWhereHas('recipients', function ($r) use ($user) {
+                        $r->where('users.id', $user->id);
+                    });
             });
         })
-        ->with(['user', 'instruction'])
-        ->latest()
-        ->take(4)
-        ->get();
+            ->with(['user', 'instruction'])
+            ->latest()
+            ->take(4)
+            ->get();
 
         // Get forwarded instructions
         $forwardedInstructionList = $user->receivedInstructions()
             ->whereNotNull('forwarded_by_id')
-            ->with(['sender', 'recipients' => function($query) {
+            ->with(['sender', 'recipients' => function ($query) {
                 $query->whereNotNull('instruction_user.forwarded_by_id');
             }])
             ->latest('instruction_user.created_at')
@@ -145,7 +144,6 @@ class HomeController extends Controller
     /**
      * Get dashboard data for SUPERVISOR role.
      *
-     * @param \App\Models\User $user
      * @return array
      */
     private function getSupervisorDashboardData(User $user)
@@ -156,52 +154,56 @@ class HomeController extends Controller
 
         $totalInstructions = $sentInstructions->count() + $receivedInstructions->count();
 
-        // Pending instructions (both sent and received without completion)
-        $pendingSent = $sentInstructions->filter(function($instruction) {
-            return !$instruction->activities()->where('action', 'completed')->exists();
+        // Pending instructions (both sent and received without user interaction)
+        $pendingSent = $sentInstructions->filter(function ($instruction) {
+            // For sent instructions, check if any recipient has replied or forwarded
+            return ! $instruction->activities()
+                ->whereIn('action', ['replied', 'forwarded'])
+                ->exists();
         })->count();
 
-        $pendingReceived = $receivedInstructions->filter(function($instruction) {
-            return !$instruction->activities()->where('action', 'completed')->exists();
+        $pendingReceived = $receivedInstructions->filter(function ($instruction) use ($user) {
+            // For received instructions, check if this user has replied or forwarded
+            return ! $instruction->activities()
+                ->where('user_id', $user->id)
+                ->whereIn('action', ['replied', 'forwarded'])
+                ->exists();
         })->count();
 
         $pendingInstructions = $pendingSent + $pendingReceived;
         $completedInstructions = $totalInstructions - $pendingInstructions;
 
         // Forwarded instructions count
-        $forwardedInstructions = Instruction::whereHas('recipients', function($query) {
+        $forwardedInstructions = Instruction::whereHas('recipients', function ($query) {
             $query->whereNotNull('instruction_user.forwarded_by_id');
         })
-        ->where(function($query) use ($user) {
-            $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
-        })
-        ->count();
+            ->where(function ($query) use ($user) {
+                $query->where('sender_id', $user->id)
+                    ->orWhereHas('recipients', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->count();
 
         // Total feedback (replies)
-        $feedbackCount = InstructionReply::whereHas('instruction', function($query) use ($user) {
+        $feedbackCount = InstructionReply::whereHas('instruction', function ($query) use ($user) {
             $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
+                ->orWhereHas('recipients', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
         })->count();
 
-        // Get upcoming deadlines
-        $upcomingDeadlines = Instruction::where(function($query) use ($user) {
+        // Get upcoming deadlines (instructions due within 5 days)
+        $upcomingDeadlines = Instruction::where(function ($query) use ($user) {
             $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
+                ->orWhereHas('recipients', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
         })
-        ->whereDate('created_at', '>=', now()->subDays(30))
-        ->whereNotIn('id', function($query) {
-            $query->select('instruction_id')
-                ->from('instruction_activities')
-                ->where('action', 'completed');
-        })
-        ->count();
+            ->whereNotNull('target_deadline')
+            ->whereDate('target_deadline', '>=', now())
+            ->whereDate('target_deadline', '<=', now()->addDays(5))
+            ->count();
 
         // Get trend data
         $trendData = $this->getInstructionTrendData($user, true);
@@ -210,43 +212,43 @@ class HomeController extends Controller
         $statusDistribution = $this->getStatusDistributionData($user, true);
 
         // Get recent assigned instructions
-        $recentInstructions = Instruction::where(function($query) use ($user) {
+        $recentInstructions = Instruction::where(function ($query) use ($user) {
             $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
+                ->orWhereHas('recipients', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
         })
-        ->with(['sender', 'recipients'])
-        ->latest()
-        ->take(5)
-        ->get();
+            ->with(['sender', 'recipients'])
+            ->latest()
+            ->take(5)
+            ->get();
 
         // Get recent feedbacks
-        $recentFeedbacks = InstructionReply::whereHas('instruction', function($query) use ($user) {
+        $recentFeedbacks = InstructionReply::whereHas('instruction', function ($query) use ($user) {
             $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
+                ->orWhereHas('recipients', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
         })
-        ->with(['user', 'instruction'])
-        ->latest()
-        ->take(4)
-        ->get();
+            ->with(['user', 'instruction'])
+            ->latest()
+            ->take(4)
+            ->get();
 
         // Get forwarded instructions
-        $forwardedInstructionList = Instruction::whereHas('recipients', function($query) {
+        $forwardedInstructionList = Instruction::whereHas('recipients', function ($query) {
             $query->whereNotNull('instruction_user.forwarded_by_id');
         })
-        ->where(function($query) use ($user) {
-            $query->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($q) use ($user) {
-                      $q->where('users.id', $user->id);
-                  });
-        })
-        ->with(['sender', 'recipients'])
-        ->latest()
-        ->take(4)
-        ->get();
+            ->where(function ($query) use ($user) {
+                $query->where('sender_id', $user->id)
+                    ->orWhereHas('recipients', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->with(['sender', 'recipients'])
+            ->latest()
+            ->take(4)
+            ->get();
 
         return [
             'totalInstructions' => $totalInstructions,
@@ -274,30 +276,27 @@ class HomeController extends Controller
         // For ADMIN, show statistics for all instructions
         $totalInstructions = Instruction::count();
 
-        // Pending instructions (without completion)
-        $pendingInstructions = Instruction::whereNotIn('id', function($query) {
+        // Pending instructions (without replies or forwards)
+        $pendingInstructions = Instruction::whereNotIn('id', function ($query) {
             $query->select('instruction_id')
                 ->from('instruction_activities')
-                ->where('action', 'completed');
+                ->whereIn('action', ['replied', 'forwarded']);
         })->count();
 
         $completedInstructions = $totalInstructions - $pendingInstructions;
 
         // Forwarded instructions
-        $forwardedInstructions = Instruction::whereHas('recipients', function($query) {
+        $forwardedInstructions = Instruction::whereHas('recipients', function ($query) {
             $query->whereNotNull('instruction_user.forwarded_by_id');
         })->count();
 
         // Total feedback (replies)
         $feedbackCount = InstructionReply::count();
 
-        // Get upcoming deadlines
-        $upcomingDeadlines = Instruction::whereDate('created_at', '>=', now()->subDays(30))
-            ->whereNotIn('id', function($query) {
-                $query->select('instruction_id')
-                    ->from('instruction_activities')
-                    ->where('action', 'completed');
-            })
+        // Get upcoming deadlines (instructions due within 5 days)
+        $upcomingDeadlines = Instruction::whereNotNull('target_deadline')
+            ->whereDate('target_deadline', '>=', now())
+            ->whereDate('target_deadline', '<=', now()->addDays(5))
             ->count();
 
         // Get trend data
@@ -331,13 +330,13 @@ class HomeController extends Controller
             ->get();
 
         // Get forwarded instructions
-        $forwardedInstructionList = Instruction::whereHas('recipients', function($query) {
+        $forwardedInstructionList = Instruction::whereHas('recipients', function ($query) {
             $query->whereNotNull('instruction_user.forwarded_by_id');
         })
-        ->with(['sender', 'recipients'])
-        ->latest()
-        ->take(4)
-        ->get();
+            ->with(['sender', 'recipients'])
+            ->latest()
+            ->take(4)
+            ->get();
 
         return [
             'totalInstructions' => $totalInstructions,
@@ -383,7 +382,7 @@ class HomeController extends Controller
         ];
 
         // Get active users count (with activity in last 7 days)
-        $activeUsers = User::whereHas('activities', function($query) {
+        $activeUsers = User::whereHas('activities', function ($query) {
             $query->whereDate('created_at', '>=', now()->subDays(7));
         })->count();
 
@@ -398,8 +397,7 @@ class HomeController extends Controller
     /**
      * Get instruction trend data for user dashboard.
      *
-     * @param \App\Models\User $user
-     * @param bool $includeSent
+     * @param  bool  $includeSent
      * @return array
      */
     private function getInstructionTrendData(User $user, $includeSent = false)
@@ -418,14 +416,14 @@ class HomeController extends Controller
             $query = Instruction::query();
 
             if ($includeSent) {
-                $query->where(function($q) use ($user) {
+                $query->where(function ($q) use ($user) {
                     $q->where('sender_id', $user->id)
-                      ->orWhereHas('recipients', function($r) use ($user) {
-                          $r->where('users.id', $user->id);
-                      });
+                        ->orWhereHas('recipients', function ($r) use ($user) {
+                            $r->where('users.id', $user->id);
+                        });
                 });
             } else {
-                $query->whereHas('recipients', function($q) use ($user) {
+                $query->whereHas('recipients', function ($q) use ($user) {
                     $q->where('users.id', $user->id);
                 });
             }
@@ -435,12 +433,20 @@ class HomeController extends Controller
                 ->where('created_at', '<=', $date)
                 ->count();
 
-            // Count completed instructions up to this date
+            // Count completed instructions up to this date (instructions with replies or forwards)
             $completedCount = (clone $query)
                 ->where('created_at', '<=', $date)
-                ->whereHas('activities', function($q) use ($date) {
-                    $q->where('action', 'completed')
-                      ->where('created_at', '<=', $date);
+                ->whereHas('activities', function ($q) use ($date, $user, $includeSent) {
+                    if ($includeSent) {
+                        // For supervisors, any activity counts as completion
+                        $q->whereIn('action', ['replied', 'forwarded'])
+                            ->where('created_at', '<=', $date);
+                    } else {
+                        // For employees, only their own activities count
+                        $q->where('user_id', $user->id)
+                            ->whereIn('action', ['replied', 'forwarded'])
+                            ->where('created_at', '<=', $date);
+                    }
                 })
                 ->count();
 
@@ -453,7 +459,7 @@ class HomeController extends Controller
         }
 
         return [
-            'labels' => $dates->map(function($date) {
+            'labels' => $dates->map(function ($date) {
                 return $date->format('M d');
             })->toArray(),
             'totalData' => $totalData,
@@ -482,11 +488,11 @@ class HomeController extends Controller
             // Count total instructions up to this date
             $totalCount = Instruction::where('created_at', '<=', $date)->count();
 
-            // Count completed instructions up to this date
+            // Count completed instructions up to this date (instructions with replies or forwards)
             $completedCount = Instruction::where('created_at', '<=', $date)
-                ->whereHas('activities', function($q) use ($date) {
-                    $q->where('action', 'completed')
-                      ->where('created_at', '<=', $date);
+                ->whereHas('activities', function ($q) use ($date) {
+                    $q->whereIn('action', ['replied', 'forwarded'])
+                        ->where('created_at', '<=', $date);
                 })
                 ->count();
 
@@ -499,7 +505,7 @@ class HomeController extends Controller
         }
 
         return [
-            'labels' => $dates->map(function($date) {
+            'labels' => $dates->map(function ($date) {
                 return $date->format('M d');
             })->toArray(),
             'totalData' => $totalData,
@@ -511,8 +517,7 @@ class HomeController extends Controller
     /**
      * Get status distribution data for user dashboard.
      *
-     * @param \App\Models\User $user
-     * @param bool $includeSent
+     * @param  bool  $includeSent
      * @return array
      */
     private function getStatusDistributionData(User $user, $includeSent = false)
@@ -521,30 +526,37 @@ class HomeController extends Controller
         $query = Instruction::query();
 
         if ($includeSent) {
-            $query->where(function($q) use ($user) {
+            $query->where(function ($q) use ($user) {
                 $q->where('sender_id', $user->id)
-                  ->orWhereHas('recipients', function($r) use ($user) {
-                      $r->where('users.id', $user->id);
-                  });
+                    ->orWhereHas('recipients', function ($r) use ($user) {
+                        $r->where('users.id', $user->id);
+                    });
             });
         } else {
-            $query->whereHas('recipients', function($q) use ($user) {
+            $query->whereHas('recipients', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
         }
 
         $total = $query->count();
 
-        // Get completed count
+        // Get completed count (instructions with replies or forwards)
         $completed = (clone $query)
-            ->whereHas('activities', function($q) {
-                $q->where('action', 'completed');
+            ->whereHas('activities', function ($q) use ($user, $includeSent) {
+                if ($includeSent) {
+                    // For supervisors, any activity counts as completion
+                    $q->whereIn('action', ['replied', 'forwarded']);
+                } else {
+                    // For employees, only their own activities count
+                    $q->where('user_id', $user->id)
+                        ->whereIn('action', ['replied', 'forwarded']);
+                }
             })
             ->count();
 
         // Get forwarded count
         $forwarded = (clone $query)
-            ->whereHas('recipients', function($q) {
+            ->whereHas('recipients', function ($q) {
                 $q->whereNotNull('instruction_user.forwarded_by_id');
             })
             ->count();
@@ -552,20 +564,35 @@ class HomeController extends Controller
         // Get in progress count (has replies but not completed)
         $inProgress = (clone $query)
             ->whereHas('replies')
-            ->whereNotIn('id', function($q) {
+            ->whereNotIn('id', function ($q) use ($user, $includeSent) {
                 $q->select('instruction_id')
-                  ->from('instruction_activities')
-                  ->where('action', 'completed');
+                    ->from('instruction_activities');
+                if ($includeSent) {
+                    // For supervisors, any activity counts as completion
+                    $q->whereIn('action', ['replied', 'forwarded']);
+                } else {
+                    // For employees, only their own activities count
+                    $q->where('user_id', $user->id)
+                        ->whereIn('action', ['replied', 'forwarded']);
+                }
             })
             ->count();
 
-        // Get delayed count (created more than 7 days ago, not completed)
+        // Get delayed count (past deadline, not completed)
         $delayed = (clone $query)
-            ->where('created_at', '<=', now()->subDays(7))
-            ->whereNotIn('id', function($q) {
+            ->whereNotNull('target_deadline')
+            ->whereDate('target_deadline', '<', now())
+            ->whereNotIn('id', function ($q) use ($user, $includeSent) {
                 $q->select('instruction_id')
-                  ->from('instruction_activities')
-                  ->where('action', 'completed');
+                    ->from('instruction_activities');
+                if ($includeSent) {
+                    // For supervisors, any activity counts as completion
+                    $q->whereIn('action', ['replied', 'forwarded']);
+                } else {
+                    // For employees, only their own activities count
+                    $q->where('user_id', $user->id)
+                        ->whereIn('action', ['replied', 'forwarded']);
+                }
             })
             ->count();
 
@@ -587,31 +614,32 @@ class HomeController extends Controller
     {
         $total = Instruction::count();
 
-        // Get completed count
-        $completed = Instruction::whereHas('activities', function($q) {
-            $q->where('action', 'completed');
+        // Get completed count (instructions with replies or forwards)
+        $completed = Instruction::whereHas('activities', function ($q) {
+            $q->whereIn('action', ['replied', 'forwarded']);
         })->count();
 
         // Get forwarded count
-        $forwarded = Instruction::whereHas('recipients', function($q) {
+        $forwarded = Instruction::whereHas('recipients', function ($q) {
             $q->whereNotNull('instruction_user.forwarded_by_id');
         })->count();
 
         // Get in progress count (has replies but not completed)
         $inProgress = Instruction::whereHas('replies')
-            ->whereNotIn('id', function($q) {
+            ->whereNotIn('id', function ($q) {
                 $q->select('instruction_id')
-                  ->from('instruction_activities')
-                  ->where('action', 'completed');
+                    ->from('instruction_activities')
+                    ->whereIn('action', ['replied', 'forwarded']);
             })
             ->count();
 
-        // Get delayed count (created more than 7 days ago, not completed)
-        $delayed = Instruction::where('created_at', '<=', now()->subDays(7))
-            ->whereNotIn('id', function($q) {
+        // Get delayed count (past deadline, not completed)
+        $delayed = Instruction::whereNotNull('target_deadline')
+            ->whereDate('target_deadline', '<', now())
+            ->whereNotIn('id', function ($q) {
                 $q->select('instruction_id')
-                  ->from('instruction_activities')
-                  ->where('action', 'completed');
+                    ->from('instruction_activities')
+                    ->whereIn('action', ['replied', 'forwarded']);
             })
             ->count();
 

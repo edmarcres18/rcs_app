@@ -31,3 +31,4 @@ DockerfileOld
 default.conf
 defaultold.conf
 /docs
+.cursor

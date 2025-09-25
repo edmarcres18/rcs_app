@@ -297,16 +297,16 @@
                                     <textarea name="content" id="reply-content" class="form-control" placeholder="Type your reply here..." required></textarea>
                                     <div id="content-error" class="invalid-feedback d-none"></div>
                                 </div>
-                                
+
                                 {{-- File Upload Section --}}
                                 <div class="mb-3">
                                     <label for="attachment" class="form-label">
                                         <i class="fas fa-paperclip me-1"></i> Attach File (Optional)
                                     </label>
-                                    
+
                                     {{-- Enhanced File Upload Area --}}
                                     <div class="file-upload-area" id="file-upload-area">
-                                        <input type="file" name="attachment" id="attachment" class="form-control" 
+                                        <input type="file" name="attachment" id="attachment" class="form-control"
                                                accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.tiff,.ico,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.odp,.zip,.rar,.7z,.csv,.json,.xml">
                                         <div class="upload-placeholder" id="upload-placeholder">
                                             <div class="text-center p-4">
@@ -319,9 +319,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div id="attachment-error" class="invalid-feedback d-none"></div>
-                                    
+
                                     {{-- File Preview --}}
                                     <div id="file-preview" class="mt-3 d-none">
                                         <div class="alert alert-info d-flex align-items-center">
@@ -336,7 +336,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-paper-plane me-1"></i> Send Reply
@@ -408,10 +408,10 @@ document.addEventListener('DOMContentLoaded', function() {
         'xlsx': 'fas fa-file-excel text-excel',
         'ppt': 'fas fa-file-powerpoint text-powerpoint',
         'pptx': 'fas fa-file-powerpoint text-powerpoint',
-        
+
         // PDF
         'pdf': 'fas fa-file-pdf text-pdf',
-        
+
         // Images
         'jpg': 'fas fa-image text-image',
         'jpeg': 'fas fa-image text-image',
@@ -422,19 +422,19 @@ document.addEventListener('DOMContentLoaded', function() {
         'svg': 'fas fa-image text-image',
         'tiff': 'fas fa-image text-image',
         'ico': 'fas fa-image text-image',
-        
+
         // Text files
         'txt': 'fas fa-file-alt text-text',
         'rtf': 'fas fa-file-alt text-text',
         'csv': 'fas fa-file-csv text-excel',
         'json': 'fas fa-file-code text-code',
         'xml': 'fas fa-file-code text-code',
-        
+
         // Archives
         'zip': 'fas fa-file-archive text-archive',
         'rar': 'fas fa-file-archive text-archive',
         '7z': 'fas fa-file-archive text-archive',
-        
+
         // OpenDocument
         'odt': 'fas fa-file-word text-word',
         'ods': 'fas fa-file-excel text-excel',
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'xls': 'excel', 'xlsx': 'excel', 'ods': 'excel', 'csv': 'excel',
         'ppt': 'powerpoint', 'pptx': 'powerpoint', 'odp': 'powerpoint',
         'pdf': 'pdf',
-        'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image', 
+        'jpg': 'image', 'jpeg': 'image', 'png': 'image', 'gif': 'image',
         'bmp': 'image', 'webp': 'image', 'svg': 'image', 'tiff': 'image', 'ico': 'image',
         'zip': 'archive', 'rar': 'archive', '7z': 'archive',
         'txt': 'text', 'rtf': 'text',
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle file selection
     attachmentField.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        
+
         if (file) {
             // Validate file size (25MB = 26214400 bytes)
             if (file.size > 26214400) {
@@ -494,24 +494,24 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show file preview with enhanced styling
             const extension = file.name.split('.').pop();
             const category = getFileCategory(extension);
-            
+
             fileIcon.className = getFileIcon(extension);
             fileName.textContent = file.name;
             fileName.className = 'file-name';
             fileSize.textContent = formatFileSize(file.size);
             fileSize.className = 'file-size';
-            
+
             // Add file category class to preview
             const alertElement = filePreview.querySelector('.alert');
             alertElement.className = `alert alert-info d-flex align-items-center file-${category}`;
-            
+
             filePreview.classList.remove('d-none');
-            
+
             // Add animation
             setTimeout(() => {
                 filePreview.classList.add('new-attachment');
             }, 10);
-            
+
             // Clear any previous errors
             attachmentField.classList.remove('is-invalid');
             attachmentError.classList.add('d-none');
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filePreview.classList.remove('new-attachment');
         attachmentField.classList.remove('is-invalid');
         attachmentError.classList.add('d-none');
-        
+
         // Show upload placeholder again
         const uploadPlaceholder = document.getElementById('upload-placeholder');
         uploadPlaceholder.style.display = 'block';
@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const downloadUrl = `/instructions/replies/${reply.id}/download`;
             const extension = reply.attachment.original_name.split('.').pop().toLowerCase();
             const category = getFileCategory(extension);
-            
+
             attachmentHtml = `
                 <div class="mt-3">
                     <div class="attachment-item file-${category} d-flex align-items-center p-3 new-attachment">
