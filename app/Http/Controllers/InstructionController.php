@@ -108,14 +108,6 @@ class InstructionController extends Controller
                 $query->where('users.id', $user->id);
             })
             ->with(['sender', 'recipients']) // Eager load all recipients
-            ->withCount([
-                // Total replies count for the instruction
-                'replies as replies_count',
-                // Count of replies that contain an attachment
-                'replies as attachments_count' => function ($q) {
-                    $q->whereNotNull('attachment_path');
-                },
-            ])
             ->latest('instructions.created_at')
             ->get()
             ->each(function($instruction) use ($user, $getRecipientDisplay) {
@@ -128,23 +120,12 @@ class InstructionController extends Controller
                     'is_read' => $pivot->is_read ?? false,
                     'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
                 ];
-
-                // Attach the forwarding user for richer UI details when available
-                if (!empty($instruction->pivot->forwarded_by_id)) {
-                    $instruction->forwardedBy = User::find($instruction->pivot->forwarded_by_id);
-                }
                 $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
             });
 
         // Get sent instructions
         $sentInstructions = Instruction::where('sender_id', $user->id)
             ->with('recipients')
-            ->withCount([
-                'replies as replies_count',
-                'replies as attachments_count' => function ($q) {
-                    $q->whereNotNull('attachment_path');
-                },
-            ])
             ->latest()
             ->get()
             ->each(function($instruction) use ($getRecipientDisplay) {
