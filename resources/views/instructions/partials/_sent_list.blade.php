@@ -8,17 +8,12 @@
             <div class="col-12">
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-paper-plane"></i></div>
-                    @if(request('sent_q'))
-                        <h5>No results found</h5>
-                        <p>We couldn't find any sent instructions matching "{{ e(request('sent_q')) }}".</p>
-                    @else
-                        <h5>You haven't sent any instructions yet.</h5>
-                        <p>Click the "New Instruction" button to send your first instruction to your team members.</p>
-                        <a href="{{ route('instructions.create') }}" class="btn btn-primary mt-3">
-                            <i class="fas fa-plus me-2"></i>
-                            Create Instruction
-                        </a>
-                    @endif
+                    <h5>You haven't sent any instructions yet.</h5>
+                    <p>Click the "New Instruction" button to send your first instruction to your team members.</p>
+                    <a href="{{ route('instructions.create') }}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus me-2"></i>
+                        Create Instruction
+                    </a>
                 </div>
             </div>
         @endforelse
