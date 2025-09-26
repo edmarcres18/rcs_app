@@ -103,34 +103,60 @@ class InstructionController extends Controller
             })->implode(', ');
         };
 
-        // Get received instructions
+        // Get received instructions with accurate counts and scoped pivot for the current user
         $receivedInstructions = Instruction::whereHas('recipients', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
             })
-            ->with(['sender', 'recipients']) // Eager load all recipients
+            ->with([
+                'sender',
+                // Scope recipients to the authenticated user so we get the correct pivot row
+                'recipients' => function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                },
+            ])
+            ->withCount([
+                'replies as replies_count',
+                // Count replies that have an attachment stored
+                'replies as attachments_count' => function ($q) {
+                    $q->whereNotNull('attachment_path');
+                },
+            ])
             ->latest('instructions.created_at')
-            ->get()
-            ->each(function($instruction) use ($user, $getRecipientDisplay) {
-                // Manually add pivot data for the current user
-                $pivot = DB::table('instruction_user')
-                    ->where('instruction_id', $instruction->id)
-                    ->where('user_id', $user->id)
-                    ->first();
-                $instruction->pivot = (object) [
-                    'is_read' => $pivot->is_read ?? false,
-                    'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
-                ];
-                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
-            });
+            ->get();
 
-        // Get sent instructions
+        // Map forwarder names in one query to avoid N+1
+        $forwarderIds = $receivedInstructions->map(function ($instruction) use ($user) {
+            $pivot = optional($instruction->recipients->first())->pivot;
+            return $pivot?->forwarded_by_id;
+        })->filter()->unique()->values();
+
+        $forwarders = User::whereIn('id', $forwarderIds)->get()->keyBy('id');
+
+        $receivedInstructions->each(function ($instruction) use ($getRecipientDisplay, $forwarders) {
+            $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+            $pivot = optional($instruction->recipients->first())->pivot;
+            $instruction->pivot = (object) [
+                'is_read' => (bool) ($pivot->is_read ?? false),
+                'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
+            ];
+            $instruction->forwarded_by_user = $pivot?->forwarded_by_id ? $forwarders->get($pivot->forwarded_by_id) : null;
+        });
+
+        // Get sent instructions with counts
         $sentInstructions = Instruction::where('sender_id', $user->id)
             ->with('recipients')
+            ->withCount([
+                'replies as replies_count',
+                'replies as attachments_count' => function ($q) {
+                    $q->whereNotNull('attachment_path');
+                },
+            ])
             ->latest()
-            ->get()
-            ->each(function($instruction) use ($getRecipientDisplay) {
-                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
-            });
+            ->get();
+
+        $sentInstructions->each(function ($instruction) use ($getRecipientDisplay) {
+            $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+        });
 
         return view('instructions.index', compact('receivedInstructions', 'sentInstructions'));
     }
@@ -507,7 +533,7 @@ class InstructionController extends Controller
                 try {
                     $fileUploadService = new FileUploadService();
                     $fileInfo = $fileUploadService->uploadFile($request->file('attachment'));
-                    
+
                     $replyData['attachment_filename'] = $fileInfo['filename'];
                     $replyData['attachment_original_name'] = $fileInfo['original_name'];
                     $replyData['attachment_path'] = $fileInfo['path'];
@@ -515,14 +541,14 @@ class InstructionController extends Controller
                     $replyData['attachment_size'] = $fileInfo['size'];
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    
+
                     if ($request->ajax()) {
                         return response()->json([
                             'success' => false,
                             'message' => 'File upload failed: ' . $e->getMessage()
                         ], 422);
                     }
-                    
+
                     return back()
                         ->with('error', 'File upload failed: ' . $e->getMessage())
                         ->withInput();
