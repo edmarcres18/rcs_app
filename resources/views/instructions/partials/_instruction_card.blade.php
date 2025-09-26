@@ -45,16 +45,16 @@
                             </span>
                         @endif
                         @if ($is_forwarded)
-                            <span class="badge bg-info-soft text-info fw-medium ms-2" title="{{ $instruction->forwarded_by_user?->full_name ? 'Forwarded by '.$instruction->forwarded_by_user->full_name : 'Forwarded' }}">
+                            <span class="badge bg-info-soft text-info fw-medium ms-2" title="Forwarded by {{ optional($instruction->forwardedBy)->full_name }}">
                                 <i class="fas fa-share me-1"></i>
-                                {{ $instruction->forwarded_by_user?->first_name ? ('Forwarded by '.$instruction->forwarded_by_user->first_name) : 'Forwarded' }}
+                                Forwarded
                             </span>
                         @endif
                     </div>
                     <div class="text-muted small d-flex align-items-center">
-                        <span title="Replies"><i class="fas fa-reply me-1"></i>{{ intval($instruction->replies_count ?? 0) }}</span>
+                        <span title="Replies"><i class="fas fa-reply me-1"></i>{{ $instruction->replies_count ?? '0' }}</span>
                         <span class="mx-2">·</span>
-                        <span title="Attachments"><i class="fas fa-paperclip me-1"></i>{{ intval($instruction->attachments_count ?? 0) }}</span>
+                        <span title="Replies with attachments"><i class="fas fa-paperclip me-1"></i>{{ $instruction->attachments_count ?? '0' }}</span>
                     </div>
                 </div>
             </div>

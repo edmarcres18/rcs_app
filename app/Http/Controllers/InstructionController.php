@@ -103,46 +103,40 @@ class InstructionController extends Controller
             })->implode(', ');
         };
 
-        // Get received instructions with accurate counts and scoped pivot for the current user
+        // Get received instructions
         $receivedInstructions = Instruction::whereHas('recipients', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
             })
-            ->with([
-                'sender',
-                // Scope recipients to the authenticated user so we get the correct pivot row
-                'recipients' => function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                },
-            ])
+            ->with(['sender', 'recipients']) // Eager load all recipients
             ->withCount([
+                // Total replies count for the instruction
                 'replies as replies_count',
-                // Count replies that have an attachment stored
+                // Count of replies that contain an attachment
                 'replies as attachments_count' => function ($q) {
                     $q->whereNotNull('attachment_path');
                 },
             ])
             ->latest('instructions.created_at')
-            ->get();
+            ->get()
+            ->each(function($instruction) use ($user, $getRecipientDisplay) {
+                // Manually add pivot data for the current user
+                $pivot = DB::table('instruction_user')
+                    ->where('instruction_id', $instruction->id)
+                    ->where('user_id', $user->id)
+                    ->first();
+                $instruction->pivot = (object) [
+                    'is_read' => $pivot->is_read ?? false,
+                    'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
+                ];
 
-        // Map forwarder names in one query to avoid N+1
-        $forwarderIds = $receivedInstructions->map(function ($instruction) use ($user) {
-            $pivot = optional($instruction->recipients->first())->pivot;
-            return $pivot?->forwarded_by_id;
-        })->filter()->unique()->values();
+                // Attach the forwarding user for richer UI details when available
+                if (!empty($instruction->pivot->forwarded_by_id)) {
+                    $instruction->forwardedBy = User::find($instruction->pivot->forwarded_by_id);
+                }
+                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+            });
 
-        $forwarders = User::whereIn('id', $forwarderIds)->get()->keyBy('id');
-
-        $receivedInstructions->each(function ($instruction) use ($getRecipientDisplay, $forwarders) {
-            $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
-            $pivot = optional($instruction->recipients->first())->pivot;
-            $instruction->pivot = (object) [
-                'is_read' => (bool) ($pivot->is_read ?? false),
-                'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
-            ];
-            $instruction->forwarded_by_user = $pivot?->forwarded_by_id ? $forwarders->get($pivot->forwarded_by_id) : null;
-        });
-
-        // Get sent instructions with counts
+        // Get sent instructions
         $sentInstructions = Instruction::where('sender_id', $user->id)
             ->with('recipients')
             ->withCount([
@@ -152,11 +146,10 @@ class InstructionController extends Controller
                 },
             ])
             ->latest()
-            ->get();
-
-        $sentInstructions->each(function ($instruction) use ($getRecipientDisplay) {
-            $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
-        });
+            ->get()
+            ->each(function($instruction) use ($getRecipientDisplay) {
+                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+            });
 
         return view('instructions.index', compact('receivedInstructions', 'sentInstructions'));
     }
