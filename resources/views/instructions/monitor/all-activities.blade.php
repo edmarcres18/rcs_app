@@ -29,7 +29,7 @@
             </a>
         </div>
         <div class="card-body">
-            <form action="{{ route('instructions.monitor.all-activities') }}" method="GET">
+            <form action="{{ route('instructions.monitor.all-activities') }}" method="GET" id="activities-filters-form">
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label for="action" class="form-label">Activity Type</label>
@@ -63,7 +63,22 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-3 mb-3">
+                        @php
+                            $pp = (int) request('per_page', 10);
+                            if ($pp < 10) { $pp = 10; }
+                            if ($pp > 100) { $pp = 100; }
+                        @endphp
+                        <label for="per_page" class="form-label">Per Page</label>
+                        <select class="form-select" id="per_page" name="per_page">
+                            <option value="10" {{ $pp === 10 ? 'selected' : '' }}>10 / page</option>
+                            <option value="20" {{ $pp === 20 ? 'selected' : '' }}>20 / page</option>
+                            <option value="50" {{ $pp === 50 ? 'selected' : '' }}>50 / page</option>
+                            <option value="100" {{ $pp === 100 ? 'selected' : '' }}>100 / page</option>
+                        </select>
+                    </div>
                     <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <input type="hidden" name="page" value="1">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-search me-1"></i> Apply Filters
                         </button>
@@ -168,8 +183,17 @@
                     </table>
                 </div>
 
-                <div class="mt-4">
-                    {{ $activities->withQueryString()->links() }}
+                <div class="mt-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+                    <div class="text-muted small">
+                        @if($activities->total() > 0)
+                            Showing <strong>{{ $activities->firstItem() }}</strong> to <strong>{{ $activities->lastItem() }}</strong> of <strong>{{ $activities->total() }}</strong> entries
+                        @else
+                            Showing 0 entries
+                        @endif
+                    </div>
+                    <div class="ms-md-auto">
+                        {{ $activities->withQueryString()->links() }}
+                    </div>
                 </div>
 
                 <!-- Activity Detail Modals -->
@@ -279,5 +303,29 @@
     .modal-body p {
         margin-bottom: 0.5rem;
     }
+
+    /* Normalize pagination across this page (match Instructions index) */
+    .pagination {
+        justify-content: center;
+        margin-bottom: 0;
+    }
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 0.875rem;
+        line-height: 1.2;
+    }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        var form = document.getElementById('activities-filters-form');
+        var perPage = document.getElementById('per_page');
+        if (form && perPage) {
+            perPage.addEventListener('change', function(){
+                var pageInput = form.querySelector('input[name="page"]');
+                if (pageInput) { pageInput.value = '1'; }
+                form.submit();
+            });
+        }
+    });
+    </script>
 @endsection
