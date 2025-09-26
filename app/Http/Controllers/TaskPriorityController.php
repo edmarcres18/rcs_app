@@ -507,9 +507,11 @@ class TaskPriorityController extends Controller
     {
         $user = auth()->user();
 
-        // Access control
-        if (! $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists()) {
-            abort(403, 'You can only export task priorities for instructions assigned to you.');
+        // Access control: allow both recipients and the instruction sender
+        $isRecipient = $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists();
+        $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
+        if (! $isRecipient && ! $isSender) {
+            abort(403, 'You can only export task priorities for instructions you sent or were assigned to.');
         }
 
         $groupKey = $taskPriority->group_key;
