@@ -11,7 +11,7 @@
 <a href="{{ route('instructions.show', $instruction) }}" class="text-decoration-none text-dark instruction-card-link">
     <div class="card instruction-card {{ $is_unread ? 'instruction-card-unread' : '' }}">
         <div class="card-body p-3 p-md-4">
-            <div classd-flex align-items-start>
+            <div class="d-flex align-items-start">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center">
                         @if($is_unread)
