@@ -173,7 +173,7 @@ class InstructionController extends Controller
         if ($request->filled('sent_q')) {
             $searchSent = trim((string) $request->input('sent_q'));
             $sentQuery->where(function ($q) use ($searchSent) {
-                $q->where('title', 'like', '%'.$searchSent+'%')
+                $q->where('title', 'like', '%'.$searchSent.'%')
                   ->orWhere('body', 'like', '%'.$searchSent.'%')
                   ->orWhereHas('recipients', function ($qr) use ($searchSent) {
                       $qr->where('first_name', 'like', '%'.$searchSent.'%')
