@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\V1\SystemNotificationsController as ApiSystemNotificationsController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\InstructionController;
@@ -12,13 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PresentationController;
-use App\Http\Controllers\Api\V1\SystemNotificationsController as ApiSystemNotificationsController;
-use App\Http\Controllers\AiAssistantController;
 
 // Offline fallback route for service worker
 Route::get('/offline', function () {
-    return File::get(public_path() . '/offline.html');
+    return File::get(public_path().'/offline.html');
 });
 
 Route::get('/', function () {
@@ -30,7 +29,9 @@ Route::get('/help', function () {
 });
 
 // Public presentation of end-user slides
-Route::get('/presentation', [PresentationController::class, 'show'])->name('presentation.show');
+Route::get('/presentation', function () {
+    return view('presentation');
+})->name('presentation.show');
 
 Auth::routes(['verify' => false]); // Disable default verification routes
 
@@ -126,6 +127,23 @@ Route::middleware('auth')->group(function () {
     Route::get('instructions/monitor/activities/{instruction}', [InstructionMonitorController::class, 'showActivityLogs'])->name('instructions.monitor.activities');
     Route::get('instructions/monitor/all-activities', [InstructionMonitorController::class, 'allActivityLogs'])->name('instructions.monitor.all-activities');
     Route::get('instructions/monitor/reports', [InstructionMonitorController::class, 'reports'])->name('instructions.monitor.reports');
+});
+
+// Task Priority Routes - Only for EMPLOYEE and SUPERVISOR roles
+// Read-only view for instruction senders to see priorities created by recipients
+Route::middleware(['auth'])->group(function () {
+    Route::get('task-priorities/sent', [\App\Http\Controllers\TaskPriorityController::class, 'sent'])->name('task-priorities.sent');
+});
+
+Route::middleware(['auth', 'role:EMPLOYEE,SUPERVISOR'])->group(function () {
+    // Place specific paths BEFORE the resource route to avoid being captured by {task_priority}
+    Route::get('task-priorities/recycle-bin', [\App\Http\Controllers\TaskPriorityController::class, 'recycleBin'])->name('task-priorities.recycle-bin');
+    Route::post('task-priorities/{groupKey}/restore', [\App\Http\Controllers\TaskPriorityController::class, 'restoreGroup'])->name('task-priorities.restore-group');
+    Route::delete('task-priorities/{groupKey}/force-delete', [\App\Http\Controllers\TaskPriorityController::class, 'forceDeleteGroup'])->name('task-priorities.force-delete-group');
+    Route::get('task-priorities/{taskPriority}/export', [\App\Http\Controllers\TaskPriorityController::class, 'exportGroup'])->name('task-priorities.export-group');
+
+    Route::resource('task-priorities', \App\Http\Controllers\TaskPriorityController::class);
+    Route::post('task-priorities/bulk-delete', [\App\Http\Controllers\TaskPriorityController::class, 'bulkDelete'])->name('task-priorities.bulk-delete');
 });
 
 // Notification API routes

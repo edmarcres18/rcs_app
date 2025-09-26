@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,8 +14,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\SystemNotifications;
+use App\Models\TaskPriority;
 
 class User extends Authenticatable
 {
@@ -93,26 +94,22 @@ class User extends Authenticatable
 
     /**
      * Get the full name of the user.
-     *
-     * @return string
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . $this->middle_name . ' ' . $this->last_name);
+        return trim($this->first_name.' '.$this->middle_name.' '.$this->last_name);
     }
 
     /**
      * Get the URL of the user's avatar.
-     *
-     * @return string
      */
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return asset('uploads/avatars/' . $this->avatar);
+            return asset('uploads/avatars/'.$this->avatar);
         }
 
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . '&color=7F9CF5&background=EBF4FF';
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->full_name).'&color=7F9CF5&background=EBF4FF';
     }
 
     /**
@@ -134,7 +131,7 @@ class User extends Authenticatable
      */
     public function hasTelegram()
     {
-        return !empty($this->telegram_chat_id) || !empty($this->telegram_username);
+        return ! empty($this->telegram_chat_id) || ! empty($this->telegram_username);
     }
 
     /**
@@ -147,6 +144,7 @@ class User extends Authenticatable
         if ($this->hasTelegram()) {
             $this->telegram_notifications_enabled = true;
             $this->save();
+
             return true;
         }
 
@@ -175,10 +173,11 @@ class User extends Authenticatable
     /**
      * Submit a rating for this user with comprehensive validation and error handling.
      *
-     * @param array $data Rating data containing 'rating' and optional 'comment'
-     * @param string|null $ipAddress User's IP address for tracking
-     * @param string|null $userAgent User's browser agent for tracking
+     * @param  array  $data  Rating data containing 'rating' and optional 'comment'
+     * @param  string|null  $ipAddress  User's IP address for tracking
+     * @param  string|null  $userAgent  User's browser agent for tracking
      * @return Rating The created rating instance
+     *
      * @throws ValidationException If validation fails
      * @throws \Exception If database operation fails
      */
@@ -216,7 +215,7 @@ class User extends Authenticatable
                 'user_id' => $this->id,
                 'rating_id' => $rating->id,
                 'rating_value' => $rating->rating,
-                'has_comment' => !empty($rating->comment),
+                'has_comment' => ! empty($rating->comment),
                 'ip_address' => $ipAddress,
             ]);
 
@@ -242,39 +241,38 @@ class User extends Authenticatable
     /**
      * Validate rating data before submission.
      *
-     * @param array $data
      * @throws ValidationException
      */
     private function validateRatingData(array $data): void
     {
         // Check if rating is provided
-        if (!isset($data['rating'])) {
+        if (! isset($data['rating'])) {
             throw ValidationException::withMessages([
-                'rating' => ['Rating is required.']
+                'rating' => ['Rating is required.'],
             ]);
         }
 
         // Validate rating value
         $rating = $data['rating'];
-        if (!is_numeric($rating) || $rating < 1 || $rating > 5) {
+        if (! is_numeric($rating) || $rating < 1 || $rating > 5) {
             throw ValidationException::withMessages([
-                'rating' => ['Rating must be a number between 1 and 5.']
+                'rating' => ['Rating must be a number between 1 and 5.'],
             ]);
         }
 
         // Validate comment if provided
-        if (isset($data['comment']) && !empty($data['comment'])) {
+        if (isset($data['comment']) && ! empty($data['comment'])) {
             $comment = trim($data['comment']);
             if (strlen($comment) > 1000) {
                 throw ValidationException::withMessages([
-                    'comment' => ['Comment cannot exceed 1000 characters.']
+                    'comment' => ['Comment cannot exceed 1000 characters.'],
                 ]);
             }
 
             // Basic content validation (no malicious content)
             if (preg_match('/<script|javascript:|data:/i', $comment)) {
                 throw ValidationException::withMessages([
-                    'comment' => ['Comment contains invalid content.']
+                    'comment' => ['Comment contains invalid content.'],
                 ]);
             }
         }
@@ -294,7 +292,7 @@ class User extends Authenticatable
 
         if ($recentRating) {
             throw ValidationException::withMessages([
-                'rating' => ['You can only submit one rating per day. Please try again tomorrow.']
+                'rating' => ['You can only submit one rating per day. Please try again tomorrow.'],
             ]);
         }
 
@@ -305,15 +303,13 @@ class User extends Authenticatable
 
         if ($weeklyRatingsCount >= 5) {
             throw ValidationException::withMessages([
-                'rating' => ['You have reached the weekly rating limit. Please try again next week.']
+                'rating' => ['You have reached the weekly rating limit. Please try again next week.'],
             ]);
         }
     }
 
     /**
      * Get the user's latest rating.
-     *
-     * @return Rating|null
      */
     public function getLatestRating(): ?Rating
     {
@@ -322,24 +318,22 @@ class User extends Authenticatable
 
     /**
      * Get the user's average rating.
-     *
-     * @return float|null
      */
     public function getAverageRating(): ?float
     {
         $average = $this->ratings()->avg('rating');
+
         return $average ? round($average, 2) : null;
     }
 
     /**
      * Check if user can submit a rating (not rate limited).
-     *
-     * @return bool
      */
     public function canSubmitRating(): bool
     {
         try {
             $this->checkRateLimit();
+
             return true;
         } catch (ValidationException $e) {
             return false;
@@ -348,14 +342,12 @@ class User extends Authenticatable
 
     /**
      * Get the time until user can submit next rating.
-     *
-     * @return \Carbon\Carbon|null
      */
     public function getNextRatingTime(): ?\Carbon\Carbon
     {
         $latestRating = $this->getLatestRating();
 
-        if (!$latestRating) {
+        if (! $latestRating) {
             return null;
         }
 
@@ -367,5 +359,13 @@ class User extends Authenticatable
     public function systemNotifications(): BelongsTo
     {
         return $this->belongsTo(SystemNotifications::class, 'created_by');
+    }
+
+    /**
+     * Get task priorities sent by this user.
+     */
+    public function sentPriorities(): HasMany
+    {
+        return $this->hasMany(TaskPriority::class, 'instruction_sender_id');
     }
 }

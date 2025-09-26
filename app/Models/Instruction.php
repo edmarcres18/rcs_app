@@ -68,10 +68,15 @@ class Instruction extends Model
     }
 
     /**
+     * Get task priorities for this instruction.
+     */
+    public function taskPriorities(): HasMany
+    {
+        return $this->hasMany(TaskPriority::class);
+    }
+
+    /**
      * Check if the given user can access this instruction.
-     *
-     * @param User $user
-     * @return bool
      */
     public function canBeAccessedBy(User $user): bool
     {

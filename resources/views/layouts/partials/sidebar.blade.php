@@ -31,6 +31,18 @@
                 </ul>
             </div>
 
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Task Management</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.*') ? 'active' : '' }}" data-title="Task Priorities">
+                            <i class="fas fa-flag"></i>
+                            <span>Task Priorities</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
         <!-- SUPERVISOR Role Menu -->
         @elseif($userRole === \App\Enums\UserRole::SUPERVISOR)
             <div class="sidebar-section">
@@ -40,6 +52,18 @@
                         <a href="{{ route('instructions.index') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.*') && !Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Received Instructions">
                             <i class="fas fa-inbox"></i>
                             <span>Received Instructions</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Task Management</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.*') ? 'active' : '' }}" data-title="Task Priorities">
+                            <i class="fas fa-flag"></i>
+                            <span>Task Priorities</span>
                         </a>
                     </li>
                 </ul>

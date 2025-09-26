@@ -12,11 +12,11 @@
         * {
             box-sizing: border-box;
         }
-        
+
         html {
             scroll-behavior: smooth;
         }
-        
+
         body {
             overflow-x: hidden;
         }
@@ -63,7 +63,7 @@
             transition: all 0.2s ease;
             touch-action: manipulation;
         }
-        
+
         .sidebar-link:hover {
             transform: translateX(2px);
         }
@@ -109,12 +109,12 @@
             font-size: 1.5rem;
             line-height: 1.3;
         }
-        
+
         .responsive-subheading {
             font-size: 1.125rem;
             line-height: 1.4;
         }
-        
+
         .responsive-text {
             font-size: 0.875rem;
             line-height: 1.5;
@@ -134,14 +134,14 @@
             width: 100%;
             border-collapse: collapse;
         }
-        
+
         .responsive-table th,
         .responsive-table td {
             padding: 0.5rem 0.25rem;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
-        
+
         .table-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -158,7 +158,7 @@
             font-size: 1rem;
             transition: border-color 0.2s ease;
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: #4f46e5;
@@ -175,7 +175,7 @@
             touch-action: manipulation;
             min-height: 44px;
         }
-        
+
         .btn:active {
             transform: translateY(1px);
         }
@@ -202,28 +202,28 @@
             .responsive-heading {
                 font-size: 1.875rem;
             }
-            
+
             .responsive-subheading {
                 font-size: 1.25rem;
             }
-            
+
             .responsive-text {
                 font-size: 1rem;
             }
-            
+
             .mobile-card {
                 padding: 1.5rem;
             }
-            
+
             .responsive-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1.5rem;
             }
-            
+
             .responsive-table {
                 font-size: 0.875rem;
             }
-            
+
             .responsive-table th,
             .responsive-table td {
                 padding: 0.75rem 0.5rem;
@@ -235,24 +235,24 @@
             .responsive-heading {
                 font-size: 2.25rem;
             }
-            
+
             .responsive-subheading {
                 font-size: 1.5rem;
             }
-            
+
             .mobile-card {
                 padding: 2rem;
             }
-            
+
             .responsive-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 2rem;
             }
-            
+
             .responsive-table {
                 font-size: 1rem;
             }
-            
+
             .responsive-table th,
             .responsive-table td {
                 padding: 1rem 0.75rem;
@@ -273,14 +273,14 @@
             padding-left: 1rem;
             padding-right: 1rem;
         }
-        
+
         @media (min-width: 640px) {
             .container {
                 padding-left: 1.5rem;
                 padding-right: 1.5rem;
             }
         }
-        
+
         @media (min-width: 1024px) {
             .container {
                 padding-left: 2rem;
@@ -358,6 +358,10 @@
                     <a href="#instructions-reading" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'instructions-reading' }" :aria-current="activeSection === 'instructions-reading' ? 'page' : false" title="Read and reply to instructions">
                         <span class="nav-icon"><i class="fas fa-inbox"></i></span>
                         <span class="nav-label">Reading & Replying</span>
+                    </a>
+                    <a href="#task-priorities" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'task-priorities' }" :aria-current="activeSection === 'task-priorities' ? 'page' : false" title="Plan and track work with Task Priorities">
+                        <span class="nav-icon"><i class="fas fa-list-check"></i></span>
+                        <span class="nav-label">Task Priorities</span>
                     </a>
                     <a href="#password-recovery" @click="sidebarOpen = false" class="sidebar-link touch-target px-3 lg:px-4 py-3 lg:py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm lg:text-base" :class="{ 'active': activeSection === 'password-recovery' }" :aria-current="activeSection === 'password-recovery' ? 'page' : false" title="Reset a forgotten password">
                         <span class="nav-icon"><i class="fas fa-key"></i></span>
@@ -821,6 +825,108 @@
                 <!-- Section Heading -->
                 <div class="sticky top-0 lg:top-auto bg-slate-100/80 backdrop-blur-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 z-20 border-b border-slate-200">
                     <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                        <i class="fas fa-list-check mr-4 text-sky-500"></i>
+                        Task Priorities
+                    </h2>
+                </div>
+
+                <!-- Task Priorities Section -->
+                <section id="task-priorities" class="mb-16 guide-section">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2">
+                            <div class="p-4 lg:p-8">
+                                <h3 class="font-bold text-lg lg:text-xl text-slate-800 mb-3 lg:mb-4">What are Task Priorities?</h3>
+                                <p class="text-slate-600 text-sm lg:text-base mb-4 lg:mb-6">Task Priorities help you break down an instruction into actionable items you will complete. Items are grouped and tracked together, and the instruction sender is kept up to date automatically.</p>
+
+                                <div class="space-y-6 lg:space-y-8">
+                                    <div>
+                                        <h4 class="font-semibold text-slate-800 mb-2">Who can create them?</h4>
+                                        <p class="text-slate-600 text-sm lg:text-base">Recipients of an instruction can create Task Priorities for that instruction. The instruction sender can view these in their read‑only “Sent” view.</p>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="font-semibold text-slate-800 mb-2">Statuses</h4>
+                                        <div class="flex flex-wrap gap-2 text-xs lg:text-sm">
+                                            <span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-semibold">Not Started</span>
+                                            <span class="px-2 py-1 rounded bg-blue-100 text-blue-800 font-semibold">Processing</span>
+                                            <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800 font-semibold">Accomplished</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="font-semibold text-slate-800 mb-2">Permissions</h4>
+                                        <ul class="list-disc ml-5 space-y-1 text-slate-600 text-sm lg:text-base">
+                                            <li><span class="font-semibold">Recipients</span>: Create, edit, export, and delete their own Task Priority groups for instructions they received.</li>
+                                            <li><span class="font-semibold">Senders</span>: View groups created for their instructions (read‑only).</li>
+                                            <li><span class="font-semibold">Delete rule</span>: A group can be deleted only when <span class="font-semibold">all items are Accomplished</span>.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-4 lg:p-8">
+                                <h3 class="font-bold text-lg lg:text-xl text-slate-800 mb-3 lg:mb-4">Flow Overview</h3>
+                                <ol class="list-decimal ml-5 space-y-3 text-slate-700 text-sm lg:text-base">
+                                    <li>
+                                        <span class="font-semibold">Open Create</span> — Go to Task Priorities and click <span class="font-semibold">New</span>. Pick the instruction (must be assigned to you).
+                                    </li>
+                                    <li>
+                                        <span class="font-semibold">Add items</span> — For each item, set a title, level, start date, target deadline, status, and optional notes. Items are saved together as one <span class="font-semibold">group</span>.
+                                    </li>
+                                    <li>
+                                        <span class="font-semibold">Notify sender</span> — When you create or update a group, the instruction sender is notified instantly (in‑app, email, broadcast, and Telegram).
+                                    </li>
+                                    <li>
+                                        <span class="font-semibold">Track & update</span> — Edit the group to keep statuses and deadlines current. The sender’s read‑only view updates automatically.
+                                    </li>
+                                    <li>
+                                        <span class="font-semibold">Finish & clean up</span> — When all items are Accomplished, you can delete the group. Deleted groups move to the <span class="font-semibold">Recycle Bin</span> where you can restore or permanently delete.
+                                    </li>
+                                </ol>
+
+                                <div class="mt-6 grid sm:grid-cols-2 gap-3">
+                                    <a href="{{ route('task-priorities.create') }}" class="w-full btn bg-indigo-600 text-white hover:bg-indigo-700">New Task Priorities</a>
+                                    <a href="{{ route('task-priorities.index') }}" class="w-full btn bg-slate-900 text-white hover:bg-slate-800">My Task Priorities</a>
+                                    <a href="{{ route('task-priorities.sent') }}" class="w-full btn bg-slate-100 text-slate-800 hover:bg-slate-200">Sent (Read‑only)</a>
+                                    <a href="{{ route('task-priorities.recycle-bin') }}" class="w-full btn bg-amber-100 text-amber-800 hover:bg-amber-200">Recycle Bin</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 lg:mt-8 grid lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow p-4 lg:p-6 border border-slate-200">
+                            <h4 class="font-semibold text-slate-800 mb-2">Recipient Actions</h4>
+                            <ul class="list-disc ml-5 space-y-2 text-sm lg:text-base text-slate-700">
+                                <li><span class="font-semibold">Create</span> a group tied to an instruction you received.</li>
+                                <li><span class="font-semibold">Edit</span> a group to replace all items with your latest plan.</li>
+                                <li><span class="font-semibold">Export</span> a group to a formatted Excel (.xls) file.</li>
+                                <li><span class="font-semibold">Delete</span> a group once all items are Accomplished.</li>
+                                <li><span class="font-semibold">Bulk delete</span> multiple completed groups at once.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-xl shadow p-4 lg:p-6 border border-slate-200">
+                            <h4 class="font-semibold text-slate-800 mb-2">Sender Visibility</h4>
+                            <p class="text-slate-700 text-sm lg:text-base">Instruction senders can open <span class="font-semibold">Sent</span> to see a clean, one‑row‑per‑group overview created by their recipients. Senders cannot modify recipient groups.</p>
+                            <div class="mt-3 text-xs lg:text-sm text-slate-500">Tip: Use the search bar to filter by instruction title.</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-sky-50 border-l-4 border-sky-400 p-4 lg:p-6 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0"><i class="fas fa-info-circle text-sky-500 text-lg lg:text-xl mt-1 mr-3 lg:mr-4"></i></div>
+                            <div class="text-xs lg:text-sm text-sky-800 space-y-1">
+                                <p>• Groups are identified internally by a shared key so all items move together through their lifecycle.</p>
+                                <p>• The Recycle Bin retains deleted groups until you permanently remove them.</p>
+                                <p>• Date filters and status filters help you focus on what matters now.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Heading -->
+                <div class="sticky top-0 lg:top-auto bg-slate-100/80 backdrop-blur-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8 z-20 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center">
                         <i class="fas fa-key mr-4 text-red-500"></i>
                         Password Recovery
                     </h2>
@@ -1215,8 +1321,8 @@
                             <a href="mailto:{{ config('mail.from.address') }}" class="bg-white text-indigo-600 px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-semibold hover:bg-indigo-50 transition duration-300 flex items-center justify-center text-sm lg:text-base">
                         <i class="fas fa-envelope mr-2"></i> Email Support
                     </a>
-                            <a href="mailto:{{ config('mail.from.address') }}?subject=Support%20Ticket%20Request" class="bg-indigo-500/50 text-white px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-semibold hover:bg-indigo-500/80 transition duration-300 flex items-center justify-center border border-indigo-400 text-sm lg:text-base">
-                                <i class="fas fa-life-ring mr-2"></i> Open a Ticket
+                            <a href="https://t.me/edmarcrescencio" target="_blank" rel="noopener" class="bg-indigo-500/50 text-white px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-semibold hover:bg-indigo-500/80 transition duration-300 flex items-center justify-center border border-indigo-400 text-sm lg:text-base">
+                                <i class="fab fa-telegram-plane mr-2"></i> Open a Ticket
                     </a>
                 </div>
             </div>
@@ -1242,6 +1348,7 @@
                                 <li><a href="#registration" class="text-xs lg:text-sm text-slate-600 hover:text-indigo-600 transition">Register</a></li>
                                 <li><a href="#instructions-sending" class="text-xs lg:text-sm text-slate-600 hover:text-indigo-600 transition">Send Instruction</a></li>
                                 <li><a href="#instructions-reading" class="text-xs lg:text-sm text-slate-600 hover:text-indigo-600 transition">My Instructions</a></li>
+                                <li><a href="#task-priorities" class="text-xs lg:text-sm text-slate-600 hover:text-indigo-600 transition">Task Priorities</a></li>
                                 <li><a href="#password-recovery" class="text-xs lg:text-sm text-slate-600 hover:text-indigo-600 transition">Password Recovery</a></li>
                     </ul>
                 </div>
@@ -1258,7 +1365,7 @@
                         </div>
                     </div>
                     <div class="border-t border-slate-200 mt-6 lg:mt-8 pt-6 lg:pt-8 text-center text-xs lg:text-sm text-slate-500">
-                        <p>&copy; 2024 RCS App. All Rights Reserved.</p>
+                        <p>&copy; {{ now()->year }} RCS App. All Rights Reserved.</p>
                     </div>
                 </div>
             </footer>
