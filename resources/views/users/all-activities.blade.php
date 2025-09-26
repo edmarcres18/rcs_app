@@ -21,7 +21,7 @@
             <h5 class="mb-0">Filter Activities</h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('users.all-activities') }}" class="row g-3">
+            <form method="GET" action="{{ route('users.all-activities') }}" class="row g-3" id="user-activities-filters">
                 <div class="col-md-3 col-sm-6">
                     <label for="user_id" class="form-label">User</label>
                     <select name="user_id" id="user_id" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
@@ -54,6 +54,20 @@
                     <input type="date" name="to_date" id="to_date" class="form-control"
                            value="{{ request('to_date') }}" style="background-color: var(--bg-input); color: var(--text-color);">
                 </div>
+                <div class="col-md-2 col-sm-6">
+                    @php
+                        $pp = (int) request('per_page', 10);
+                        if ($pp < 10) { $pp = 10; }
+                        if ($pp > 100) { $pp = 100; }
+                    @endphp
+                    <label for="per_page" class="form-label">Per Page</label>
+                    <select name="per_page" id="per_page" class="form-select" style="background-color: var(--bg-input); color: var(--text-color);">
+                        <option value="10" {{ $pp === 10 ? 'selected' : '' }}>10 / page</option>
+                        <option value="20" {{ $pp === 20 ? 'selected' : '' }}>20 / page</option>
+                        <option value="50" {{ $pp === 50 ? 'selected' : '' }}>50 / page</option>
+                        <option value="100" {{ $pp === 100 ? 'selected' : '' }}>100 / page</option>
+                    </select>
+                </div>
                 <div class="col-md-2 col-12">
                     <label for="search" class="form-label">Search</label>
                     <div class="input-group">
@@ -64,6 +78,7 @@
                         </button>
                     </div>
                 </div>
+                <input type="hidden" name="page" value="1">
                 <div class="col-12 mt-2 text-end">
                     <a href="{{ route('users.all-activities') }}" class="btn btn-secondary">
                         <i class="fas fa-redo me-2"></i>Reset Filters
@@ -137,10 +152,12 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
-                <div class="mb-2 mb-md-0">
-                    <span class="text-muted">
-                        Showing {{ $activities->firstItem() ?? 0 }} to {{ $activities->lastItem() ?? 0 }} of {{ $activities->total() }} activities
-                    </span>
+                <div class="mb-2 mb-md-0 text-muted small">
+                    @if($activities->total() > 0)
+                        Showing <strong>{{ $activities->firstItem() }}</strong> to <strong>{{ $activities->lastItem() }}</strong> of <strong>{{ $activities->total() }}</strong> activities
+                    @else
+                        Showing 0 activities
+                    @endif
                 </div>
                 <nav aria-label="Activity pagination" class="ms-auto">
                     {{ $activities->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
@@ -193,6 +210,25 @@
     /* Pagination spacing/alignment fixes */
     .pagination {
         margin-bottom: 0; /* keep pagination aligned inside flex row */
+        justify-content: center;
+    }
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 0.875rem;
+        line-height: 1.2;
     }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        var form = document.getElementById('user-activities-filters');
+        var perPage = document.getElementById('per_page');
+        if (form && perPage) {
+            perPage.addEventListener('change', function(){
+                var pageInput = form.querySelector('input[name="page"]');
+                if (pageInput) { pageInput.value = '1'; }
+                form.submit();
+            });
+        }
+    });
+    </script>
 @endsection

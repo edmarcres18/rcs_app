@@ -191,9 +191,9 @@
                             Showing 0 entries
                         @endif
                     </div>
-                    <div class="ms-md-auto">
-                        {{ $activities->withQueryString()->links() }}
-                    </div>
+                    <nav class="ms-md-auto" aria-label="Activities pagination">
+                        {{ $activities->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </nav>
                 </div>
 
                 <!-- Activity Detail Modals -->
