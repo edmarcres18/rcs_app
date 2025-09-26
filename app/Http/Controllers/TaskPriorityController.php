@@ -526,7 +526,16 @@ class TaskPriorityController extends Controller
             'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
         ];
 
-        $preparedBy = trim(($user->full_name ?? ($user->name ?? 'Unknown User')));
+        // Prepared By: prefer the group's creator (created_by_user_id), otherwise fallback to current user
+        $creatorName = null;
+        $creatorId = (int) ($items->first()->created_by_user_id ?? 0);
+        if ($creatorId > 0) {
+            $creator = User::find($creatorId);
+            if ($creator) {
+                $creatorName = trim(($creator->full_name ?? ($creator->name ?? '')));
+            }
+        }
+        $preparedBy = $creatorName ?: trim(($user->full_name ?? ($user->name ?? 'Unknown User')));
         $generatedAt = now()->format('Y-m-d H:i');
 
         return response()->stream(function () use ($items, $preparedBy, $generatedAt) {
