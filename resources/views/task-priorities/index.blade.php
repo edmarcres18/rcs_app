@@ -140,9 +140,9 @@
         </div>
 
         <div class="tp-pagination">
-            {{ $taskPriorities->links() }}
+            {{ $taskPriorities->appends(request()->query())->onEachSide(1)->links('pagination::bootstrap-5') }}
         </div>
-        
+
         <div id="tp-bulkbar" class="tp-bulkbar" aria-live="polite" aria-atomic="true">
             <form method="POST" action="{{ route('task-priorities.bulk-delete') }}" id="tp-bulk-form">
                 @csrf

@@ -18,82 +18,24 @@
         </div>
     </div>
 
-    <form method="GET" action="{{ route('task-priorities.sent') }}" class="tp-filters tp-filters--single" id="tp-filter-form">
-        <div class="tp-field tp-field--search">
-            <label for="instruction_title" class="sr-only">Search Instruction Title</label>
-            <div class="tp-search-wrap">
-                <span class="tp-search-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                        <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </span>
-                <input type="text" id="instruction_title" name="instruction_title" value="{{ request('instruction_title') }}" placeholder="Search instruction title..." autocomplete="off" />
-                @if(request('instruction_title'))
-                <a class="tp-clear" href="{{ route('task-priorities.sent') }}" title="Clear search" aria-label="Clear search">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </a>
-                @endif
-            </div>
+    <form method="GET" action="{{ route('task-priorities.sent') }}" class="tp-filters" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;">
+        <input type="hidden" name="page" value="1" />
+        <div class="tp-input-wrap" style="flex:1 1 300px; min-width:240px;">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Search instruction title or receiver" class="tp-input js-live-search" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px;" autocomplete="off" />
         </div>
+        <div class="tp-select-wrap" style="flex:0 0 auto;">
+            <label for="per_page" class="sr-only">Per page</label>
+            <select id="per_page" name="per_page" class="tp-select js-live-per-page" style="padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px;">
+                @php $pp = (int) request('per_page', 10); if($pp < 5) { $pp = 5; } if($pp > 10) { $pp = 10; } @endphp
+                <option value="5" {{ $pp === 5 ? 'selected' : '' }}>5 / page</option>
+                <option value="10" {{ $pp === 10 ? 'selected' : '' }}>10 / page</option>
+            </select>
+        </div>
+        <a href="{{ route('task-priorities.sent') }}" class="tp-btn tp-btn-ghost">Reset</a>
     </form>
 
-    <div class="tp-table-wrap">
-        <table class="tp-table">
-            <thead>
-                <tr>
-                    <th>Instruction Title</th>
-                    <th>Receiver</th>
-                    <th class="tp-col-actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($taskPriorities as $tp)
-                    <tr class="tp-row" data-id="{{ $tp->id }}">
-                        <td data-label="Instruction Title">
-                                <span class="tp-instruction-title" title="{{ $tp->instruction->title ?? 'N/A' }}">{{ \Illuminate\Support\Str::limit($tp->instruction->title ?? 'N/A', 80) }}</span>
-                            </div>
-                        </td>
-                        <td data-label="Receiver">
-                            <div class="tp-sender">
-                                @php $receiver = $tp->createdBy ?? null; @endphp
-                                <div class="tp-avatar" aria-hidden="true">
-                                    @if($receiver && $receiver->avatar_url)
-                                        <img src="{{ $receiver->avatar_url }}" alt="" />
-                                    @else
-                                        <span class="tp-avatar-fallback">{{ $receiver ? \Illuminate\Support\Str::of($receiver->first_name.' '.($receiver->last_name ?? ''))->substr(0,1)->upper() : '?' }}</span>
-                                    @endif
-                                </div>
-                                <div class="tp-sender-name">{{ $receiver ? trim(($receiver->first_name ?? '').' '.($receiver->last_name ?? '')) : 'Unknown' }}</div>
-                            </div>
-                        </td>
-                        <td class="tp-col-actions">
-                            <div class="tp-actions-inline" role="group" aria-label="Row actions">
-                                <a class="tp-icon-btn" href="{{ route('task-priorities.show', $tp) }}" title="View">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 .001 6.001A3 3 0 0 0 12 9z"/></svg>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3">
-                            <div class="tp-empty">
-                                <div class="tp-empty-emoji" aria-hidden="true">📭</div>
-                                <div class="tp-empty-title">No task priorities found</div>
-                                <div class="tp-empty-sub">When receivers create task priorities for your instructions, they will appear here.</div>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="tp-pagination">
-        {{ $taskPriorities->links() }}
+    <div id="tp-partial-container">
+        @include('task-priorities.partials._sent_table', ['taskPriorities' => $taskPriorities])
     </div>
 </div>
 
@@ -146,4 +88,32 @@
   .tp-btn, .tp-icon-btn { transition: none !important; }
 }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('form.tp-filters');
+  if (!form) { return; }
+  var searchInput = form.querySelector('.js-live-search');
+  var perPageSelect = form.querySelector('.js-live-per-page');
+  var debounceTimer = null;
+
+  function submitWithResetPage() {
+    var pageField = form.querySelector('input[name="page"]');
+    if (pageField) { pageField.value = '1'; }
+    form.requestSubmit ? form.requestSubmit() : form.submit();
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      if (debounceTimer) { clearTimeout(debounceTimer); }
+      debounceTimer = setTimeout(submitWithResetPage, 350);
+    });
+  }
+
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function () {
+      submitWithResetPage();
+    });
+  }
+});
+</script>
 @endsection

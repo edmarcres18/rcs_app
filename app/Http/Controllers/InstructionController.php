@@ -34,7 +34,7 @@ class InstructionController extends Controller
     /**
      * Display a listing of the instructions.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -104,27 +104,46 @@ class InstructionController extends Controller
             })->implode(', ');
         };
 
-        // Get received instructions
-        $receivedInstructions = Instruction::whereHas('recipients', function ($query) use ($user) {
+        // Per-page clamp helper
+        $receivedPerPageInput = (int) $request->input('received_per_page', 10);
+        if ($receivedPerPageInput < 5) { $receivedPerPageInput = 5; }
+        if ($receivedPerPageInput > 10) { $receivedPerPageInput = 10; }
+        $sentPerPageInput = (int) $request->input('sent_per_page', 10);
+        if ($sentPerPageInput < 5) { $sentPerPageInput = 5; }
+        if ($sentPerPageInput > 10) { $sentPerPageInput = 10; }
+
+        // Base received instructions
+        $receivedQuery = Instruction::whereHas('recipients', function ($query) use ($user) {
             $query->where('users.id', $user->id);
         })
-            ->with(['sender', 'recipients']) // Eager load all recipients
+            ->with(['sender', 'recipients'])
             ->withCount([
-            // Total replies
-            'replies as replies_count',
-            // Replies that include an attachment
-            'replies as attachments_count' => function ($query) {
-                $query->whereNotNull('attachment_path');
-            },
-            // Number of forwards (recipients added via forwarding)
-            'recipients as forwards_count' => function ($query) {
-                $query->whereNotNull('instruction_user.forwarded_by_id');
-            },
-        ])
-            ->latest('instructions.created_at')
-            ->get()
-            ->each(function ($instruction) use ($user, $getRecipientDisplay) {
-                // Manually add pivot data for the current user
+                'replies as replies_count',
+                'replies as attachments_count' => function ($query) {
+                    $query->whereNotNull('attachment_path');
+                },
+                'recipients as forwards_count' => function ($query) {
+                    $query->whereNotNull('instruction_user.forwarded_by_id');
+                },
+            ])
+            ->latest('instructions.created_at');
+
+        if ($request->filled('received_q')) {
+            $search = trim((string) $request->input('received_q'));
+            $receivedQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                  ->orWhere('body', 'like', '%'.$search.'%')
+                  ->orWhereHas('sender', function ($qs) use ($search) {
+                      $qs->where('first_name', 'like', '%'.$search.'%')
+                         ->orWhere('last_name', 'like', '%'.$search.'%')
+                         ->orWhereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ['%'.$search.'%']);
+                  });
+            });
+        }
+
+        $receivedInstructions = $receivedQuery
+            ->paginate($receivedPerPageInput, ['*'], 'received_page')
+            ->through(function ($instruction) use ($user, $getRecipientDisplay) {
                 $pivot = DB::table('instruction_user')
                     ->where('instruction_id', $instruction->id)
                     ->where('user_id', $user->id)
@@ -134,10 +153,11 @@ class InstructionController extends Controller
                     'forwarded_by_id' => $pivot->forwarded_by_id ?? null,
                 ];
                 $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+                return $instruction;
             });
 
-        // Get sent instructions
-        $sentInstructions = Instruction::where('sender_id', $user->id)
+        // Base sent instructions
+        $sentQuery = Instruction::where('sender_id', $user->id)
             ->with('recipients')
             ->withCount([
                 'replies as replies_count',
@@ -148,11 +168,35 @@ class InstructionController extends Controller
                     $query->whereNotNull('instruction_user.forwarded_by_id');
                 },
             ])
-            ->latest()
-            ->get()
-            ->each(function ($instruction) use ($getRecipientDisplay) {
-                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+            ->latest();
+
+        if ($request->filled('sent_q')) {
+            $searchSent = trim((string) $request->input('sent_q'));
+            $sentQuery->where(function ($q) use ($searchSent) {
+                $q->where('title', 'like', '%'.$searchSent+'%')
+                  ->orWhere('body', 'like', '%'.$searchSent.'%')
+                  ->orWhereHas('recipients', function ($qr) use ($searchSent) {
+                      $qr->where('first_name', 'like', '%'.$searchSent.'%')
+                         ->orWhere('last_name', 'like', '%'.$searchSent.'%')
+                         ->orWhereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ['%'.$searchSent.'%']);
+                  });
             });
+        }
+
+        $sentInstructions = $sentQuery
+            ->paginate($sentPerPageInput, ['*'], 'sent_page')
+            ->through(function ($instruction) use ($getRecipientDisplay) {
+                $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
+                return $instruction;
+            });
+
+        // Partial responses for AJAX
+        if ($request->boolean('partial_received')) {
+            return view('instructions.partials._received_list', compact('receivedInstructions'));
+        }
+        if ($request->boolean('partial_sent')) {
+            return view('instructions.partials._sent_list', compact('sentInstructions'));
+        }
 
         return view('instructions.index', compact('receivedInstructions', 'sentInstructions'));
     }

@@ -369,13 +369,29 @@ class TaskPriorityController extends Controller
         $baseQuery = TaskPriority::query()
             ->where('instruction_sender_id', $user->id);
 
-        if ($request->filled('instruction_title')) {
-            $baseQuery->whereHas('instruction', function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->instruction_title.'%');
+        // Simple search across instruction title and receiver name
+        if ($request->filled('q')) {
+            $search = trim((string) $request->input('q'));
+            $baseQuery->where(function ($query) use ($search) {
+                $query->whereHas('instruction', function ($q) use ($search) {
+                    $q->where('title', 'like', '%'.$search.'%');
+                })
+                ->orWhereHas('createdBy', function ($q) use ($search) {
+                    $q->where('first_name', 'like', '%'.$search.'%')
+                        ->orWhere('last_name', 'like', '%'.$search.'%')
+                        ->orWhereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ['%'.$search.'%']);
+                });
             });
         }
 
-        $perPage = 15;
+        // Per-page with clamping: min 5, max 10
+        $perPageInput = (int) $request->input('per_page', 10);
+        if ($perPageInput < 5) {
+            $perPageInput = 5;
+        } elseif ($perPageInput > 10) {
+            $perPageInput = 10;
+        }
+        $perPage = $perPageInput;
         $page = (int) ($request->input('page', 1));
 
         $groupKeysQuery = (clone $baseQuery)->select('group_key')->distinct();
@@ -385,7 +401,7 @@ class TaskPriorityController extends Controller
             ->forPage($page, $perPage)
             ->pluck('group_key');
 
-        $representatives = TaskPriority::with(['instruction', 'sender'])
+        $representatives = TaskPriority::with(['instruction', 'sender', 'createdBy'])
             ->whereIn('group_key', $groupKeys)
             ->get()
             ->groupBy('group_key')
@@ -401,6 +417,11 @@ class TaskPriorityController extends Controller
         );
 
         $readOnly = true;
+
+        // Return partial table for AJAX/live updates
+        if ($request->boolean('partial')) {
+            return view('task-priorities.partials._sent_table', compact('taskPriorities'));
+        }
 
         return view('task-priorities.sent', compact('taskPriorities', 'readOnly'));
     }
