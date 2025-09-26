@@ -10,16 +10,16 @@ use App\Models\InstructionReply;
 use App\Models\User;
 use App\Notifications\InstructionAssigned;
 use App\Notifications\InstructionForwarded;
+use App\Notifications\InstructionForwardedToSender;
 use App\Notifications\InstructionReplied;
-use App\Services\UserActivityService;
 use App\Services\FileUploadService;
+use App\Services\UserActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use App\Notifications\InstructionForwardedToSender;
 
 class InstructionController extends Controller
 {
@@ -90,9 +90,10 @@ class InstructionController extends Controller
                     $firstName = $recipient->first_name;
                     $lastName = $recipient->last_name;
 
-                    if (!empty($lastName)) {
+                    if (! empty($lastName)) {
                         $lastInitial = mb_strtoupper(mb_substr(trim($lastName), 0, 1));
-                        return $firstName . ' ' . $lastInitial . '.';
+
+                        return $firstName.' '.$lastInitial.'.';
                     }
 
                     return $firstName;
@@ -105,12 +106,24 @@ class InstructionController extends Controller
 
         // Get received instructions
         $receivedInstructions = Instruction::whereHas('recipients', function ($query) use ($user) {
-                $query->where('users.id', $user->id);
-            })
+            $query->where('users.id', $user->id);
+        })
             ->with(['sender', 'recipients']) // Eager load all recipients
+            ->withCount([
+            // Total replies
+            'replies as replies_count',
+            // Replies that include an attachment
+            'replies as attachments_count' => function ($query) {
+                $query->whereNotNull('attachment_path');
+            },
+            // Number of forwards (recipients added via forwarding)
+            'recipients as forwards_count' => function ($query) {
+                $query->whereNotNull('instruction_user.forwarded_by_id');
+            },
+        ])
             ->latest('instructions.created_at')
             ->get()
-            ->each(function($instruction) use ($user, $getRecipientDisplay) {
+            ->each(function ($instruction) use ($user, $getRecipientDisplay) {
                 // Manually add pivot data for the current user
                 $pivot = DB::table('instruction_user')
                     ->where('instruction_id', $instruction->id)
@@ -126,9 +139,18 @@ class InstructionController extends Controller
         // Get sent instructions
         $sentInstructions = Instruction::where('sender_id', $user->id)
             ->with('recipients')
+            ->withCount([
+                'replies as replies_count',
+                'replies as attachments_count' => function ($query) {
+                    $query->whereNotNull('attachment_path');
+                },
+                'recipients as forwards_count' => function ($query) {
+                    $query->whereNotNull('instruction_user.forwarded_by_id');
+                },
+            ])
             ->latest()
             ->get()
-            ->each(function($instruction) use ($getRecipientDisplay) {
+            ->each(function ($instruction) use ($getRecipientDisplay) {
                 $instruction->recipientDisplay = $getRecipientDisplay($instruction->recipients);
             });
 
@@ -191,7 +213,7 @@ class InstructionController extends Controller
             // Validate specific users are selected
             $validator = Validator::make($request->all(), [
                 'recipients' => 'required|array|min:1',
-                'recipients.*' => 'exists:users,id'
+                'recipients.*' => 'exists:users,id',
             ]);
 
             if ($validator->fails()) {
@@ -201,12 +223,11 @@ class InstructionController extends Controller
             }
 
             $recipientIds = $request->recipients;
-        }
-        elseif ($request->recipient_type === 'role') {
+        } elseif ($request->recipient_type === 'role') {
             // Validate roles are selected
             $validator = Validator::make($request->all(), [
                 'selected_roles' => 'required|array|min:1',
-                'selected_roles.*' => 'string'
+                'selected_roles.*' => 'string',
             ]);
 
             if ($validator->fails()) {
@@ -226,8 +247,7 @@ class InstructionController extends Controller
                     ->withErrors(['recipients' => 'No users found with the selected roles.'])
                     ->withInput();
             }
-        }
-        elseif ($request->recipient_type === 'all') {
+        } elseif ($request->recipient_type === 'all') {
             // Get all users except current user and SYSTEM_ADMIN
             $recipientIds = User::where('id', '!=', $user->id)
                 ->where('roles', '!=', UserRole::SYSTEM_ADMIN->value)
@@ -275,7 +295,7 @@ class InstructionController extends Controller
             InstructionActivity::create([
                 'instruction_id' => $instruction->id,
                 'user_id' => $user->id,
-                'action' => 'sent'
+                'action' => 'sent',
             ]);
 
             // Send notifications and email to all recipients
@@ -284,21 +304,23 @@ class InstructionController extends Controller
             // Log system activity
             UserActivityService::log(
                 'instruction_created',
-                'Created a new instruction: ' . $request->title,
+                'Created a new instruction: '.$request->title,
                 [
                     'instruction_id' => $instruction->id,
                     'recipient_count' => count($recipientIds),
-                    'recipient_type' => $request->recipient_type
+                    'recipient_type' => $request->recipient_type,
                 ]
             );
 
             DB::commit();
+
             return redirect()->route('instructions.show', $instruction)
                 ->with('success', 'Instruction sent successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
-                ->with('error', 'Failed to create instruction: ' . $e->getMessage())
+                ->with('error', 'Failed to create instruction: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -311,7 +333,7 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this instruction
-        if (!$instruction->canBeAccessedBy($user)) {
+        if (! $instruction->canBeAccessedBy($user)) {
             return response()->view('errors.403', ['message' => 'You do not have permission to view this instruction.'], 403);
         }
 
@@ -320,7 +342,7 @@ class InstructionController extends Controller
 
         // If the user is a recipient and hasn't read it yet, mark as read
         $recipient = $instruction->recipients()->where('user_id', $user->id)->first();
-        if ($recipient && isset($recipient->pivot) && !$recipient->pivot->is_read) {
+        if ($recipient && isset($recipient->pivot) && ! $recipient->pivot->is_read) {
             $this->markAsRead($instruction);
         }
 
@@ -365,7 +387,7 @@ class InstructionController extends Controller
             }
 
             // If not all users of a role are selected, show individual names
-            if (!$useGenericRecipient) {
+            if (! $useGenericRecipient) {
                 $recipientNames = $recipients->map(function ($recipient) {
                     if ($recipient->roles === UserRole::EMPLOYEE) {
                         // For employees, show first name only
@@ -377,9 +399,10 @@ class InstructionController extends Controller
                         $firstName = $recipient->first_name;
                         $lastName = $recipient->last_name;
 
-                        if (!empty($lastName)) {
+                        if (! empty($lastName)) {
                             $lastInitial = mb_strtoupper(mb_substr(trim($lastName), 0, 1));
-                            return $firstName . ' ' . $lastInitial . '.';
+
+                            return $firstName.' '.$lastInitial.'.';
                         }
 
                         return $firstName;
@@ -392,7 +415,6 @@ class InstructionController extends Controller
                 $recipientDisplay = $recipientNames->implode(', ');
             }
         }
-
 
         // Get all activities and replies
         $activities = $instruction->activities()
@@ -420,7 +442,7 @@ class InstructionController extends Controller
             ->where('user_id', $user->id)
             ->exists();
 
-        if (!$recipientExists) {
+        if (! $recipientExists) {
             return back()->with('error', 'You are not a recipient of this instruction.');
         }
 
@@ -431,12 +453,12 @@ class InstructionController extends Controller
         InstructionActivity::create([
             'instruction_id' => $instruction->id,
             'user_id' => $user->id,
-            'action' => 'read'
+            'action' => 'read',
         ]);
 
         UserActivityService::log(
             'instruction_read',
-            'Read instruction: ' . $instruction->title,
+            'Read instruction: '.$instruction->title,
             ['instruction_id' => $instruction->id]
         );
 
@@ -451,11 +473,12 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this instruction, handle AJAX appropriately
-        if (!$instruction->canBeAccessedBy($user)) {
+        if (! $instruction->canBeAccessedBy($user)) {
             $message = 'You do not have permission to reply to this instruction.';
             if ($request->ajax()) {
                 return response()->json(['message' => $message], 403);
             }
+
             return response()->view('errors.403', ['message' => $message], 403);
         }
 
@@ -465,6 +488,7 @@ class InstructionController extends Controller
             if ($request->ajax()) {
                 return response()->json(['message' => $message], 403);
             }
+
             return redirect()->route('instructions.show', $instruction)
                 ->with('error', $message);
         }
@@ -479,7 +503,7 @@ class InstructionController extends Controller
             $rules['attachment'] = [
                 'file',
                 'max:25600', // 25MB in KB
-                'mimes:jpg,jpeg,png,gif,bmp,webp,svg,tiff,ico,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp,zip,rar,7z,csv,json,xml'
+                'mimes:jpg,jpeg,png,gif,bmp,webp,svg,tiff,ico,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp,zip,rar,7z,csv,json,xml',
             ];
         }
 
@@ -490,6 +514,7 @@ class InstructionController extends Controller
             if ($request->ajax()) {
                 return response()->json(['message' => $validator->errors()->first(), 'errors' => $validator->errors()], 422);
             }
+
             return back()->withErrors($validator)->withInput();
         }
 
@@ -505,7 +530,7 @@ class InstructionController extends Controller
             // Handle file upload if present
             if ($request->hasFile('attachment')) {
                 try {
-                    $fileUploadService = new FileUploadService();
+                    $fileUploadService = new FileUploadService;
                     $fileInfo = $fileUploadService->uploadFile($request->file('attachment'));
 
                     $replyData['attachment_filename'] = $fileInfo['filename'];
@@ -519,12 +544,12 @@ class InstructionController extends Controller
                     if ($request->ajax()) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'File upload failed: ' . $e->getMessage()
+                            'message' => 'File upload failed: '.$e->getMessage(),
                         ], 422);
                     }
 
                     return back()
-                        ->with('error', 'File upload failed: ' . $e->getMessage())
+                        ->with('error', 'File upload failed: '.$e->getMessage())
                         ->withInput();
                 }
             }
@@ -537,7 +562,7 @@ class InstructionController extends Controller
                 'instruction_id' => $instruction->id,
                 'user_id' => $user->id,
                 'action' => 'replied',
-                'content' => $request->content
+                'content' => $request->content,
             ]);
 
             // Notify sender if the replier is not the sender
@@ -547,8 +572,8 @@ class InstructionController extends Controller
 
             // Notify all other recipients
             $recipients = $instruction->recipients()
-                            ->where('user_id', '!=', $user->id)
-                            ->get();
+                ->where('user_id', '!=', $user->id)
+                ->get();
 
             foreach ($recipients as $recipient) {
                 $recipient->notify(new InstructionReplied($instruction, $user, $reply));
@@ -557,7 +582,7 @@ class InstructionController extends Controller
             // Log system activity
             UserActivityService::log(
                 'instruction_replied',
-                'Replied to instruction: ' . $instruction->title,
+                'Replied to instruction: '.$instruction->title,
                 ['instruction_id' => $instruction->id]
             );
 
@@ -574,10 +599,10 @@ class InstructionController extends Controller
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->full_name,
-                        'avatar_url' => $user->avatar_url
+                        'avatar_url' => $user->avatar_url,
                     ],
                     'created_at' => $reply->created_at->toISOString(),
-                    'attachment' => null
+                    'attachment' => null,
                 ];
 
                 // Add attachment information if present
@@ -588,14 +613,14 @@ class InstructionController extends Controller
                         'size' => $reply->formatted_file_size,
                         'mime_type' => $reply->attachment_mime_type,
                         'is_image' => $reply->isAttachmentImage(),
-                        'icon' => $reply->attachment_icon
+                        'icon' => $reply->attachment_icon,
                     ];
                 }
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Reply added successfully.',
-                    'reply' => $replyResponse
+                    'reply' => $replyResponse,
                 ]);
             }
 
@@ -608,12 +633,12 @@ class InstructionController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to add reply: ' . $e->getMessage()
+                    'message' => 'Failed to add reply: '.$e->getMessage(),
                 ], 500);
             }
 
             return back()
-                ->with('error', 'Failed to add reply: ' . $e->getMessage())
+                ->with('error', 'Failed to add reply: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -626,7 +651,7 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this instruction
-        if (!$instruction->canBeAccessedBy($user)) {
+        if (! $instruction->canBeAccessedBy($user)) {
             return response()->view('errors.403', ['message' => 'You do not have permission to forward this instruction.'], 403);
         }
 
@@ -656,7 +681,7 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this instruction
-        if (!$instruction->canBeAccessedBy($user)) {
+        if (! $instruction->canBeAccessedBy($user)) {
             return response()->view('errors.403', ['message' => 'You do not have permission to forward this instruction.'], 403);
         }
 
@@ -670,7 +695,7 @@ class InstructionController extends Controller
         $validator = Validator::make($request->all(), [
             'forward_message' => 'nullable|string',
             'recipients' => 'required|array|min:1',
-            'recipients.*' => 'exists:users,id'
+            'recipients.*' => 'exists:users,id',
         ]);
 
         if ($validator->fails()) {
@@ -681,9 +706,10 @@ class InstructionController extends Controller
 
         // Check if any of the recipients are already assigned
         $existingRecipients = $instruction->recipients()->whereIn('users.id', $request->recipients)->pluck('users.id')->toArray();
-        if (!empty($existingRecipients)) {
+        if (! empty($existingRecipients)) {
             $existingUsers = User::whereIn('id', $existingRecipients)->pluck('first_name', 'last_name')->toArray();
-            $errorMsg = 'Some users are already recipients: ' . implode(', ', $existingUsers);
+            $errorMsg = 'Some users are already recipients: '.implode(', ', $existingUsers);
+
             return back()->withErrors(['recipients' => $errorMsg])->withInput();
         }
 
@@ -725,20 +751,22 @@ class InstructionController extends Controller
             // Log system activity
             UserActivityService::log(
                 'instruction_forwarded',
-                'Forwarded instruction: ' . $instruction->title,
+                'Forwarded instruction: '.$instruction->title,
                 [
                     'instruction_id' => $instruction->id,
-                    'recipient_count' => count($request->recipients)
+                    'recipient_count' => count($request->recipients),
                 ]
             );
 
             DB::commit();
+
             return redirect()->route('instructions.show', $instruction)
                 ->with('success', 'Instruction forwarded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
-                ->with('error', 'Failed to forward instruction: ' . $e->getMessage())
+                ->with('error', 'Failed to forward instruction: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -746,8 +774,6 @@ class InstructionController extends Controller
     /**
      * Get updates for an instruction for real-time functionality.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Instruction $instruction
      * @return \Illuminate\Http\JsonResponse
      */
     public function getUpdates(Request $request, Instruction $instruction)
@@ -755,10 +781,10 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this instruction
-        if (!$instruction->canBeAccessedBy($user)) {
+        if (! $instruction->canBeAccessedBy($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to view this instruction.'
+                'message' => 'You do not have permission to view this instruction.',
             ], 403);
         }
 
@@ -771,16 +797,16 @@ class InstructionController extends Controller
             ->where('id', '>', $lastReplyId)
             ->orderBy('created_at')
             ->get()
-            ->map(function($reply) {
+            ->map(function ($reply) {
                 $replyData = [
                     'id' => $reply->id,
                     'content' => $reply->content,
                     'user' => [
                         'id' => $reply->user->id,
-                        'name' => $reply->user->full_name
+                        'name' => $reply->user->full_name,
                     ],
                     'created_at' => $reply->created_at->format('M d, Y g:i A'),
-                    'attachment' => null
+                    'attachment' => null,
                 ];
 
                 // Add attachment information if present
@@ -791,7 +817,7 @@ class InstructionController extends Controller
                         'size' => $reply->formatted_file_size,
                         'mime_type' => $reply->attachment_mime_type,
                         'is_image' => $reply->isAttachmentImage(),
-                        'icon' => $reply->attachment_icon
+                        'icon' => $reply->attachment_icon,
                     ];
                 }
 
@@ -804,20 +830,20 @@ class InstructionController extends Controller
             ->where('id', '>', $lastActivityId)
             ->orderBy('created_at')
             ->get()
-            ->map(function($activity) {
+            ->map(function ($activity) {
                 return [
                     'id' => $activity->id,
                     'action' => $activity->action,
                     'content' => $activity->content,
                     'user' => [
                         'id' => $activity->user->id,
-                        'name' => $activity->user->full_name
+                        'name' => $activity->user->full_name,
                     ],
                     'target_user' => $activity->targetUser ? [
                         'id' => $activity->targetUser->id,
-                        'name' => $activity->targetUser->full_name
+                        'name' => $activity->targetUser->full_name,
                     ] : null,
-                    'created_at' => $activity->created_at->format('M d, Y g:i A')
+                    'created_at' => $activity->created_at->format('M d, Y g:i A'),
                 ];
             });
 
@@ -825,8 +851,8 @@ class InstructionController extends Controller
             'success' => true,
             'updates' => [
                 'replies' => $newReplies,
-                'activities' => $newActivities
-            ]
+                'activities' => $newActivities,
+            ],
         ]);
     }
 
@@ -838,24 +864,24 @@ class InstructionController extends Controller
         $user = Auth::user();
 
         // Check if user has access to the instruction
-        if (!$reply->instruction->canBeAccessedBy($user)) {
+        if (! $reply->instruction->canBeAccessedBy($user)) {
             abort(403, 'You do not have permission to access this attachment.');
         }
 
         // Check if reply has attachment
-        if (!$reply->hasAttachment()) {
+        if (! $reply->hasAttachment()) {
             abort(404, 'Attachment not found.');
         }
 
         // Check if file exists
-        if (!Storage::disk('public')->exists($reply->attachment_path)) {
+        if (! Storage::disk('public')->exists($reply->attachment_path)) {
             abort(404, 'File not found on server.');
         }
 
         // Log the download activity
         UserActivityService::log(
             'attachment_downloaded',
-            'Downloaded attachment: ' . $reply->attachment_original_name,
+            'Downloaded attachment: '.$reply->attachment_original_name,
             ['reply_id' => $reply->id, 'instruction_id' => $reply->instruction_id]
         );
 

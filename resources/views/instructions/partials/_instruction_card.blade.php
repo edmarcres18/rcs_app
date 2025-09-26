@@ -52,9 +52,11 @@
                         @endif
                     </div>
                     <div class="text-muted small d-flex align-items-center">
-                        <span title="Replies"><i class="fas fa-reply me-1"></i>{{ $instruction->replies_count ?? '0' }}</span>
+                        <span title="Replies" class="d-inline-flex align-items-center"><i class="fas fa-reply me-1"></i>{{ (int) ($instruction->replies_count ?? 0) }}</span>
                         <span class="mx-2">·</span>
-                        <span title="Attachments"><i class="fas fa-paperclip me-1"></i>{{ $instruction->attachments_count ?? '0' }}</span>
+                        <span title="Attachments" class="d-inline-flex align-items-center"><i class="fas fa-paperclip me-1"></i>{{ (int) ($instruction->attachments_count ?? 0) }}</span>
+                        <span class="mx-2">·</span>
+                        <span title="Forwards" class="d-inline-flex align-items-center"><i class="fas fa-share me-1"></i>{{ (int) ($instruction->forwards_count ?? 0) }}</span>
                     </div>
                 </div>
             </div>
