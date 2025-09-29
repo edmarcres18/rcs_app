@@ -21,6 +21,13 @@ Route::get('/offline', function () {
 });
 
 Route::get('/', function () {
+    // Check if user is authenticated
+    if (Auth::check()) {
+        // Redirect authenticated users to home
+        return redirect()->route('home');
+    }
+
+    // Redirect unauthenticated users to login
     return view('auth.login');
 });
 

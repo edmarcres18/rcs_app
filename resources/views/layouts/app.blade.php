@@ -10,6 +10,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MHR RCS">
+    <meta name="application-name" content="MHR RCS">
+    <meta name="msapplication-TileColor" content="#4070f4">
+    <meta name="msapplication-tap-highlight" content="no">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -2003,7 +2007,7 @@
             <i class="fas fa-chevron-left"></i>
         </div>
 
-        
+
 
         <!-- Rating Modal -->
         <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
