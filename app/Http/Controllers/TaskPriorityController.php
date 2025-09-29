@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\TaskPriorityStoreRequest;
-use App\Http\Requests\TaskPriorityUpdateRequest;
 use App\Http\Requests\TaskPriorityGroupUpdateRequest;
+use App\Http\Requests\TaskPriorityStoreRequest;
 use App\Models\Instruction;
 use App\Models\TaskPriority;
 use App\Models\User;
@@ -12,6 +11,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class TaskPriorityController extends Controller
 {
@@ -195,7 +200,7 @@ class TaskPriorityController extends Controller
         $user = auth()->user();
 
         $isRecipient = $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists();
-        $isSender = (int)($taskPriority->instruction->sender_id ?? 0) === (int)$user->id;
+        $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
         if (! $isRecipient && ! $isSender) {
             abort(403, 'You can only view task priorities for instructions assigned to you or those you sent.');
         }
@@ -376,11 +381,11 @@ class TaskPriorityController extends Controller
                 $query->whereHas('instruction', function ($q) use ($search) {
                     $q->where('title', 'like', '%'.$search.'%');
                 })
-                ->orWhereHas('createdBy', function ($q) use ($search) {
-                    $q->where('first_name', 'like', '%'.$search.'%')
-                        ->orWhere('last_name', 'like', '%'.$search.'%')
-                        ->orWhereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ['%'.$search.'%']);
-                });
+                    ->orWhereHas('createdBy', function ($q) use ($search) {
+                        $q->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ['%'.$search.'%']);
+                    });
             });
         }
 
@@ -517,11 +522,11 @@ class TaskPriorityController extends Controller
         });
 
         return redirect()->route('task-priorities.recycle-bin')
-            ->with('success', $deleted . ' task priorities permanently deleted.');
+            ->with('success', $deleted.' task priorities permanently deleted.');
     }
 
     /**
-     * Export the specified group's items as a styled Excel worksheet (HTML-based .xls).
+     * Export the specified group's items as a styled Excel worksheet (XLSX format).
      * Columns: Priority Title, Status, Target Deadline, Notes
      */
     public function exportGroup(TaskPriority $taskPriority)
@@ -540,12 +545,7 @@ class TaskPriorityController extends Controller
             ->orderBy('id')
             ->get();
 
-        $fileName = 'task-priority-group-'.$groupKey.'-'.now()->format('Ymd_His').'.xls';
-
-        $headers = [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-        ];
+        $fileName = 'task-priority-group-'.$groupKey.'-'.now()->format('Ymd_His').'.xlsx';
 
         // Prepared By: prefer the group's creator (created_by_user_id), otherwise fallback to current user
         $creatorName = null;
@@ -559,47 +559,116 @@ class TaskPriorityController extends Controller
         $preparedBy = $creatorName ?: trim(($user->full_name ?? ($user->name ?? 'Unknown User')));
         $generatedAt = now()->format('Y-m-d H:i');
 
-        return response()->stream(function () use ($items, $preparedBy, $generatedAt) {
-            // Output UTF-8 BOM
-            echo chr(0xEF).chr(0xBB).chr(0xBF);
-            // Start HTML table with minimal styling Excel understands
-            echo '<html><head><meta charset="UTF-8"><style>
-                table { border-collapse: collapse; width: 100%; font-family: Segoe UI, Arial, sans-serif; }
-                th { background:#0ea5e9; color:#fff; text-transform:uppercase; font-size:12px; letter-spacing:.04em; }
-                th, td { border:1px solid #d1d5db; padding:8px 10px; }
-                tr:nth-child(even) td { background:#f9fafb; }
-                .title { font-weight:700; }
-                .status { font-weight:700; }
-                .status-accomplished { background:#dcfce7; color:#166534; }
-                .status-processing { background:#dbeafe; color:#1e40af; }
-                .status-not-started { background:#e5e7eb; color:#374151; }
-                .meta { margin-bottom:10px; }
-                .meta td { border:none; padding:2px 0; }
-                .rcs-banner { background:#f3f4f6; color:#111827; border:1px solid #d1d5db; padding:8px 10px; margin:0 0 10px 0; font-weight:600; text-align:center; }
-            </style></head><body>';
-            echo '<div class="rcs-banner" contenteditable="false">This file was generated by RCS App</div>';
-            echo '<table class="meta"><tr><td><strong>Prepared By:</strong> '.e($preparedBy).'</td></tr>';
-            echo '<tr><td><strong>Generated At:</strong> '.e($generatedAt).'</td></tr></table>';
-            echo '<table><thead><tr>
-                    <th>Priority Title</th>
-                    <th>Status</th>
-                    <th>Target Deadline</th>
-                    <th>Notes</th>
-                </tr></thead><tbody>';
-            foreach ($items as $i) {
-                $statusSlug = \Illuminate\Support\Str::slug($i->status);
-                $deadline = optional($i->target_deadline)->format('Y-m-d');
-                $notes = e($i->notes);
-                $title = e($i->priority_title);
-                $status = e($i->status);
-                echo '<tr>';
-                echo '<td class="title">'.$title.'</td>';
-                echo '<td class="status status-'.$statusSlug.'">'.$status.'</td>';
-                echo '<td>'.$deadline.'</td>';
-                echo '<td>'.$notes.'</td>';
-                echo '</tr>';
+        // Create new Spreadsheet object
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Task Priorities');
+
+        // Set header information
+        $sheet->setCellValue('A1', 'This file was generated by RCS App');
+        $sheet->setCellValue('A2', 'Prepared By: '.$preparedBy);
+        $sheet->setCellValue('A3', 'Generated At: '.$generatedAt);
+
+        // Style the header information
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('F3F4F6');
+        $sheet->getStyle('A1')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        $sheet->getStyle('A2:A3')->getFont()->setSize(10);
+        $sheet->getStyle('A2:A3')->getFont()->setBold(true);
+
+        // Set column headers
+        $headers = ['Priority Title', 'Status', 'Target Deadline', 'Notes'];
+        $headerRow = 5;
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col.$headerRow, $header);
+            $col++;
+        }
+
+        // Style the column headers
+        $headerRange = 'A'.$headerRow.':D'.$headerRow;
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFont()->setSize(12);
+        $sheet->getStyle($headerRange)->getFont()->setColor(new Color('FFFFFF'));
+        $sheet->getStyle($headerRange)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('0EA5E9');
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // Add data rows
+        $dataRow = $headerRow + 1;
+        foreach ($items as $item) {
+            $sheet->setCellValue('A'.$dataRow, $item->priority_title);
+            $sheet->setCellValue('B'.$dataRow, $item->status);
+            $sheet->setCellValue('C'.$dataRow, $item->target_deadline ? $item->target_deadline->format('Y-m-d') : '');
+            $sheet->setCellValue('D'.$dataRow, $item->notes ?? '');
+
+            // Style the status cell based on status
+            $statusCell = 'B'.$dataRow;
+            $status = strtolower($item->status);
+            if ($status === 'accomplished') {
+                $sheet->getStyle($statusCell)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('DCFCE7');
+                $sheet->getStyle($statusCell)->getFont()->setColor(new Color('166534'));
+            } elseif ($status === 'processing' || $status === 'in progress') {
+                $sheet->getStyle($statusCell)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('DBEAFE');
+                $sheet->getStyle($statusCell)->getFont()->setColor(new Color('1E40AF'));
+            } else {
+                $sheet->getStyle($statusCell)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('E5E7EB');
+                $sheet->getStyle($statusCell)->getFont()->setColor(new Color('374151'));
             }
-            echo '</tbody></table></body></html>';
-        }, 200, $headers);
+
+            $sheet->getStyle($statusCell)->getFont()->setBold(true);
+
+            // Style the title cell
+            $sheet->getStyle('A'.$dataRow)->getFont()->setBold(true);
+
+            // Add borders to all cells
+            $rowRange = 'A'.$dataRow.':D'.$dataRow;
+            $sheet->getStyle($rowRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+            // Alternate row background
+            if ($dataRow % 2 == 0) {
+                $sheet->getStyle($rowRange)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F9FAFB');
+            }
+
+            $dataRow++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'D') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Set minimum column widths
+        $sheet->getColumnDimension('A')->setWidth(25);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(15);
+        $sheet->getColumnDimension('D')->setWidth(30);
+
+        // Create writer and save to temporary file
+        $writer = new Xlsx($spreadsheet);
+
+        // Create temporary file
+        $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
+        $writer->save($tempFile);
+
+        // Return file download response
+        return response()->download($tempFile, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+        ])->deleteFileAfterSend(true);
     }
 }

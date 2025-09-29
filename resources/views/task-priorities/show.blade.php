@@ -18,7 +18,7 @@
                 </span>
                 <span>Back</span>
             </a>
-            <a href="{{ route('task-priorities.export-group', $taskPriority) }}" class="tp-btn tp-btn-ghost" title="Export CSV">
+            <a href="{{ route('task-priorities.export-group', $taskPriority) }}" class="tp-btn tp-btn-ghost" title="Export XLSX">
                 <span class="tp-btn-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

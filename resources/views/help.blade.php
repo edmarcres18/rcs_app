@@ -900,7 +900,7 @@
                             <ul class="list-disc ml-5 space-y-2 text-sm lg:text-base text-slate-700">
                                 <li><span class="font-semibold">Create</span> a group tied to an instruction you received.</li>
                                 <li><span class="font-semibold">Edit</span> a group to replace all items with your latest plan.</li>
-                                <li><span class="font-semibold">Export</span> a group to a formatted Excel (.xls) file.</li>
+                                <li><span class="font-semibold">Export</span> a group to a formatted Excel (.xlsx) file.</li>
                                 <li><span class="font-semibold">Delete</span> a group once all items are Accomplished.</li>
                                 <li><span class="font-semibold">Bulk delete</span> multiple completed groups at once.</li>
                             </ul>
