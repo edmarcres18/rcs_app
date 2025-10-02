@@ -22,19 +22,28 @@ class TaskPriorityController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * 
+     * PRIVACY GUARANTEE: Only shows task priorities created by the authenticated user.
+     * Even if multiple users receive the same instruction and create task priorities,
+     * each user will ONLY see their own task priorities.
      */
     public function index(Request $request): View
     {
         $user = auth()->user();
 
-        // Only show task priorities for instructions where the current user is a recipient
+        // CRITICAL PRIVACY FILTER: Only show task priorities created by the authenticated user
+        // This ensures complete privacy - users only see their own task priorities,
+        // even if other recipients of the same instruction also created task priorities
         $baseQuery = TaskPriority::query()
+            ->where('created_by_user_id', $user->id)
             ->whereHas('instruction.recipients', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
 
         // Auto-limit to the most recent sender who sent an instruction to the current user
+        // and for which the current user has created task priorities
         $recentSenderId = TaskPriority::query()
+            ->where('created_by_user_id', $user->id)
             ->whereHas('instruction.recipients', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
@@ -81,7 +90,9 @@ class TaskPriorityController extends Controller
             ->forPage($page, $perPage)
             ->pluck('group_key');
 
+        // Fetch representatives with privacy filter
         $representatives = TaskPriority::with(['instruction', 'sender', 'createdBy'])
+            ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $groupKeys)
             ->get()
             ->groupBy('group_key')
@@ -89,7 +100,9 @@ class TaskPriorityController extends Controller
             ->values();
 
         // Determine which groups are fully accomplished (deletable)
+        // Apply privacy filter here as well
         $deletableGroupKeys = TaskPriority::select('group_key')
+            ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $groupKeys)
             ->groupBy('group_key')
             ->havingRaw("SUM(CASE WHEN status <> 'Accomplished' THEN 1 ELSE 0 END) = 0")
@@ -194,19 +207,29 @@ class TaskPriorityController extends Controller
 
     /**
      * Display the specified resource.
+     * 
+     * PRIVACY GUARANTEE: Only the creator of the task priority can view it,
+     * OR the instruction sender can view it (read-only).
      */
     public function show(TaskPriority $taskPriority): View
     {
         $user = auth()->user();
 
-        $isRecipient = $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists();
+        // Check if user is the creator of this task priority
+        $isCreator = (int) ($taskPriority->created_by_user_id ?? 0) === (int) $user->id;
+        
+        // Check if user is the instruction sender (read-only access)
         $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
-        if (! $isRecipient && ! $isSender) {
-            abort(403, 'You can only view task priorities for instructions assigned to you or those you sent.');
+        
+        // CRITICAL PRIVACY CHECK: Only creator or sender can view
+        if (! $isCreator && ! $isSender) {
+            abort(403, 'You can only view task priorities you created or those created for instructions you sent.');
         }
 
-        $taskPriority->load(['instruction', 'sender']);
-        $groupItems = TaskPriority::with(['instruction', 'sender'])
+        $taskPriority->load(['instruction', 'sender', 'createdBy']);
+        
+        // Fetch all items in the group (no need for additional privacy filter since access already checked above)
+        $groupItems = TaskPriority::with(['instruction', 'sender', 'createdBy'])
             ->where('group_key', $taskPriority->group_key)
             ->orderBy('id')
             ->get();
@@ -214,23 +237,25 @@ class TaskPriorityController extends Controller
         return view('task-priorities.show', [
             'taskPriority' => $taskPriority,
             'groupItems' => $groupItems,
-            'canModify' => $isRecipient, // senders have read-only access
+            'canModify' => $isCreator, // only creators can modify, senders have read-only access
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
+     * 
+     * PRIVACY GUARANTEE: Only the creator can edit their own task priorities.
      */
     public function edit(TaskPriority $taskPriority): View
     {
         $user = auth()->user();
 
-        // Verify the user is a recipient of the instruction
-        if (! $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists()) {
-            abort(403, 'You can only edit task priorities for instructions assigned to you.');
+        // CRITICAL PRIVACY CHECK: Only the creator can edit
+        if ((int) ($taskPriority->created_by_user_id ?? 0) !== (int) $user->id) {
+            abort(403, 'You can only edit task priorities you created.');
         }
 
-        $taskPriority->load(['instruction', 'sender']);
+        $taskPriority->load(['instruction', 'sender', 'createdBy']);
         $groupItems = TaskPriority::where('group_key', $taskPriority->group_key)
             ->orderBy('id')
             ->get();
@@ -243,14 +268,16 @@ class TaskPriorityController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * 
+     * PRIVACY GUARANTEE: Only the creator can update their own task priorities.
      */
     public function update(TaskPriorityGroupUpdateRequest $request, TaskPriority $taskPriority): RedirectResponse
     {
         $user = auth()->user();
 
-        // Verify the user is a recipient of the instruction
-        if (! $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists()) {
-            abort(403, 'You can only update task priorities for instructions assigned to you.');
+        // CRITICAL PRIVACY CHECK: Only the creator can update
+        if ((int) ($taskPriority->created_by_user_id ?? 0) !== (int) $user->id) {
+            abort(403, 'You can only update task priorities you created.');
         }
 
         $data = $request->validated();
@@ -305,14 +332,16 @@ class TaskPriorityController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * 
+     * PRIVACY GUARANTEE: Only the creator can delete their own task priorities.
      */
     public function destroy(TaskPriority $taskPriority): RedirectResponse
     {
         $user = auth()->user();
 
-        // Verify the user is a recipient of the instruction
-        if (! $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists()) {
-            abort(403, 'You can only delete task priorities for instructions assigned to you.');
+        // CRITICAL PRIVACY CHECK: Only the creator can delete
+        if ((int) ($taskPriority->created_by_user_id ?? 0) !== (int) $user->id) {
+            abort(403, 'You can only delete task priorities you created.');
         }
 
         TaskPriority::where('group_key', $taskPriority->group_key)->delete();
@@ -324,6 +353,8 @@ class TaskPriorityController extends Controller
 
     /**
      * Bulk delete task priorities.
+     * 
+     * PRIVACY GUARANTEE: Only deletes task priorities created by the authenticated user.
      */
     public function bulkDelete(Request $request): RedirectResponse
     {
@@ -334,18 +365,18 @@ class TaskPriorityController extends Controller
             'selected_items.*' => 'exists:task_priorities,id',
         ]);
 
-        // Resolve selected group keys
+        // Resolve selected group keys - CRITICAL: Only for items created by current user
         $selectedGroupKeys = TaskPriority::whereIn('id', $request->selected_items)
+            ->where('created_by_user_id', $user->id)
             ->pluck('group_key')
             ->unique()
             ->values();
 
-        // Filter to groups belonging to instructions where user is a recipient and all items are Accomplished
+        // Filter to groups created by user where all items are Accomplished
+        // Double-check privacy: only groups created by the current user
         $deletableGroupKeys = TaskPriority::select('group_key')
+            ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $selectedGroupKeys)
-            ->whereHas('instruction.recipients', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
             ->groupBy('group_key')
             ->havingRaw("SUM(CASE WHEN status <> 'Accomplished' THEN 1 ELSE 0 END) = 0")
             ->pluck('group_key');
@@ -356,7 +387,10 @@ class TaskPriorityController extends Controller
                 ->with('error', 'No selected groups are eligible for deletion. Only groups where all items are Accomplished can be deleted.');
         }
 
-        $deletedCount = TaskPriority::whereIn('group_key', $deletableGroupKeys)->delete();
+        // Final privacy check: only delete items created by current user
+        $deletedCount = TaskPriority::where('created_by_user_id', $user->id)
+            ->whereIn('group_key', $deletableGroupKeys)
+            ->delete();
 
         return redirect()
             ->route('task-priorities.index')
@@ -433,12 +467,16 @@ class TaskPriorityController extends Controller
 
     /**
      * Recycle Bin: list soft-deleted task priority groups for current user.
+     * 
+     * PRIVACY GUARANTEE: Only shows soft-deleted task priorities created by the authenticated user.
      */
     public function recycleBin(Request $request): View
     {
         $user = auth()->user();
 
+        // CRITICAL PRIVACY FILTER: Only show soft-deleted items created by current user
         $baseQuery = TaskPriority::onlyTrashed()
+            ->where('created_by_user_id', $user->id)
             ->whereHas('instruction.recipients', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
@@ -454,7 +492,9 @@ class TaskPriorityController extends Controller
             ->forPage($page, $perPage)
             ->pluck('group_key');
 
-        $representatives = TaskPriority::withTrashed()->with(['instruction', 'sender'])
+        // Fetch representatives with privacy filter
+        $representatives = TaskPriority::withTrashed()->with(['instruction', 'sender', 'createdBy'])
+            ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $groupKeys)
             ->get()
             ->groupBy('group_key')
@@ -474,17 +514,17 @@ class TaskPriorityController extends Controller
 
     /**
      * Restore a soft-deleted group by group_key.
+     * 
+     * PRIVACY GUARANTEE: Only restores task priorities created by the authenticated user.
      */
     public function restoreGroup(Request $request, string $groupKey): RedirectResponse
     {
         $user = auth()->user();
 
-        // Ensure the group belongs to user's received instructions
+        // CRITICAL PRIVACY CHECK: Ensure the group was created by current user
         $exists = TaskPriority::onlyTrashed()
             ->where('group_key', $groupKey)
-            ->whereHas('instruction.recipients', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
+            ->where('created_by_user_id', $user->id)
             ->exists();
 
         if (! $exists) {
@@ -492,7 +532,11 @@ class TaskPriorityController extends Controller
                 ->with('error', 'Group not found or not authorized.');
         }
 
-        TaskPriority::onlyTrashed()->where('group_key', $groupKey)->restore();
+        // Restore only items created by current user
+        TaskPriority::onlyTrashed()
+            ->where('group_key', $groupKey)
+            ->where('created_by_user_id', $user->id)
+            ->restore();
 
         return redirect()->route('task-priorities.recycle-bin')
             ->with('success', 'Task priority group restored successfully.');
@@ -500,16 +544,17 @@ class TaskPriorityController extends Controller
 
     /**
      * Permanently delete a soft-deleted group by group_key.
+     * 
+     * PRIVACY GUARANTEE: Only permanently deletes task priorities created by the authenticated user.
      */
     public function forceDeleteGroup(Request $request, string $groupKey): RedirectResponse
     {
         $user = auth()->user();
 
+        // CRITICAL PRIVACY CHECK: Only delete items created by current user
         $query = TaskPriority::onlyTrashed()
             ->where('group_key', $groupKey)
-            ->whereHas('instruction.recipients', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
+            ->where('created_by_user_id', $user->id);
 
         if (! $query->exists()) {
             return redirect()->route('task-priorities.recycle-bin')
@@ -528,16 +573,19 @@ class TaskPriorityController extends Controller
     /**
      * Export the specified group's items as a styled Excel worksheet (XLSX format).
      * Columns: Priority Title, Status, Target Deadline, Notes
+     * 
+     * PRIVACY GUARANTEE: Only the creator or the instruction sender can export.
      */
     public function exportGroup(TaskPriority $taskPriority)
     {
         $user = auth()->user();
 
-        // Access control: allow both recipients and the instruction sender
-        $isRecipient = $taskPriority->instruction->recipients()->where('user_id', $user->id)->exists();
+        // CRITICAL PRIVACY CHECK: Only creator or instruction sender can export
+        $isCreator = (int) ($taskPriority->created_by_user_id ?? 0) === (int) $user->id;
         $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
-        if (! $isRecipient && ! $isSender) {
-            abort(403, 'You can only export task priorities for instructions you sent or were assigned to.');
+        
+        if (! $isCreator && ! $isSender) {
+            abort(403, 'You can only export task priorities you created or those created for instructions you sent.');
         }
 
         $groupKey = $taskPriority->group_key;

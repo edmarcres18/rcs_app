@@ -21,7 +21,9 @@ Route::get('/offline', function () {
 });
 
 Route::get('/', function () {
-    return view('auth.login');
+    return Auth::check()
+        ? redirect()->route('home')
+        : redirect()->route('login');
 });
 
 Route::get('/help', function () {
