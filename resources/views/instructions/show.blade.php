@@ -62,13 +62,6 @@
         margin-right: 0.75rem;
         color: #9ca3af;
     }
-    .recipients-list img, .instruction-meta-item img {
-        border: 2px solid #e5e7eb;
-        transition: border-color 0.2s ease;
-    }
-    .recipients-list img:hover, .instruction-meta-item img:hover {
-        border-color: var(--primary-color);
-    }
     .instruction-body {
         padding: 2rem 1.5rem;
         line-height: 1.7;
@@ -241,23 +234,14 @@
         <div class="row g-4">
             {{-- Instruction Content Column --}}
             <div class="col-lg-7">
-                <div class="card instruction-card"></div>
+                <div class="card instruction-card">
                     <div class="instruction-header">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="instruction-meta-item">
                                     <i class="fas fa-paper-plane"></i>
                                     <div>
-                                        <strong>From:</strong>
-                                        <div class="d-flex align-items-center mt-1">
-                                            <img src="{{ $instruction->sender->avatar_url }}"
-                                                 alt="{{ $instruction->sender->full_name }}"
-                                                 class="rounded-circle me-2"
-                                                 width="24"
-                                                 height="24"
-                                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($instruction->sender->full_name) }}&size=24&background=7F9CF5&color=fff'">
-                                            <span class="small">{{ $instruction->sender->full_name }}</span>
-                                        </div>
+                                        <strong>From:</strong> {{ $instruction->sender->full_name }}
                                     </div>
                                 </div>
                             </div>
@@ -265,24 +249,7 @@
                                 <div class="instruction-meta-item">
                                     <i class="fas fa-users"></i>
                                     <div>
-                                        <strong>To:</strong>
-                                        <div class="recipients-list mt-1">
-                                            @if($instruction->recipients->isNotEmpty())
-                                                @foreach($instruction->recipients as $recipient)
-                                                    <div class="d-flex align-items-center mb-1">
-                                                        <img src="{{ $recipient->avatar_url }}"
-                                                             alt="{{ $recipient->full_name }}"
-                                                             class="rounded-circle me-2"
-                                                             width="24"
-                                                             height="24"
-                                                             onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($recipient->full_name) }}&size=24&background=7F9CF5&color=fff'">
-                                                        <span class="small">{{ $recipient->full_name }}</span>
-                                                    </div>
-                                                @endforeach
-                                            @else
-                                                <span class="text-muted">No recipients</span>
-                                            @endif
-                                        </div>
+                                        <strong>To:</strong> {{ $recipientDisplay }}
                                     </div>
                                 </div>
                             </div>
@@ -305,11 +272,7 @@
 
                     <div class="instruction-signature">
                         <div class="signature-avatar me-3">
-                            <img src="{{ $instruction->sender->avatar_url }}"
-                                 alt="{{ $instruction->sender->full_name }}"
-                                 width="48"
-                                 height="48"
-                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($instruction->sender->full_name) }}&size=48&background=7F9CF5&color=fff'">
+                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}">
                         </div>
                         <div>
                             <div class="signature-name">{{ $instruction->sender->full_name }}</div>
@@ -731,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createReplyHtml(reply) {
         const formattedTime = moment(reply.created_at).format('MMM D, YYYY, h:mm A');
         const relativeTime = moment(reply.created_at).fromNow();
-        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.full_name || reply.user.name)}&color=7F9CF5&background=EBF4FF`;
+        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.name)}&color=7F9CF5&background=EBF4FF`;
 
         let attachmentHtml = '';
         if (reply.attachment) {
@@ -764,14 +727,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="timeline-content">
                 <div class="d-flex align-items-center mb-2">
-                    <img src="${avatarUrl}"
-                         alt="${reply.user.full_name || reply.user.name}"
-                         class="rounded-circle"
-                         width="36"
-                         height="36"
-                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.full_name || reply.user.name)}&size=36&background=7F9CF5&color=fff'">
+                    <img src="${avatarUrl}" alt="${reply.user.name}" class="rounded-circle" width="36" height="36">
                     <div class="ms-3">
-                        <span class="fw-bold d-block">${reply.user.full_name || reply.user.name}</span>
+                        <span class="fw-bold d-block">${reply.user.name}</span>
                         <small class="text-muted" title="${formattedTime}">${relativeTime}</small>
                     </div>
                 </div>
