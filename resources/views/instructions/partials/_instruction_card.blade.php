@@ -19,7 +19,12 @@
                         @endif
                         <div class="fw-bold text-dark">
                              @if ($type === 'received')
-                                <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}" class="rounded-circle me-2" width="24" height="24">
+                                <img src="{{ $instruction->sender->avatar_url }}"
+                                     alt="{{ $instruction->sender->full_name }}"
+                                     class="rounded-circle me-2"
+                                     width="24"
+                                     height="24"
+                                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($instruction->sender->full_name) }}&size=24&background=7F9CF5&color=fff'">
                                 {{ $instruction->sender->full_name }}
                             @else
                                 <i class="fas fa-user-friends me-2 text-muted"></i>
