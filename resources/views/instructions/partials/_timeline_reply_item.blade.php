@@ -8,7 +8,11 @@
         {{-- Reply Header --}}
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <img src="{{ $reply->user->avatar }}" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="30" height="30">
+                @if ($reply->user->avatar)
+                    <img src="{{ $reply->user->avatar }}" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="30" height="30" style="object-fit: cover;">
+                @else
+                    <img src="https://ui-avatars.com/api/?name={{ $reply->user->full_name }}&background=4070f4&color=fff&size=150" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="30" height="30">
+                @endif
                 <div class="ms-2">
                     <span class="fw-bold d-block small">{{ $reply->user->full_name }}</span>
                 </div>
