@@ -80,6 +80,8 @@
         width: 48px;
         height: 48px;
         border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border-color);
     }
     .signature-name {
         font-weight: 600;
@@ -126,6 +128,16 @@
         justify-content: center;
         flex-shrink: 0;
         font-size: 0.9rem;
+    }
+
+    /* Timeline avatar styling */
+    .timeline-content img {
+        border: 2px solid var(--border-color);
+        transition: border-color 0.2s ease;
+    }
+
+    .timeline-content img:hover {
+        border-color: var(--primary-color);
     }
     .bg-primary-soft { background-color: rgba(79, 70, 229, 0.1); }
     .text-primary { color: #4f46e5 !important; }
@@ -272,7 +284,7 @@
 
                     <div class="instruction-signature">
                         <div class="signature-avatar me-3">
-                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}">
+                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}" class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;">
                         </div>
                         <div>
                             <div class="signature-name">{{ $instruction->sender->full_name }}</div>
@@ -694,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createReplyHtml(reply) {
         const formattedTime = moment(reply.created_at).format('MMM D, YYYY, h:mm A');
         const relativeTime = moment(reply.created_at).fromNow();
-        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.name)}&color=7F9CF5&background=EBF4FF`;
+        const avatarUrl = reply.user.avatar_url;
 
         let attachmentHtml = '';
         if (reply.attachment) {
