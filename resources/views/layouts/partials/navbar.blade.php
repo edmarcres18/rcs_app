@@ -41,7 +41,11 @@
             @else
                 <div class="dropdown navbar-user">
                     <div class="navbar-user-avatar dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ Auth::user()->avatar_url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px; object-fit: cover;">
+                    @if (Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px; object-fit: cover;">
+                    @else
+                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->full_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 36px; height: 36px;">
+                    @endif
                     </div>
                 </div>
             @endguest
