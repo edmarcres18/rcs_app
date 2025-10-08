@@ -76,10 +76,15 @@
         display: flex;
         align-items: center;
     }
+    .signature-avatar {
+        position: relative;
+    }
     .signature-avatar img {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
+        border: 3px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .signature-name {
         font-weight: 600;
@@ -126,6 +131,25 @@
         justify-content: center;
         flex-shrink: 0;
         font-size: 0.9rem;
+    }
+    .timeline-icon-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .timeline-icon-avatar img {
+        transition: transform 0.2s ease;
+    }
+    .timeline-icon-avatar:hover img {
+        transform: scale(1.05);
+    }
+    .timeline-badge {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
     .bg-primary-soft { background-color: rgba(79, 70, 229, 0.1); }
     .text-primary { color: #4f46e5 !important; }
@@ -272,11 +296,11 @@
 
                     <div class="instruction-signature">
                         <div class="signature-avatar me-3">
-                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}">
+                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}" style="object-fit: cover;">
                         </div>
                         <div>
                             <div class="signature-name">{{ $instruction->sender->full_name }}</div>
-                            <div class="signature-role">{{ $instruction->sender->roles ?? 'Staff' }}</div>
+                            <div class="signature-role">{{ $instruction->sender->roles->value ?? 'Staff' }}</div>
                         </div>
                     </div>
                 </div>
@@ -721,19 +745,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         return `
-        <div class="timeline-item mb-4">
-            <div class="timeline-icon bg-primary-soft text-primary">
-                <i class="fas fa-reply"></i>
+        <div class="timeline-item d-flex align-items-start mb-4">
+            <div class="timeline-icon-avatar" title="Reply by ${reply.user.name}">
+                <img src="${avatarUrl}" alt="${reply.user.name}" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e5e7eb;">
             </div>
-            <div class="timeline-content">
-                <div class="d-flex align-items-center mb-2">
-                    <img src="${avatarUrl}" alt="${reply.user.name}" class="rounded-circle" width="36" height="36">
-                    <div class="ms-3">
-                        <span class="fw-bold d-block">${reply.user.name}</span>
-                        <small class="text-muted" title="${formattedTime}">${relativeTime}</small>
+            <div class="timeline-content ps-3 flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <span class="fw-bold d-block">${reply.user.name}</span>
+                            <small class="text-muted">Replied</small>
+                        </div>
                     </div>
+                    <small class="text-muted" title="${formattedTime}">${relativeTime}</small>
                 </div>
-                <div class="p-3 rounded" style="background-color: var(--bg-reply);">
+                <div class="reply-bubble mt-2">
                     <p class="mb-0" style="white-space: pre-wrap;">${reply.content}</p>
                     ${attachmentHtml}
                 </div>

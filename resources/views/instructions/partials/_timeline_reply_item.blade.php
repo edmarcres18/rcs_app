@@ -1,16 +1,16 @@
 @props(['reply'])
 
 <div class="timeline-item d-flex align-items-start mb-4">
-    <div class="timeline-icon bg-primary-soft text-primary" title="Reply">
-        <i class="fas fa-reply"></i>
+    <div class="timeline-icon-avatar" title="Reply by {{ $reply->user->full_name }}">
+        <img src="{{ $reply->user->avatar_url }}" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e5e7eb;">
     </div>
     <div class="timeline-content ps-3 flex-grow-1">
         {{-- Reply Header --}}
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <img src="{{ $reply->user->avatar_url }}" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="30" height="30">
-                <div class="ms-2">
-                    <span class="fw-bold d-block small">{{ $reply->user->full_name }}</span>
+                <div>
+                    <span class="fw-bold d-block">{{ $reply->user->full_name }}</span>
+                    <small class="text-muted">Replied</small>
                 </div>
             </div>
             <small class="text-muted" title="{{ $reply->created_at->format('Y-m-d H:i:s') }}">

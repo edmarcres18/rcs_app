@@ -37,9 +37,18 @@
 @endphp
 
 <div class="timeline-item d-flex align-items-start mb-4">
+    @if($activity->user)
+    <div class="timeline-icon-avatar" title="{{ ucfirst($activity->action) }} by {{ $activity->user->full_name }}">
+        <img src="{{ $activity->user->avatar_url }}" alt="{{ $activity->user->full_name }}" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e5e7eb;">
+        <span class="timeline-badge {{ $iconClass }}" style="position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff;">
+            <i class="fas {{ $icon }}" style="font-size: 10px;"></i>
+        </span>
+    </div>
+    @else
     <div class="timeline-icon {{ $iconClass }}" title="{{ ucfirst($activity->action) }}">
         <i class="fas {{ $icon }}"></i>
     </div>
+    @endif
     <div class="timeline-content ps-3">
         <p class="mb-0 small">{!! $text !!}</p>
         <small class="text-muted" title="{{ $activity->created_at->format('Y-m-d H:i:s') }}">
