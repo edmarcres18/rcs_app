@@ -462,12 +462,12 @@ class InstructionController extends Controller
 
         // Get all activities and replies
         $activities = $instruction->activities()
-            ->with(['user', 'targetUser'])
+            ->with(['user:id,first_name,middle_name,last_name,avatar,roles', 'targetUser:id,first_name,middle_name,last_name,avatar,roles'])
             ->orderBy('created_at')
             ->get();
 
         $replies = $instruction->replies()
-            ->with('user')
+            ->with('user:id,first_name,middle_name,last_name,avatar,roles')
             ->orderBy('created_at')
             ->get();
 

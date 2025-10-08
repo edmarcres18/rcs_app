@@ -1,16 +1,22 @@
 @props(['reply'])
 
 <div class="timeline-item d-flex align-items-start mb-4">
-    <div class="timeline-icon-avatar" title="Reply by {{ $reply->user->full_name }}">
-        <img src="{{ $reply->user->avatar_url }}" alt="{{ $reply->user->full_name }}" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e5e7eb;">
+    <div class="timeline-icon bg-primary-soft text-primary" title="Reply">
+        <i class="fas fa-reply"></i>
     </div>
     <div class="timeline-content ps-3 flex-grow-1">
         {{-- Reply Header --}}
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <div>
-                    <span class="fw-bold d-block">{{ $reply->user->full_name }}</span>
-                    <small class="text-muted">Replied</small>
+                <img src="{{ $reply->user->avatar_url }}" 
+                     alt="{{ $reply->user->full_name }}" 
+                     class="rounded-circle border border-2 border-light shadow-sm" 
+                     width="36" 
+                     height="36"
+                     style="object-fit: cover;"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($reply->user->full_name) }}&color=7F9CF5&background=EBF4FF';">
+                <div class="ms-2">
+                    <span class="fw-bold d-block small">{{ $reply->user->full_name }}</span>
                 </div>
             </div>
             <small class="text-muted" title="{{ $reply->created_at->format('Y-m-d H:i:s') }}">

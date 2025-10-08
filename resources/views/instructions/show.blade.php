@@ -76,15 +76,11 @@
         display: flex;
         align-items: center;
     }
-    .signature-avatar {
-        position: relative;
-    }
     .signature-avatar img {
-        width: 56px;
-        height: 56px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        border: 3px solid var(--border-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        object-fit: cover;
     }
     .signature-name {
         font-weight: 600;
@@ -93,6 +89,12 @@
     .signature-role {
         color: var(--text-muted);
         font-size: 0.9rem;
+    }
+
+    /* Avatar styles for timeline items */
+    .timeline-content img.rounded-circle {
+        background-color: #fff;
+        flex-shrink: 0;
     }
 
     /* --- Reply Form & Activity Timeline --- */
@@ -131,25 +133,6 @@
         justify-content: center;
         flex-shrink: 0;
         font-size: 0.9rem;
-    }
-    .timeline-icon-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        position: relative;
-    }
-    .timeline-icon-avatar img {
-        transition: transform 0.2s ease;
-    }
-    .timeline-icon-avatar:hover img {
-        transform: scale(1.05);
-    }
-    .timeline-badge {
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
     .bg-primary-soft { background-color: rgba(79, 70, 229, 0.1); }
     .text-primary { color: #4f46e5 !important; }
@@ -296,11 +279,15 @@
 
                     <div class="instruction-signature">
                         <div class="signature-avatar me-3">
-                            <img src="{{ $instruction->sender->avatar_url }}" alt="{{ $instruction->sender->full_name }}" style="object-fit: cover;">
+                            <img src="{{ $instruction->sender->avatar_url }}" 
+                                 alt="{{ $instruction->sender->full_name }}"
+                                 class="border border-2 border-light shadow-sm"
+                                 style="object-fit: cover;"
+                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($instruction->sender->full_name) }}&color=7F9CF5&background=EBF4FF';">
                         </div>
                         <div>
                             <div class="signature-name">{{ $instruction->sender->full_name }}</div>
-                            <div class="signature-role">{{ $instruction->sender->roles->value ?? 'Staff' }}</div>
+                            <div class="signature-role">{{ $instruction->sender->roles ?? 'Staff' }}</div>
                         </div>
                     </div>
                 </div>
@@ -718,7 +705,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function createReplyHtml(reply) {
         const formattedTime = moment(reply.created_at).format('MMM D, YYYY, h:mm A');
         const relativeTime = moment(reply.created_at).fromNow();
-        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user.name)}&color=7F9CF5&background=EBF4FF`;
+        const userName = reply.user.name || 'User';
+        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&color=7F9CF5&background=EBF4FF`;
 
         let attachmentHtml = '';
         if (reply.attachment) {
@@ -746,15 +734,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return `
         <div class="timeline-item d-flex align-items-start mb-4">
-            <div class="timeline-icon-avatar" title="Reply by ${reply.user.name}">
-                <img src="${avatarUrl}" alt="${reply.user.name}" class="rounded-circle" width="40" height="40" style="object-fit: cover; border: 2px solid #e5e7eb;">
+            <div class="timeline-icon bg-primary-soft text-primary" title="Reply">
+                <i class="fas fa-reply"></i>
             </div>
             <div class="timeline-content ps-3 flex-grow-1">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <span class="fw-bold d-block">${reply.user.name}</span>
-                            <small class="text-muted">Replied</small>
+                        <img src="${avatarUrl}" 
+                             alt="${userName}" 
+                             class="rounded-circle border border-2 border-light shadow-sm" 
+                             width="36" 
+                             height="36"
+                             style="object-fit: cover;"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&color=7F9CF5&background=EBF4FF';">
+                        <div class="ms-2">
+                            <span class="fw-bold d-block small">${userName}</span>
                         </div>
                     </div>
                     <small class="text-muted" title="${formattedTime}">${relativeTime}</small>
