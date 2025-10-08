@@ -32,16 +32,16 @@
                     <div class="attachment-item file-{{ $category }} d-flex align-items-center p-3">
                         <i class="{{ $reply->attachment_icon }} me-3"></i>
                         <div class="flex-grow-1">
-                            <a href="{{ route('instructions.replies.download', $reply) }}" 
-                               class="file-name text-decoration-none" 
+                            <a href="{{ route('instructions.replies.download', $reply) }}"
+                               class="file-name text-decoration-none"
                                target="_blank">
                                 {{ $reply->attachment_original_name }}
                             </a>
                             <br>
                             <span class="file-size">{{ $reply->formatted_file_size }}</span>
                         </div>
-                        <a href="{{ route('instructions.replies.download', $reply) }}" 
-                           class="btn btn-sm btn-outline-primary" 
+                        <a href="{{ route('instructions.replies.download', $reply) }}"
+                           class="btn btn-sm btn-outline-primary"
                            target="_blank"
                            title="Download {{ $reply->attachment_original_name }}">
                             <i class="fas fa-download"></i>
