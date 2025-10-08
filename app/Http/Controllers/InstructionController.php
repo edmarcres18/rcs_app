@@ -848,6 +848,7 @@ class InstructionController extends Controller
                     'user' => [
                         'id' => $reply->user->id,
                         'name' => $reply->user->full_name,
+                        'avatar_url' => $reply->user->avatar_url,
                     ],
                     'created_at' => $reply->created_at->format('M d, Y g:i A'),
                     'attachment' => null,
