@@ -8,7 +8,7 @@
         {{-- Reply Header --}}
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <img src="{{ $reply->user->avatar_url }}" 
+                <img src="{{ $reply->user->avatar }}" 
                      alt="{{ $reply->user->full_name }}" 
                      class="rounded-circle border border-2 border-light shadow-sm" 
                      width="36" 

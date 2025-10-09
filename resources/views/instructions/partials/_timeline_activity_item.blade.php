@@ -41,7 +41,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 @if($activity->user)
-                    <img src="{{ $activity->user->avatar_url }}" 
+                    <img src="{{ $activity->user->avatar }}" 
                          alt="{{ $activity->user->full_name }}" 
                          class="rounded-circle border border-2 border-light shadow-sm" 
                          width="28" 

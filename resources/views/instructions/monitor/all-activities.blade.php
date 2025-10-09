@@ -147,7 +147,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="{{ $activity->user->avatar_url }}"
+                                            <img src="{{ $activity->user->avatar }}"
                                                  alt="{{ $activity->user->full_name }}" 
                                                  class="rounded-circle border border-1 me-2" 
                                                  width="28" 

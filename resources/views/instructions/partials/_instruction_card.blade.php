@@ -19,7 +19,7 @@
                         @endif
                         <div class="fw-bold text-dark">
                              @if ($type === 'received')
-                                <img src="{{ $instruction->sender->avatar_url }}" 
+                                <img src="{{ $instruction->sender->avatar }}" 
                                      alt="{{ $instruction->sender->full_name }}" 
                                      class="rounded-circle border border-1 me-2" 
                                      width="28" 

@@ -279,7 +279,7 @@
 
                     <div class="instruction-signature">
                         <div class="signature-avatar me-3">
-                            <img src="{{ $instruction->sender->avatar_url }}" 
+                            <img src="{{ $instruction->sender->avatar }}" 
                                  alt="{{ $instruction->sender->full_name }}"
                                  class="border border-2 border-light shadow-sm"
                                  style="object-fit: cover;"
@@ -706,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formattedTime = moment(reply.created_at).format('MMM D, YYYY, h:mm A');
         const relativeTime = moment(reply.created_at).fromNow();
         const userName = reply.user.name || 'User';
-        const avatarUrl = reply.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&color=7F9CF5&background=EBF4FF`;
+        const avatarUrl = reply.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&color=7F9CF5&background=EBF4FF`;
 
         let attachmentHtml = '';
         if (reply.attachment) {

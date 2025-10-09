@@ -181,7 +181,7 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ $recipient->avatar_url }}"
+                                        <img src="{{ $recipient->avatar }}"
                                              alt="{{ $recipient->full_name }}" 
                                              class="rounded-circle border border-1 me-2" 
                                              width="28" 
