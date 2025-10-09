@@ -147,8 +147,13 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($activity->user->full_name) }}&size=24&background=4070f4&color=fff"
-                                                class="rounded-circle me-2" alt="{{ $activity->user->full_name }}" width="24" height="24">
+                                            <img src="{{ $activity->user->avatar_url }}"
+                                                 alt="{{ $activity->user->full_name }}" 
+                                                 class="rounded-circle border border-1 me-2" 
+                                                 width="28" 
+                                                 height="28"
+                                                 style="object-fit: cover;"
+                                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($activity->user->full_name) }}&color=7F9CF5&background=EBF4FF';">
                                             {{ $activity->user->full_name }}
                                         </div>
                                     </td>

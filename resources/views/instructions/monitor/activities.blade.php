@@ -181,8 +181,13 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($recipient->full_name) }}&size=24&background=4070f4&color=fff"
-                                            class="rounded-circle me-2" alt="{{ $recipient->full_name }}" width="24" height="24">
+                                        <img src="{{ $recipient->avatar_url }}"
+                                             alt="{{ $recipient->full_name }}" 
+                                             class="rounded-circle border border-1 me-2" 
+                                             width="28" 
+                                             height="28"
+                                             style="object-fit: cover;"
+                                             onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($recipient->full_name) }}&color=7F9CF5&background=EBF4FF';">
                                         {{ $recipient->full_name }}
                                     </div>
                                 </td>
