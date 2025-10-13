@@ -135,6 +135,8 @@ Route::middleware('auth')->group(function () {
 // Read-only view for instruction senders to see priorities created by recipients
 Route::middleware(['auth'])->group(function () {
     Route::get('task-priorities/sent', [\App\Http\Controllers\TaskPriorityController::class, 'sent'])->name('task-priorities.sent');
+    // Export route is available to authenticated users; controller enforces creator/sender access
+    Route::get('task-priorities/{taskPriority}/export', [\App\Http\Controllers\TaskPriorityController::class, 'exportGroup'])->name('task-priorities.export-group');
 });
 
 Route::middleware(['auth', 'role:EMPLOYEE,SUPERVISOR'])->group(function () {
@@ -142,7 +144,6 @@ Route::middleware(['auth', 'role:EMPLOYEE,SUPERVISOR'])->group(function () {
     Route::get('task-priorities/recycle-bin', [\App\Http\Controllers\TaskPriorityController::class, 'recycleBin'])->name('task-priorities.recycle-bin');
     Route::post('task-priorities/{groupKey}/restore', [\App\Http\Controllers\TaskPriorityController::class, 'restoreGroup'])->name('task-priorities.restore-group');
     Route::delete('task-priorities/{groupKey}/force-delete', [\App\Http\Controllers\TaskPriorityController::class, 'forceDeleteGroup'])->name('task-priorities.force-delete-group');
-    Route::get('task-priorities/{taskPriority}/export', [\App\Http\Controllers\TaskPriorityController::class, 'exportGroup'])->name('task-priorities.export-group');
 
     Route::resource('task-priorities', \App\Http\Controllers\TaskPriorityController::class);
     Route::post('task-priorities/bulk-delete', [\App\Http\Controllers\TaskPriorityController::class, 'bulkDelete'])->name('task-priorities.bulk-delete');
