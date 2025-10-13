@@ -71,21 +71,10 @@
                     <div class="tp-info-value tp-sender">
                         @php $sender = $taskPriority->sender; @endphp
                         <div class="tp-avatar" aria-hidden="true">
-                            @if($sender && $sender->avatar)
-                                <img src="{{ $sender->avatar }}"
-                                     alt="{{ $sender->full_name }}"
-                                     class="rounded-circle border border-1"
-                                     width="28"
-                                     height="28"
-                                     style="object-fit: cover;"
-                                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($sender->full_name) }}&color=7F9CF5&background=EBF4FF';" />
+                            @if($sender && $sender->avatar_url)
+                                <img src="{{ $sender->avatar_url }}" alt="" />
                             @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($sender->full_name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF"
-                                     alt="{{ $sender->full_name ?? 'Unknown' }}"
-                                     class="rounded-circle border border-1"
-                                     width="28"
-                                     height="28"
-                                     style="object-fit: cover;" />
+                                <span class="tp-avatar-fallback">{{ $sender ? \Illuminate\Support\Str::of($sender->full_name)->substr(0,1)->upper() : '?' }}</span>
                             @endif
                         </div>
                         <span>{{ $sender->full_name ?? 'Unknown' }}</span>
@@ -179,8 +168,9 @@
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: .9rem; }
 
 .tp-sender { display: inline-flex; align-items: center; gap: 10px; }
-.tp-avatar { display: inline-flex; align-items: center; justify-content: center; }
-.tp-avatar img { width: 28px; height: 28px; object-fit: cover; }
+.tp-avatar { width: 32px; height: 32px; border-radius: 50%; background: #f3f4f6; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #eee; }
+.tp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.tp-avatar-fallback { font-weight: 700; color: #6b7280; }
 
 .tp-chips { display:flex; gap:10px; flex-wrap:wrap; }
 .tp-chip { display:inline-flex; align-items:center; gap:8px; background:#f9fafb; border:1px solid #eee; border-radius:999px; padding:6px 10px; font-weight:700; color:#111827; }
