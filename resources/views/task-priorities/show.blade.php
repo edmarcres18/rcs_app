@@ -67,28 +67,28 @@
                     <div class="tp-info-value">{{ $taskPriority->instruction->title ?? 'N/A' }}</div>
                 </div>
                 <div class="tp-info-row">
-                    <div class="tp-info-label">Sender</div>
+                    <div class="tp-info-label">Creator</div>
                     <div class="tp-info-value tp-sender">
-                        @php $sender = $taskPriority->sender; @endphp
+                        @php $creator = $taskPriority->createdBy; @endphp
                         <div class="tp-avatar" aria-hidden="true">
-                            @if($sender && $sender->avatar)
-                                <img src="{{ $sender->avatar }}"
-                                     alt="{{ $sender->full_name }}"
+                            @if($creator && $creator->avatar)
+                                <img src="{{ $creator->avatar }}"
+                                     alt="{{ $creator->full_name }}"
                                      class="rounded-circle border border-1"
                                      width="28"
                                      height="28"
                                      style="object-fit: cover;"
-                                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($sender->full_name) }}&color=7F9CF5&background=EBF4FF';" />
+                                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($creator->full_name) }}&color=7F9CF5&background=EBF4FF';" />
                             @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($sender->full_name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF"
-                                     alt="{{ $sender->full_name ?? 'Unknown' }}"
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($creator->full_name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF"
+                                     alt="{{ $creator->full_name ?? 'Unknown' }}"
                                      class="rounded-circle border border-1"
                                      width="28"
                                      height="28"
                                      style="object-fit: cover;" />
                             @endif
                         </div>
-                        <span>{{ $sender->full_name ?? 'Unknown' }}</span>
+                        <span>{{ $creator->full_name ?? 'Unknown' }}</span>
                     </div>
                 </div>
             </div>
