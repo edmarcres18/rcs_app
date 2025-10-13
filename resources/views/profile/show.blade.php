@@ -10,9 +10,9 @@
                 <div class="card-body text-center">
                     <div class="position-relative mb-4 mx-auto" style="width: 150px; height: 150px;">
                         @if ($user->avatar)
-                            <img src="{{ $user->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                            <img src="{{ $user->avatar }}" alt="Profile Picture" class="rounded-circle img-fluid avatar-clickable" style="width: 150px; height: 150px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#avatarModal">
                         @else
-                            <img src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid">
+                            <img src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=150" alt="Profile Picture" class="rounded-circle img-fluid avatar-clickable" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#avatarModal">
                         @endif
                     </div>
 
@@ -108,6 +108,17 @@
                     </div>
                     <hr>
                     @endif
+                    @if($user->position)
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <p class="mb-0 text-muted">Position</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="mb-0">{{ $user->position }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    @endif
                     <div class="row mb-3">
                         <div class="col-sm-3">
                             <p class="mb-0 text-muted">Email</p>
@@ -165,4 +176,65 @@
         </div>
     </div>
 </div>
+
+<!-- Avatar Full Screen Modal -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-black border-0">
+            <div class="modal-body d-flex align-items-center justify-content-center p-0 position-relative">
+                <!-- Close button -->
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top: 20px; right: 20px; z-index: 10;" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <!-- Avatar image -->
+                <div class="text-center">
+                    @if ($user->avatar)
+                        <img id="fullScreenAvatar" src="{{ $user->avatar }}" alt="Profile Picture" class="img-fluid" style="max-width: 90vw; max-height: 90vh; object-fit: contain;">
+                    @else
+                        <img id="fullScreenAvatar" src="https://ui-avatars.com/api/?name={{ $user->first_name }}+{{ $user->last_name }}&background=4070f4&color=fff&size=800" alt="Profile Picture" class="img-fluid" style="max-width: 90vw; max-height: 90vh; object-fit: contain;">
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effect to avatar
+    const avatarImages = document.querySelectorAll('.avatar-clickable');
+
+    avatarImages.forEach(function(img) {
+        img.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.2s ease-in-out';
+        });
+
+        img.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+
+    // Handle modal show event to update the full-screen image
+    const avatarModal = document.getElementById('avatarModal');
+    const fullScreenAvatar = document.getElementById('fullScreenAvatar');
+
+    avatarModal.addEventListener('show.bs.modal', function() {
+        // Get the source from the clicked avatar
+        const clickedAvatar = document.querySelector('.avatar-clickable');
+        if (clickedAvatar) {
+            fullScreenAvatar.src = clickedAvatar.src;
+        }
+    });
+
+    // Close modal when clicking on the image
+    fullScreenAvatar.addEventListener('click', function() {
+        const modal = bootstrap.Modal.getInstance(avatarModal);
+        if (modal) {
+            modal.hide();
+        }
+    });
+});
+</script>
+@endpush
 @endsection

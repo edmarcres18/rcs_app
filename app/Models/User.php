@@ -14,8 +14,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use App\Models\SystemNotifications;
-use App\Models\TaskPriority;
 
 class User extends Authenticatable
 {
@@ -38,6 +36,7 @@ class User extends Authenticatable
         'middle_name',
         'last_name',
         'nickname',
+        'position',
         'roles',
     ];
 

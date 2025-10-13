@@ -78,6 +78,14 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <label for="position" class="form-label">Position (optional)</label>
+                                    <input type="text" class="form-control @error('position') is-invalid @enderror" id="position" name="position" value="{{ old('position', $user->position) }}" placeholder="e.g. Software Developer, Project Manager">
+                                    @error('position')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
                                     <label for="email" class="form-label">Email Address</label>
                                     <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
                                     @error('email')
