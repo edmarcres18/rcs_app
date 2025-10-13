@@ -810,17 +810,19 @@ class TaskPriorityController extends Controller
         $sheet->getPageMargins()->setLeft(0.5);
 
         // ==================== CREATE AND RETURN FILE ====================
-        // Create writer and save to temporary file
         $writer = new Xlsx($spreadsheet);
 
-        // Create temporary file
-        $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
-        $writer->save($tempFile);
-
-        // Return file download response
-        return response()->download($tempFile, $fileName, [
+        return response()->streamDownload(function () use ($writer) {
+            if (function_exists('ob_get_length') && ob_get_length()) {
+                @ob_end_clean();
+            }
+            $writer->save('php://output');
+        }, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-        ])->deleteFileAfterSend(true);
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+        ]);
     }
 }
