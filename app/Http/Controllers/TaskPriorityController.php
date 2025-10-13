@@ -587,240 +587,259 @@ class TaskPriorityController extends Controller
      */
     public function exportGroup(TaskPriority $taskPriority)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        // CRITICAL PRIVACY CHECK: Only creator or instruction sender can export
-        $isCreator = (int) ($taskPriority->created_by_user_id ?? 0) === (int) $user->id;
-        $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
+            // CRITICAL PRIVACY CHECK: Only creator or instruction sender can export
+            $isCreator = (int) ($taskPriority->created_by_user_id ?? 0) === (int) $user->id;
+            $isSender = (int) ($taskPriority->instruction->sender_id ?? 0) === (int) $user->id;
 
-        if (! $isCreator && ! $isSender) {
-            abort(403, 'You can only export task priorities you created or those created for instructions you sent.');
-        }
-
-        $groupKey = $taskPriority->group_key;
-        $items = TaskPriority::where('group_key', $groupKey)
-            ->orderBy('id')
-            ->get();
-
-        if ($items->isEmpty()) {
-            abort(404, 'No task priorities found in this group.');
-        }
-
-        // Get creator information
-        $creatorId = (int) ($items->first()->created_by_user_id ?? 0);
-        $creator = User::find($creatorId);
-
-        // Prepare user information for header
-        $userName = strtoupper(trim($creator ? $creator->full_name : 'Unknown User'));
-        $userPosition = strtoupper(trim($creator->position ?? 'N/A'));
-
-        $fileName = 'WEEKLY LIST OF PRIORITIES - '.$userPosition.' - '.now()->format('Ymd_His').'.xlsx';
-
-        // Determine priority level category (SHORT TERM, MEDIUM TERM, or LONG TERM)
-        $weekRange = $items->first()->week_range ?? 1;
-        $priorityCategory = match (true) {
-            $weekRange <= 1 => 'SHORT TERM (Weekly)',
-            $weekRange <= 3 => 'MEDIUM TERM (Bi-Weekly)',
-            default => 'LONG TERM (Monthly)',
-        };
-
-        // Create new Spreadsheet object
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle($userPosition);
-
-        // Set default font to Calibri size 11
-        $spreadsheet->getDefaultStyle()->getFont()->setName('Calibri');
-        $spreadsheet->getDefaultStyle()->getFont()->setSize(11);
-
-        // ==================== ROW 2: User Name and Position ====================
-        // Column B2: User Name
-        $sheet->setCellValue('B2', $userName);
-        $sheet->getStyle('B2')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('B2')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-
-        // Columns C2-E2: Position merged
-        $sheet->mergeCells('C2:E2');
-        $sheet->setCellValue('C2', $userPosition);
-        $sheet->getStyle('C2')->getFont()->setBold(true)->setSize(12);
-        $sheet->getStyle('C2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-
-        // Apply light blue background to row 2 (user name and position)
-        $sheet->getStyle('A2:E2')->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('B3D9FF'); // Light blue background
-
-        // Apply borders to row 2
-        $sheet->getStyle('A2:E2')->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN)
-            ->setColor(new Color('000000'));
-
-        // ==================== ROW 3: Priority Category Header ====================
-        // Merge cells C3:E3 for priority category
-        $sheet->mergeCells('C3:E3');
-        $sheet->setCellValue('C3', $priorityCategory);
-        $sheet->getStyle('C3')->getFont()->setBold(true)->setSize(11);
-        $sheet->getStyle('C3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C3')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('C3')->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('FFFF00'); // Yellow background
-
-        // Apply borders to row 3
-        $sheet->getStyle('A3:E3')->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN)
-            ->setColor(new Color('000000'));
-
-        // ==================== ROW 4: Column Headers ====================
-        $headers = [
-            'A4' => 'ITEM NO.',
-            'B4' => 'TASK',
-            'C4' => 'TARGET DATE TO COMPLETED',
-            'D4' => 'REMARKS',
-            'E4' => 'STATUS',
-        ];
-
-        foreach ($headers as $cell => $headerText) {
-            $sheet->setCellValue($cell, $headerText);
-        }
-
-        // Style column headers: Yellow background, bold, centered, bordered
-        $sheet->getStyle('A4:E4')->getFont()->setBold(true)->setSize(11)->setColor(new Color('000000'));
-        $sheet->getStyle('A4:E4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A4:E4')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('A4:E4')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A4:E4')->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('FFFF00'); // Yellow background
-        $sheet->getStyle('A4:E4')->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN)
-            ->setColor(new Color('000000'));
-
-        // Set row height for headers
-        $sheet->getRowDimension(4)->setRowHeight(30);
-
-        // ==================== DATA ROWS ====================
-        $dataRow = 5; // Start from row 5
-        $itemNumber = 1;
-
-        foreach ($items as $item) {
-            // Column A: Item Number (centered)
-            $sheet->setCellValue('A'.$dataRow, $itemNumber);
-            $sheet->getStyle('A'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('A'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-
-            // Column B: Task (priority_title)
-            $sheet->setCellValue('B'.$dataRow, (string) ($item->priority_title ?? ''));
-            $sheet->getStyle('B'.$dataRow)->getAlignment()->setWrapText(true);
-            $sheet->getStyle('B'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-
-            // Column C: Target Date (formatted as DD-MMM-YY)
-            if ($item->target_deadline) {
-                $formattedDate = Carbon::parse($item->target_deadline)->format('d-M-y');
-                $sheet->setCellValue('C'.$dataRow, $formattedDate);
-            } else {
-                $sheet->setCellValue('C'.$dataRow, '');
+            if (! $isCreator && ! $isSender) {
+                abort(403, 'You can only export task priorities you created or those created for instructions you sent.');
             }
-            $sheet->getStyle('C'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('C'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-            $sheet->getStyle('C'.$dataRow)->getAlignment()->setWrapText(true);
 
-            // Column D: Remarks (notes)
-            $sheet->setCellValue('D'.$dataRow, (string) ($item->notes ?? ''));
-            $sheet->getStyle('D'.$dataRow)->getAlignment()->setWrapText(true);
-            $sheet->getStyle('D'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+            $groupKey = $taskPriority->group_key;
+            $items = TaskPriority::where('group_key', $groupKey)
+                ->orderBy('id')
+                ->get();
 
-            // Column E: Status (uppercase)
-            $rawStatus = trim((string) ($item->status ?? 'NOT STARTED'));
-            $upper = strtoupper($rawStatus);
-            // Normalize to required values
-            if (preg_match('/NOT\s*STARTED/i', $rawStatus)) {
-                $statusText = 'NOT STARTED';
-            } elseif (preg_match('/ACCOMPLISHED|COMPLETED|DONE/i', $rawStatus)) {
-                $statusText = 'ACCOMPLISHED';
-            } elseif (preg_match('/ON\s*-?\s*PROGRESS|IN\s*PROGRESS|PROGRESS|PROCESSING/i', $rawStatus)) {
-                $statusText = 'ONPROGRESS';
-            } else {
-                $statusText = $upper; // fallback uppercase
+            if ($items->isEmpty()) {
+                abort(404, 'No task priorities found in this group.');
             }
-            $sheet->setCellValue('E'.$dataRow, $statusText);
-            $sheet->getStyle('E'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('E'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-            $sheet->getStyle('E'.$dataRow)->getAlignment()->setWrapText(true);
 
-            // Apply borders to all data cells
-            $sheet->getStyle('A'.$dataRow.':E'.$dataRow)->getBorders()->getAllBorders()
+            // Get creator information with null safety
+            $creatorId = (int) ($items->first()->created_by_user_id ?? 0);
+            $creator = User::find($creatorId);
+
+            // Prepare user information for header with null safety
+            $userName = strtoupper(trim($creator ? $creator->full_name : 'Unknown User'));
+            $userPosition = strtoupper(trim($creator ? $creator->position : 'N/A'));
+
+            $fileName = 'WEEKLY LIST OF PRIORITIES - '.$userPosition.' - '.now()->format('Ymd_His').'.xlsx';
+
+            // Determine priority level category (SHORT TERM, MEDIUM TERM, or LONG TERM)
+            $weekRange = $items->first()->week_range ?? 1;
+            $priorityCategory = match (true) {
+                $weekRange <= 1 => 'SHORT TERM (Weekly)',
+                $weekRange <= 3 => 'MEDIUM TERM (Bi-Weekly)',
+                default => 'LONG TERM (Monthly)',
+            };
+
+            // Create new Spreadsheet object
+            $spreadsheet = new Spreadsheet;
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle($userPosition);
+
+            // Set default font to Calibri size 11
+            $spreadsheet->getDefaultStyle()->getFont()->setName('Calibri');
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(11);
+
+            // ==================== ROW 2: User Name and Position ====================
+            // Column B2: User Name
+            $sheet->setCellValue('B2', $userName);
+            $sheet->getStyle('B2')->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('B2')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+            // Columns C2-E2: Position merged
+            $sheet->mergeCells('C2:E2');
+            $sheet->setCellValue('C2', $userPosition);
+            $sheet->getStyle('C2')->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('C2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C2')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+            // Apply light blue background to row 2 (user name and position)
+            $sheet->getStyle('A2:E2')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('B3D9FF'); // Light blue background
+
+            // Apply borders to row 2
+            $sheet->getStyle('A2:E2')->getBorders()->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN)
                 ->setColor(new Color('000000'));
 
-            // Set row height with auto-sizing consideration
-            $sheet->getRowDimension($dataRow)->setRowHeight(-1); // Auto height
+            // ==================== ROW 3: Priority Category Header ====================
+            // Merge cells C3:E3 for priority category
+            $sheet->mergeCells('C3:E3');
+            $sheet->setCellValue('C3', $priorityCategory);
+            $sheet->getStyle('C3')->getFont()->setBold(true)->setSize(11);
+            $sheet->getStyle('C3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C3')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle('C3')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('FFFF00'); // Yellow background
 
-            $itemNumber++;
-            $dataRow++;
-        }
-
-        // Add extra empty rows for future entries (optional - makes report look complete)
-        $emptyRowsToAdd = max(0, 12 - $items->count()); // Ensure at least 12 rows total
-        for ($i = 0; $i < $emptyRowsToAdd; $i++) {
-            $sheet->setCellValue('A'.$dataRow, $itemNumber);
-            $sheet->getStyle('A'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-            // Apply borders
-            $sheet->getStyle('A'.$dataRow.':E'.$dataRow)->getBorders()->getAllBorders()
+            // Apply borders to row 3
+            $sheet->getStyle('A3:E3')->getBorders()->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN)
                 ->setColor(new Color('000000'));
 
-            $itemNumber++;
-            $dataRow++;
+            // ==================== ROW 4: Column Headers ====================
+            $headers = [
+                'A4' => 'ITEM NO.',
+                'B4' => 'TASK',
+                'C4' => 'TARGET DATE TO COMPLETED',
+                'D4' => 'REMARKS',
+                'E4' => 'STATUS',
+            ];
+
+            foreach ($headers as $cell => $headerText) {
+                $sheet->setCellValue($cell, $headerText);
+            }
+
+            // Style column headers: Yellow background, bold, centered, bordered
+            $sheet->getStyle('A4:E4')->getFont()->setBold(true)->setSize(11)->setColor(new Color('000000'));
+            $sheet->getStyle('A4:E4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A4:E4')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle('A4:E4')->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A4:E4')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('FFFF00'); // Yellow background
+            $sheet->getStyle('A4:E4')->getBorders()->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN)
+                ->setColor(new Color('000000'));
+
+            // Set row height for headers
+            $sheet->getRowDimension(4)->setRowHeight(30);
+
+            // ==================== DATA ROWS ====================
+            $dataRow = 5; // Start from row 5
+            $itemNumber = 1;
+
+            foreach ($items as $item) {
+                // Column A: Item Number (centered)
+                $sheet->setCellValue('A'.$dataRow, $itemNumber);
+                $sheet->getStyle('A'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+
+                // Column B: Task (priority_title)
+                $sheet->setCellValue('B'.$dataRow, (string) ($item->priority_title ?? ''));
+                $sheet->getStyle('B'.$dataRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('B'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+
+                // Column C: Target Date (formatted as DD-MMM-YY)
+                if ($item->target_deadline) {
+                    $formattedDate = Carbon::parse($item->target_deadline)->format('d-M-y');
+                    $sheet->setCellValue('C'.$dataRow, $formattedDate);
+                } else {
+                    $sheet->setCellValue('C'.$dataRow, '');
+                }
+                $sheet->getStyle('C'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('C'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+                $sheet->getStyle('C'.$dataRow)->getAlignment()->setWrapText(true);
+
+                // Column D: Remarks (notes)
+                $sheet->setCellValue('D'.$dataRow, (string) ($item->notes ?? ''));
+                $sheet->getStyle('D'.$dataRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('D'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+
+                // Column E: Status (uppercase)
+                $rawStatus = trim((string) ($item->status ?? 'NOT STARTED'));
+                $upper = strtoupper($rawStatus);
+                // Normalize to required values
+                if (preg_match('/NOT\s*STARTED/i', $rawStatus)) {
+                    $statusText = 'NOT STARTED';
+                } elseif (preg_match('/ACCOMPLISHED|COMPLETED|DONE/i', $rawStatus)) {
+                    $statusText = 'ACCOMPLISHED';
+                } elseif (preg_match('/ON\s*-?\s*PROGRESS|IN\s*PROGRESS|PROGRESS|PROCESSING/i', $rawStatus)) {
+                    $statusText = 'ONPROGRESS';
+                } else {
+                    $statusText = $upper; // fallback uppercase
+                }
+                $sheet->setCellValue('E'.$dataRow, $statusText);
+                $sheet->getStyle('E'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('E'.$dataRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+                $sheet->getStyle('E'.$dataRow)->getAlignment()->setWrapText(true);
+
+                // Apply borders to all data cells
+                $sheet->getStyle('A'.$dataRow.':E'.$dataRow)->getBorders()->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN)
+                    ->setColor(new Color('000000'));
+
+                // Set row height with auto-sizing consideration
+                $sheet->getRowDimension($dataRow)->setRowHeight(-1); // Auto height
+
+                $itemNumber++;
+                $dataRow++;
+            }
+
+            // Add extra empty rows for future entries (optional - makes report look complete)
+            $emptyRowsToAdd = max(0, 12 - $items->count()); // Ensure at least 12 rows total
+            for ($i = 0; $i < $emptyRowsToAdd; $i++) {
+                $sheet->setCellValue('A'.$dataRow, $itemNumber);
+                $sheet->getStyle('A'.$dataRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                // Apply borders
+                $sheet->getStyle('A'.$dataRow.':E'.$dataRow)->getBorders()->getAllBorders()
+                    ->setBorderStyle(Border::BORDER_THIN)
+                    ->setColor(new Color('000000'));
+
+                $itemNumber++;
+                $dataRow++;
+            }
+
+            // ==================== COLUMN WIDTHS ====================
+            // Fixed widths tuned to match the provided image while relying on Wrap Text
+            $sheet->getColumnDimension('A')->setWidth(6.5);   // ITEM NO.
+            $sheet->getColumnDimension('B')->setWidth(45);    // TASK
+            $sheet->getColumnDimension('C')->setWidth(20);    // TARGET DATE TO COMPLETED
+            $sheet->getColumnDimension('D')->setWidth(35);    // REMARKS
+            $sheet->getColumnDimension('E')->setWidth(18);    // STATUS
+
+            // Enable text wrapping for all data columns
+            $lastRow = $dataRow - 1;
+            $sheet->getStyle('A5:E'.$lastRow)->getAlignment()->setWrapText(true);
+            // Ensure reasonable minimal row height for readability while allowing auto-expansion
+            for ($r = 5; $r <= $lastRow; $r++) {
+                $sheet->getRowDimension($r)->setRowHeight(-1);
+            }
+
+            // ==================== PAGE SETUP ====================
+            // Set page orientation and margins for printing
+            $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+            $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
+            $sheet->getPageSetup()->setFitToWidth(1);
+            $sheet->getPageSetup()->setFitToHeight(0);
+
+            // Set print area
+            $sheet->getPageSetup()->setPrintArea('A1:E'.$lastRow);
+
+            // Set margins
+            $sheet->getPageMargins()->setTop(0.5);
+            $sheet->getPageMargins()->setRight(0.5);
+            $sheet->getPageMargins()->setBottom(0.5);
+            $sheet->getPageMargins()->setLeft(0.5);
+
+            // ==================== CREATE AND RETURN FILE ====================
+            // Create writer and save to temporary file
+            $writer = new Xlsx($spreadsheet);
+
+            // Create temporary file with proper error handling
+            $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
+            if (! $tempFile) {
+                throw new \Exception('Failed to create temporary file for export');
+            }
+
+            $writer->save($tempFile);
+
+            // Return file download response
+            return response()->download($tempFile, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+            ])->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Task Priority Export Failed', [
+                'user_id' => auth()->id(),
+                'task_priority_id' => $taskPriority->id,
+                'group_key' => $taskPriority->group_key ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Return a user-friendly error response
+            return redirect()->back()->with('error', 'Failed to export task priorities. Please try again or contact support if the problem persists.');
         }
-
-        // ==================== COLUMN WIDTHS ====================
-        // Fixed widths tuned to match the provided image while relying on Wrap Text
-        $sheet->getColumnDimension('A')->setWidth(6.5);   // ITEM NO.
-        $sheet->getColumnDimension('B')->setWidth(45);    // TASK
-        $sheet->getColumnDimension('C')->setWidth(20);    // TARGET DATE TO COMPLETED
-        $sheet->getColumnDimension('D')->setWidth(35);    // REMARKS
-        $sheet->getColumnDimension('E')->setWidth(18);    // STATUS
-
-        // Enable text wrapping for all data columns
-        $lastRow = $dataRow - 1;
-        $sheet->getStyle('A5:E'.$lastRow)->getAlignment()->setWrapText(true);
-        // Ensure reasonable minimal row height for readability while allowing auto-expansion
-        for ($r = 5; $r <= $lastRow; $r++) {
-            $sheet->getRowDimension($r)->setRowHeight(-1);
-        }
-
-        // ==================== PAGE SETUP ====================
-        // Set page orientation and margins for printing
-        $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
-        $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
-        $sheet->getPageSetup()->setFitToWidth(1);
-        $sheet->getPageSetup()->setFitToHeight(0);
-
-        // Set print area
-        $sheet->getPageSetup()->setPrintArea('A1:E'.$lastRow);
-
-        // Set margins
-        $sheet->getPageMargins()->setTop(0.5);
-        $sheet->getPageMargins()->setRight(0.5);
-        $sheet->getPageMargins()->setBottom(0.5);
-        $sheet->getPageMargins()->setLeft(0.5);
-
-        // ==================== CREATE AND RETURN FILE ====================
-        // Create writer and save to temporary file
-        $writer = new Xlsx($spreadsheet);
-
-        // Create temporary file
-        $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
-        $writer->save($tempFile);
-
-        // Return file download response
-        return response()->download($tempFile, $fileName, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-        ])->deleteFileAfterSend(true);
     }
 }
