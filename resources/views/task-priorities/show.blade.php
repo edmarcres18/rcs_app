@@ -18,16 +18,19 @@
                 </span>
                 <span>Back</span>
             </a>
-            <a href="{{ route('task-priorities.export-group', $taskPriority) }}" class="tp-btn tp-btn-ghost" title="Export XLSX">
-                <span class="tp-btn-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M4 17h16v3H4z" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                </span>
-                <span>Export</span>
-            </a>
+            <form action="{{ route('task-priorities.export-group', $taskPriority) }}" method="POST" class="tp-inline-form">
+                @csrf
+                <button type="submit" class="tp-btn tp-btn-ghost" title="Export XLSX">
+                    <span class="tp-btn-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 17h16v3H4z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </span>
+                    <span>Export</span>
+                </button>
+            </form>
             @if(!empty($canModify))
             <a href="{{ route('task-priorities.edit', $taskPriority) }}" class="tp-btn tp-btn-primary">
                 <span class="tp-btn-icon" aria-hidden="true">
