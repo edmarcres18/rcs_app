@@ -810,42 +810,17 @@ class TaskPriorityController extends Controller
         $sheet->getPageMargins()->setLeft(0.5);
 
         // ==================== CREATE AND RETURN FILE ====================
+        // Create writer and save to temporary file
         $writer = new Xlsx($spreadsheet);
 
-        return response()->streamDownload(function () use ($writer) {
-            // Ensure session is not locked during long stream
-            if (function_exists('session_write_close')) {
-                @session_write_close();
-            } else {
-                try {
-                    session()->save();
-                } catch (\Throwable $e) {
-                    // ignore if session driver doesn't support save here
-                }
-            }
+        // Create temporary file
+        $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
+        $writer->save($tempFile);
 
-            // Disable output compression/buffering if enabled
-            if (function_exists('ini_get') && function_exists('ini_set')) {
-                @ini_set('zlib.output_compression', 'Off');
-                @ini_set('output_buffering', '0');
-            }
-
-            // Clean all active output buffers to avoid corrupting binary stream
-            if (function_exists('ob_get_level')) {
-                while (ob_get_level() > 0) {
-                    @ob_end_clean();
-                }
-            }
-
-            // Stream the XLSX
-            $writer->save('php://output');
-        }, $fileName, [
+        // Return file download response
+        return response()->download($tempFile, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
-            'Pragma' => 'no-cache',
-            'X-Accel-Buffering' => 'no',
-            'Content-Transfer-Encoding' => 'binary',
-        ]);
+        ])->deleteFileAfterSend(true);
     }
 }
