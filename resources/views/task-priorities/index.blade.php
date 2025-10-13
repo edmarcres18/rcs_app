@@ -93,8 +93,8 @@
                                 <div class="tp-sender">
                                     @php $sender = $tp->sender ?? null; @endphp
                                     <div class="tp-avatar" aria-hidden="true">
-                                        @if($sender && $sender->avatar_url)
-                                            <img src="{{ $sender->avatar_url }}"
+                                        @if($sender && $sender->avatar)
+                                            <img src="{{ $sender->avatar }}"
                                                  alt="{{ $sender->full_name }}"
                                                  class="rounded-circle border border-1"
                                                  width="28"

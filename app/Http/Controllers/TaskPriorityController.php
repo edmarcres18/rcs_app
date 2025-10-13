@@ -93,7 +93,7 @@ class TaskPriorityController extends Controller
             ->pluck('group_key');
 
         // Fetch representatives with privacy filter
-        $representatives = TaskPriority::with(['instruction', 'sender', 'createdBy'])
+        $representatives = TaskPriority::with(['instruction', 'sender:id,first_name,middle_name,last_name,avatar', 'createdBy'])
             ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $groupKeys)
             ->get()
@@ -130,7 +130,7 @@ class TaskPriorityController extends Controller
         $user = auth()->user();
 
         // Only get instructions where the current user is a recipient
-        $instructions = Instruction::with('sender')
+        $instructions = Instruction::with('sender:id,first_name,middle_name,last_name,avatar')
             ->whereHas('recipients', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -141,7 +141,7 @@ class TaskPriorityController extends Controller
                     'title' => $instruction->title,
                     'sender_id' => $instruction->sender_id,
                     'sender_name' => $instruction->sender->full_name,
-                    'sender_avatar' => $instruction->sender->avatar_url,
+                    'sender_avatar' => $instruction->sender->avatar,
                 ];
             });
 
@@ -157,7 +157,7 @@ class TaskPriorityController extends Controller
         $user = auth()->user();
 
         // Get the instruction and verify the user is a recipient
-        $instruction = Instruction::with('sender')
+        $instruction = Instruction::with('sender:id,first_name,middle_name,last_name,avatar')
             ->whereHas('recipients', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -228,10 +228,10 @@ class TaskPriorityController extends Controller
             abort(403, 'You can only view task priorities you created or those created for instructions you sent.');
         }
 
-        $taskPriority->load(['instruction', 'sender', 'createdBy']);
+        $taskPriority->load(['instruction', 'sender:id,first_name,middle_name,last_name,avatar', 'createdBy']);
 
         // Fetch all items in the group (no need for additional privacy filter since access already checked above)
-        $groupItems = TaskPriority::with(['instruction', 'sender', 'createdBy'])
+        $groupItems = TaskPriority::with(['instruction', 'sender:id,first_name,middle_name,last_name,avatar', 'createdBy'])
             ->where('group_key', $taskPriority->group_key)
             ->orderBy('id')
             ->get();
@@ -313,7 +313,7 @@ class TaskPriorityController extends Controller
 
         // Gather updated items and notify instruction sender instantly (email, in-app, broadcast, Telegram)
         try {
-            $instruction = $taskPriority->instruction()->with('sender')->first();
+            $instruction = $taskPriority->instruction()->with('sender:id,first_name,middle_name,last_name,avatar')->first();
             $updatedItems = TaskPriority::where('group_key', $taskPriority->group_key)
                 ->orderBy('id')
                 ->get();
@@ -442,7 +442,7 @@ class TaskPriorityController extends Controller
             ->forPage($page, $perPage)
             ->pluck('group_key');
 
-        $representatives = TaskPriority::with(['instruction', 'sender', 'createdBy'])
+        $representatives = TaskPriority::with(['instruction', 'sender:id,first_name,middle_name,last_name,avatar', 'createdBy'])
             ->whereIn('group_key', $groupKeys)
             ->get()
             ->groupBy('group_key')
@@ -495,7 +495,7 @@ class TaskPriorityController extends Controller
             ->pluck('group_key');
 
         // Fetch representatives with privacy filter
-        $representatives = TaskPriority::withTrashed()->with(['instruction', 'sender', 'createdBy'])
+        $representatives = TaskPriority::withTrashed()->with(['instruction', 'sender:id,first_name,middle_name,last_name,avatar', 'createdBy'])
             ->where('created_by_user_id', $user->id)
             ->whereIn('group_key', $groupKeys)
             ->get()
