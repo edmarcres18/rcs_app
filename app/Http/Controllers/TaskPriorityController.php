@@ -838,18 +838,39 @@ class TaskPriorityController extends Controller
             }
             Settings::setTempDir($tempDir);
 
-            // Create writer and stream directly to response to avoid FS permission issues
+            // Create writer and save to a persistent, known-writable path, then download
             $writer = new Xlsx($spreadsheet);
 
-            return response()->streamDownload(function () use ($writer) {
-                // Stream to output buffer
-                $writer->save('php://output');
-            }, $fileName, [
+            $exportPath = rtrim($tempDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$fileName;
+
+            // If a file with same name exists, append a unique suffix
+            if (file_exists($exportPath)) {
+                $uniqueSuffix = '-'.uniqid();
+                $exportPath = rtrim($tempDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.
+                    pathinfo($fileName, PATHINFO_FILENAME).$uniqueSuffix.'.'.pathinfo($fileName, PATHINFO_EXTENSION);
+            }
+
+            // Save with robust error handling
+            try {
+                $writer->save($exportPath);
+            } catch (\Throwable $saveException) {
+                throw new \Exception('Failed to save Excel file to storage: '.$saveException->getMessage());
+            }
+
+            if (! file_exists($exportPath) || ! is_readable($exportPath)) {
+                throw new \Exception('Generated file is not accessible for download in storage');
+            }
+
+            // Return file download from disk; delete after send to avoid storage bloat
+            $headers = [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+                'Content-Disposition' => 'attachment; filename="'.basename($exportPath).'"',
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
                 'Pragma' => 'no-cache',
-            ]);
+                'X-Accel-Buffering' => 'no',
+            ];
+
+            return response()->download($exportPath, basename($exportPath), $headers)->deleteFileAfterSend(true);
 
         } catch (\Exception $e) {
             // Log the error for debugging
