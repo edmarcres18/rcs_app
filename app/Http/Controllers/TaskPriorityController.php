@@ -614,7 +614,14 @@ class TaskPriorityController extends Controller
         $userName = strtoupper(trim($creator ? $creator->full_name : 'Unknown User'));
         $userPosition = strtoupper(trim($creator->position ?? 'N/A'));
 
-        $fileName = 'WEEKLY LIST OF PRIORITIES - '.$userPosition.' - '.now()->format('Ymd_His').'.xlsx';
+        // Sanitize filename component derived from user position to ensure safe downloads across OS/browsers
+        $sanitizedFileBase = preg_replace('/[^\p{L}\p{N}\s\-_().]/u', '-', (string) $userPosition);
+        $sanitizedFileBase = trim(preg_replace('/[\s\-]+/', ' ', (string) $sanitizedFileBase));
+        $sanitizedFileBase = $sanitizedFileBase !== '' ? $sanitizedFileBase : 'PRIORITIES';
+        if (mb_strlen($sanitizedFileBase) > 50) {
+            $sanitizedFileBase = mb_substr($sanitizedFileBase, 0, 50);
+        }
+        $fileName = 'WEEKLY LIST OF PRIORITIES - '.$sanitizedFileBase.' - '.now()->format('Ymd_His').'.xlsx';
 
         // Determine priority level category (SHORT TERM, MEDIUM TERM, or LONG TERM)
         $weekRange = $items->first()->week_range ?? 1;
