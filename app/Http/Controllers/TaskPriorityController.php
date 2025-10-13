@@ -813,9 +813,31 @@ class TaskPriorityController extends Controller
         $writer = new Xlsx($spreadsheet);
 
         return response()->streamDownload(function () use ($writer) {
-            if (function_exists('ob_get_length') && ob_get_length()) {
-                @ob_end_clean();
+            // Ensure session is not locked during long stream
+            if (function_exists('session_write_close')) {
+                @session_write_close();
+            } else {
+                try {
+                    session()->save();
+                } catch (\Throwable $e) {
+                    // ignore if session driver doesn't support save here
+                }
             }
+
+            // Disable output compression/buffering if enabled
+            if (function_exists('ini_get') && function_exists('ini_set')) {
+                @ini_set('zlib.output_compression', 'Off');
+                @ini_set('output_buffering', '0');
+            }
+
+            // Clean all active output buffers to avoid corrupting binary stream
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) {
+                    @ob_end_clean();
+                }
+            }
+
+            // Stream the XLSX
             $writer->save('php://output');
         }, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -823,6 +845,7 @@ class TaskPriorityController extends Controller
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma' => 'no-cache',
             'X-Accel-Buffering' => 'no',
+            'Content-Transfer-Encoding' => 'binary',
         ]);
     }
 }

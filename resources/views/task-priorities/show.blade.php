@@ -20,7 +20,7 @@
             </a>
             <form action="{{ route('task-priorities.export-group', $taskPriority) }}" method="POST" class="tp-inline-form">
                 @csrf
-                <button type="submit" class="tp-btn tp-btn-ghost" title="Export XLSX">
+                <button type="submit" class="tp-btn tp-btn-ghost" title="Export XLSX" formtarget="_blank">
                     <span class="tp-btn-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
