@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -824,37 +825,31 @@ class TaskPriorityController extends Controller
             $sheet->getPageMargins()->setBottom(0.5);
             $sheet->getPageMargins()->setLeft(0.5);
 
-            // ==================== CREATE AND RETURN FILE ====================
-            // Create writer and save to temporary file
+            // ==================== CREATE AND STREAM FILE ====================
+            // Ensure a known writable temp directory is used by PhpSpreadsheet
+            $tempDir = storage_path('app/exports');
+            if (! is_dir($tempDir)) {
+                if (! @mkdir($tempDir, 0775, true) && ! is_dir($tempDir)) {
+                    throw new \Exception('Unable to create export temp directory: '.$tempDir);
+                }
+            }
+            if (! is_writable($tempDir)) {
+                throw new \Exception('Export temp directory not writable: '.$tempDir);
+            }
+            Settings::setTempDir($tempDir);
+
+            // Create writer and stream directly to response to avoid FS permission issues
             $writer = new Xlsx($spreadsheet);
 
-            // Create temporary file with proper error handling
-            $tempFile = tempnam(sys_get_temp_dir(), 'task_priority_export_');
-            if (! $tempFile) {
-                throw new \Exception('Failed to create temporary file for export');
-            }
-
-            // Save the file with error handling
-            try {
-                $writer->save($tempFile);
-            } catch (\Exception $saveException) {
-                // Clean up the temporary file if save fails
-                if (file_exists($tempFile)) {
-                    unlink($tempFile);
-                }
-                throw new \Exception('Failed to save Excel file: '.$saveException->getMessage());
-            }
-
-            // Verify file exists and is readable before download
-            if (! file_exists($tempFile) || ! is_readable($tempFile)) {
-                throw new \Exception('Generated file is not accessible for download');
-            }
-
-            // Return file download response
-            return response()->download($tempFile, $fileName, [
+            return response()->streamDownload(function () use ($writer) {
+                // Stream to output buffer
+                $writer->save('php://output');
+            }, $fileName, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            ])->deleteFileAfterSend(true);
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+                'Pragma' => 'no-cache',
+            ]);
 
         } catch (\Exception $e) {
             // Log the error for debugging
