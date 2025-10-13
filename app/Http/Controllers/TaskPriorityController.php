@@ -627,7 +627,13 @@ class TaskPriorityController extends Controller
         // Create new Spreadsheet object
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle($userPosition);
+        // Worksheet title must be <= 31 chars and cannot contain : \\ / ? * [ ]
+        $sanitizedTitle = preg_replace('/[:\\\\\/\?\*\[\]]/', '-', (string) $userPosition);
+        $sanitizedTitle = trim($sanitizedTitle) !== '' ? trim($sanitizedTitle) : 'Sheet1';
+        if (mb_strlen($sanitizedTitle) > 31) {
+            $sanitizedTitle = mb_substr($sanitizedTitle, 0, 31);
+        }
+        $sheet->setTitle($sanitizedTitle);
 
         // Set default font to Calibri size 11
         $spreadsheet->getDefaultStyle()->getFont()->setName('Calibri');
