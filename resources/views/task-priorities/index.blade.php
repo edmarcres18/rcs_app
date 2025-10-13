@@ -91,26 +91,26 @@
                             </td>
                             <td data-label="Sender">
                                 <div class="tp-sender">
-                                    @php $creator = $tp->createdBy ?? null; @endphp
+                                    @php $sender = $tp->sender ?? null; @endphp
                                     <div class="tp-avatar" aria-hidden="true">
-                                        @if($creator && $creator->avatar)
-                                            <img src="{{ $creator->avatar }}"
-                                                 alt="{{ $creator->full_name }}"
+                                        @if($sender && $sender->avatar_url)
+                                            <img src="{{ $sender->avatar_url }}"
+                                                 alt="{{ $sender->full_name }}"
                                                  class="rounded-circle border border-1"
                                                  width="28"
                                                  height="28"
                                                  style="object-fit: cover;"
-                                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($creator->full_name) }}&color=7F9CF5&background=EBF4FF';" />
+                                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($sender->full_name) }}&color=7F9CF5&background=EBF4FF';" />
                                         @else
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($creator->full_name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF"
-                                                 alt="{{ $creator->full_name ?? 'Unknown' }}"
+                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($sender->full_name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF"
+                                                 alt="{{ $sender->full_name ?? 'Unknown' }}"
                                                  class="rounded-circle border border-1"
                                                  width="28"
                                                  height="28"
                                                  style="object-fit: cover;" />
                                         @endif
                                     </div>
-                                    <div class="tp-sender-name">{{ $creator->full_name ?? 'Unknown' }}</div>
+                                    <div class="tp-sender-name">{{ $sender->full_name ?? 'Unknown' }}</div>
                                 </div>
                             </td>
                             <td class="tp-col-actions">

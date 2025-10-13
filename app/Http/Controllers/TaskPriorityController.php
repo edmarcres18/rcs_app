@@ -141,7 +141,7 @@ class TaskPriorityController extends Controller
                     'title' => $instruction->title,
                     'sender_id' => $instruction->sender_id,
                     'sender_name' => $instruction->sender->full_name,
-                    'sender_avatar' => $instruction->sender->avatar,
+                    'sender_avatar' => $instruction->sender->avatar_url,
                 ];
             });
 
