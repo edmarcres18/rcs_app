@@ -26,7 +26,6 @@ docker-compose.old.yml
 Dockerfile
 Dockerfile.prod
 DockerfileOld
-/docker
 .bash_history
 default.conf
 defaultold.conf
