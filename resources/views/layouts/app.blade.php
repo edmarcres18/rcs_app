@@ -3017,12 +3017,6 @@
             for (let i = 0; i < rawData.length; ++i) {
                 outputArray[i] = rawData.charCodeAt(i);
             }
-            if (outputArray.length === 64) {
-                const withPrefix = new Uint8Array(65);
-                withPrefix[0] = 4;
-                withPrefix.set(outputArray, 1);
-                return withPrefix;
-            }
             return outputArray;
         }
     </script>
