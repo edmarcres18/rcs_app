@@ -399,6 +399,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('reply-form');
     if (!form) return;
 
+    function escapeHTML(str) {
+        return (str || '').replace(/[&<>"']/g, function(m) {
+            switch (m) {
+                case '&': return '&amp;';
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '"': return '&quot;';
+                case "'": return '&#39;';
+                default: return m;
+            }
+        });
+    }
+
+    function linkifyText(text) {
+        const escaped = escapeHTML(text);
+        const urlRegex = /(?:(https?:\/\/[^\s<]+)|(?:www\.[^\s<]+?\.[^\s<]+))/gi;
+        return escaped.replace(urlRegex, function(match) {
+            let url = match;
+            let trailing = '';
+            while (/[\.,!?;:\)\]\}]$/.test(url)) { trailing = url.slice(-1) + trailing; url = url.slice(0, -1); }
+            let href = url;
+            if (!/^https?:\/\//i.test(href)) href = 'http://' + href;
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>${trailing}`;
+        }).replace(/\n/g, '<br>');
+    }
+
+    function linkifyElement(el) {
+        if (!el) return;
+        el.innerHTML = linkifyText(el.textContent || '');
+    }
+
     const contentField = document.getElementById('reply-content');
     const contentError = document.getElementById('content-error');
     const timelineContainer = document.getElementById('timeline-container');
@@ -600,6 +631,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    linkifyElement(document.querySelector('.instruction-body'));
+    document.querySelectorAll('.reply-bubble p').forEach(linkifyElement);
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         resetValidationState();
@@ -663,6 +697,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 newReplyElement.innerHTML = newReplyHtml;
                 const insertedElement = timelineContainer.insertBefore(newReplyElement.firstElementChild, timelineContainer.firstChild);
                 insertedElement.classList.add('animate__animated', 'animate__fadeInDown');
+
+                const replyTextEl = insertedElement.querySelector('.reply-text');
+                if (replyTextEl) {
+                    replyTextEl.innerHTML = linkifyText(reply.content || '');
+                }
 
                 timelineContainer.scrollTop = 0;
                 form.reset();
@@ -754,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <small class="text-muted" title="${formattedTime}">${relativeTime}</small>
                 </div>
                 <div class="reply-bubble mt-2">
-                    <p class="mb-0" style="white-space: pre-wrap;">${reply.content}</p>
+                    <p class="mb-0 reply-text" style="white-space: pre-wrap;"></p>
                     ${attachmentHtml}
                 </div>
             </div>
