@@ -247,9 +247,9 @@
             <button class="btn btn-outline-secondary btn-sm" id="btn-export-png">
                 <i class="fa-solid fa-image me-1"></i> Export PNG
             </button>
-            <button class="btn btn-outline-primary btn-sm" id="btn-share">
+            <a class="btn btn-outline-primary btn-sm" id="btn-share" href="{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}" target="_blank" rel="noopener" data-share-url="{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}">
                 <i class="fa-solid fa-share-nodes me-1"></i> Share
-            </button>
+            </a>
         </div>
     </div>
 
@@ -466,7 +466,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
+        const shareUrl = document.getElementById('btn-share')?.dataset.shareUrl || "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
 
         // Activities bar
         new Chart(document.getElementById('chart-activities'), {
