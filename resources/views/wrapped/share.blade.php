@@ -16,6 +16,15 @@
             margin: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
+        .d-flex { display: flex; }
+        .justify-content-between { justify-content: space-between; }
+        .align-items-center { align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-2 { gap: 0.5rem; }
+        .text-center { text-align: center; }
+        .text-muted { color: #6b7280; }
+        .small { font-size: 0.9rem; }
+
         .share-wrapper {
             min-height: 100vh;
             display: flex;
@@ -41,9 +50,11 @@
                         #f9fafb;
             border-radius: 24px;
             border: 1px solid #e5e7eb;
-            padding: 36px 40px 46px;
+            padding: clamp(22px, 3vw, 36px) clamp(20px, 3vw, 40px) clamp(28px, 4vw, 46px);
             box-shadow: 0 18px 50px rgba(0,0,0,0.10);
             isolation: isolate;
+            max-width: 1240px;
+            margin: 0 auto;
         }
         .wrapped-export-card::before,
         .wrapped-export-card::after {
@@ -108,7 +119,7 @@
         .wrapped-title { font-size: clamp(30px, 5vw, 48px); font-weight: 900; color: var(--laravel-red); text-align: center; letter-spacing: -0.5px; margin: 14px 0 6px; }
         .wrapped-subtitle { font-size: clamp(22px, 4vw, 34px); font-weight: 800; color: var(--ink); text-align: center; margin: 0; }
         .wrapped-tagline { text-align: center; color: var(--laravel-red); font-weight: 700; letter-spacing: 0.5px; margin-top: 8px; }
-        .wrapped-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+        .wrapped-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: clamp(10px, 2vw, 16px); }
         .wrapped-stat {
             background: #fff;
             border: 1px solid #e5e7eb;
@@ -154,11 +165,21 @@
         .wrapped-stamp.left { top: -40px; left: -40px; }
         .wrapped-stamp.right { bottom: -40px; right: -40px; }
         .wrapped-stamp .icon { font-size: 42px; color: #9ca3af; }
+        @media (max-width: 1024px) {
+            .wrapped-stage { padding: 14px; }
+            .wrapped-export-card { max-width: 100%; }
+            .wrapped-stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        }
         @media (max-width: 768px) {
-            .wrapped-export-card { padding: 20px; }
+            .wrapped-stage { padding: 10px; border-radius: 18px; }
+            .wrapped-export-card { padding: 18px 16px 22px; border-radius: 18px; }
             .wrapped-stamp { display: none; }
             .wrapped-grid { gap: 14px; }
             .wrapped-stat { grid-template-columns: 1fr; align-items: flex-start; }
+            .wrapped-pill { width: 100%; justify-content: center; }
+            .wrapped-user { width: 100%; justify-content: center; }
+            .wrapped-title { font-size: clamp(28px, 7vw, 42px); }
+            .wrapped-subtitle { font-size: clamp(20px, 6vw, 30px); }
         }
         @keyframes float {
             0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.7; }
@@ -193,7 +214,7 @@
             <div class="wrapped-grid">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <span class="wrapped-pill"><i class="fa-regular fa-calendar"></i> {{ $selectedYear }} RCS Wrapped</span>
-                    <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $user->full_name ?? $user->email }}</span>
+                    <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $displayName ?? $user->email }}</span>
                 </div>
                 <div class="text-center">
                     <div class="text-muted small mb-1">wrapped.rcs</div>

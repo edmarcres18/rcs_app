@@ -24,6 +24,7 @@
         box-shadow: 0 12px 30px rgba(0,0,0,0.08);
         border: 1px solid rgba(0,0,0,0.04);
         transition: transform .2s ease, box-shadow .2s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .wrapped-card:hover {
         transform: translateY(-4px);
@@ -36,17 +37,12 @@
     /* Laravel Wrapped inspired export card */
     .wrapped-stage {
         background: #f7f9fb;
-        padding: 28px;
+        padding: 18px;
         border-radius: 26px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-        width: 1920px;
-        height: 1080px;
-        max-width: 100%;
-        max-height: 100%;
+        max-width: 1380px;
+        width: 100%;
         margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     .wrapped-export-card {
         position: relative;
@@ -57,14 +53,13 @@
                     #f9fafb;
         border-radius: 24px;
         border: 1px solid #e5e7eb;
-        padding: 40px 44px 46px;
+        padding: clamp(22px, 3vw, 36px) clamp(20px, 3vw, 40px) clamp(28px, 4vw, 46px);
         box-shadow: 0 18px 50px rgba(0,0,0,0.10);
         isolation: isolate;
-        width: 100%;
-        max-width: 1600px;
-    }
-    .wrapped-export-card {
         animation: bgShift 12s ease-in-out infinite alternate;
+        max-width: 1240px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .wrapped-export-card::before,
     .wrapped-export-card::after {
@@ -171,8 +166,8 @@
     }
     .wrapped-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: clamp(10px, 2vw, 16px);
     }
     .wrapped-stat {
         background: #fff;
@@ -200,7 +195,7 @@
     }
     .wrapped-stat .text { display: flex; flex-direction: column; gap: 2px; }
     .wrapped-stat .label { color: var(--muted); font-size: 0.95rem; letter-spacing: 0.1px; }
-    .wrapped-stat .value { font-size: 1.5rem; font-weight: 900; color: var(--ink); }
+    .wrapped-stat .value { font-size: clamp(1.25rem, 3vw, 1.6rem); font-weight: 900; color: var(--ink); line-height: 1.2; }
     .wrapped-stat .hint { color: #9ca3af; font-size: 0.9rem; }
     .wrapped-user {
         display: inline-flex;
@@ -212,11 +207,22 @@
         padding: 8px 12px;
         font-weight: 700;
     }
+    @media (max-width: 1024px) {
+        .wrapped-stage { padding: 14px; }
+        .wrapped-export-card { max-width: 100%; }
+        .wrapped-stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    }
+
     @media (max-width: 768px) {
-        .wrapped-export-card { padding: 20px; }
+        .wrapped-stage { padding: 10px; border-radius: 18px; }
+        .wrapped-export-card { padding: 18px 16px 22px; border-radius: 18px; }
         .wrapped-stamp { display: none; }
         .wrapped-grid { gap: 14px; }
         .wrapped-stat { grid-template-columns: 1fr; align-items: flex-start; }
+        .wrapped-pill { width: 100%; justify-content: center; }
+        .wrapped-user { width: 100%; justify-content: center; }
+        .wrapped-title { font-size: clamp(28px, 7vw, 42px); }
+        .wrapped-subtitle { font-size: clamp(20px, 6vw, 30px); }
     }
 
     @keyframes bgShift {
