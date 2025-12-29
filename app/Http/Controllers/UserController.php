@@ -8,6 +8,7 @@ use App\Models\PendingUpdate;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\UserActivityService;
+use App\Services\UserActivityWrappedService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -122,6 +123,18 @@ class UserController extends Controller
             ->get();
 
         return view('users.show', compact('user', 'activities'));
+    }
+
+    /**
+     * Display the yearly "Wrapped" summary for a user.
+     */
+    public function wrapped(User $user, Request $request)
+    {
+        $year = (int) ($request->query('year') ?? now()->year);
+
+        $wrapped = UserActivityWrappedService::generate($user, $year);
+
+        return view('users.wrapped', compact('user', 'wrapped', 'year'));
     }
 
     /**
