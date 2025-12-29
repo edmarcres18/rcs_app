@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\UserActivityWrappedService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
 class WrappedController extends Controller
@@ -37,6 +38,10 @@ class WrappedController extends Controller
         }
 
         $summary = $service->generateWrappedSummary($user->id, $selectedYear);
+
+        if (!View::exists('wrapped.index')) {
+            abort(500, 'wrapped.index view missing');
+        }
 
         return view('wrapped.index', [
             'summary' => $summary,
@@ -71,6 +76,10 @@ class WrappedController extends Controller
         }
 
         $summary = $service->generateWrappedSummary($user->id, $selectedYear);
+
+        if (!View::exists('wrapped.share')) {
+            abort(500, 'wrapped.share view missing');
+        }
 
         return view('wrapped.share', [
             'summary' => $summary,
