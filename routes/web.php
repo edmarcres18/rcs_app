@@ -66,11 +66,10 @@ Route::middleware('auth')->group(function () {
 
     // RCS Wrapped
     Route::get('wrapped/{year?}', [WrappedController::class, 'index'])->name('wrapped.index');
-    Route::get('wrapped/year/{year}', [WrappedController::class, 'index'])->name('wrapped.year');
 });
 
-// Public share route (card-only, signed)
-Route::get('wrapped/share/{token}', [WrappedController::class, 'share'])->name('wrapped.share');
+// Public share route (card-only)
+Route::get('wrapped/share/{user}/{year?}', [WrappedController::class, 'share'])->name('wrapped.share');
 
 // Pending Updates Routes for SYSTEM_ADMIN
 Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.')->group(function () {

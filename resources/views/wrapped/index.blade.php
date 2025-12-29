@@ -466,7 +466,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const shareUrl = @json($shareUrl ?? url()->current());
+        const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
 
         // Activities bar
         new Chart(document.getElementById('chart-activities'), {
