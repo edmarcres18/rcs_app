@@ -24,9 +24,23 @@ class UserController extends Controller
     {
         // Only ADMIN and SYSTEM_ADMIN can access all user management functions
         $this->middleware(function ($request, $next) {
+            $action = $request->route()->getActionMethod();
+            $selfAllowed = ['wrapped'];
+
+            if (in_array($action, $selfAllowed, true)) {
+                // Allow any authenticated user to view their own Wrapped
+                $routeUser = $request->route('user');
+                $authUser = Auth::user();
+
+                if ($authUser && $routeUser && (int)$routeUser->id === (int)$authUser->id) {
+                    return $next($request);
+                }
+            }
+
             if (!Auth::check() || !in_array(Auth::user()->roles, [UserRole::ADMIN, UserRole::SYSTEM_ADMIN])) {
                 return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
             }
+
             return $next($request);
         });
     }
