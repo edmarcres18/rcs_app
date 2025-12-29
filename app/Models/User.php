@@ -100,6 +100,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get a slug for sharing (fallback to id if no name).
+     */
+    public function getShareSlugAttribute(): string
+    {
+        $base = trim($this->full_name) !== '' ? str_replace(' ', '-', strtolower($this->full_name)) : 'user';
+        $clean = preg_replace('/[^a-z0-9\-]+/', '', $base) ?: 'user';
+        return $clean.'-'.$this->id;
+    }
+
+    /**
      * Get the URL of the user's avatar.
      */
     public function getAvatarUrlAttribute(): string
