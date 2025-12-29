@@ -492,7 +492,7 @@
     const summary = @json($summary);
 
     const palette = ['#2563eb','#22c55e','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#14b8a6','#f97316'];
-    const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
+    const shareUrl = "{{ route('wrapped.share', ['userSlug' => $shareSlug ?? ($user->id ?? '') , 'year' => $selectedYear]) }}";
     const sizeMap = {
         landscape: { width: 1920, height: 1080 },
         portrait: { width: 1080, height: 1920 },
