@@ -535,15 +535,24 @@
 
         // Web share
         document.getElementById('btn-share').addEventListener('click', async () => {
-            if (navigator.share) {
-                await navigator.share({
-                    title: `My {{ $selectedYear }} RCS Wrapped`,
-                    text: 'Check out my yearly RCS Wrapped summary!',
-                    url: shareUrl
-                });
-            } else {
-                navigator.clipboard.writeText(shareUrl);
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: `My {{ $selectedYear }} RCS Wrapped`,
+                        text: 'Check out my yearly RCS Wrapped summary!',
+                        url: shareUrl
+                    });
+                    return;
+                }
+            } catch (err) {
+                // fall through to fallback
+            }
+
+            try {
+                await navigator.clipboard.writeText(shareUrl);
                 alert('Share link copied to clipboard');
+            } catch (err) {
+                window.open(shareUrl, '_blank', 'noopener');
             }
         });
     });
