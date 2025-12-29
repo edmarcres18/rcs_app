@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\UserActivityWrappedService;
 use Illuminate\Http\Request;
@@ -12,7 +11,7 @@ class WrappedController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except('share');
+        $this->middleware('auth');
     }
 
     /**
@@ -48,11 +47,8 @@ class WrappedController extends Controller
     /**
      * Publicly shareable view of a user's wrapped card (card-only).
      */
-    public function share(Request $request, UserActivityWrappedService $service, string $slug, ?int $year = null)
+    public function share(Request $request, UserActivityWrappedService $service, int $userId, ?int $year = null)
     {
-        // Slug format: slugified-name-id
-        $segments = explode('-', $slug);
-        $userId = (int) array_pop($segments);
         $user = User::findOrFail($userId);
 
         $availableYears = UserActivity::query()

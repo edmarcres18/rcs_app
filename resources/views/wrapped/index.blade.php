@@ -247,7 +247,7 @@
             <button class="btn btn-outline-secondary btn-sm" id="btn-export-png">
                 <i class="fa-solid fa-image me-1"></i> Export PNG
             </button>
-            <a class="btn btn-outline-primary btn-sm" id="btn-share" href="{{ route('wrapped.share', ['slug' => $user->share_slug, 'year' => $selectedYear]) }}" target="_blank" rel="noopener" data-share-url="{{ route('wrapped.share', ['slug' => $user->share_slug, 'year' => $selectedYear]) }}">
+            <a class="btn btn-outline-primary btn-sm" id="btn-share" href="{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}" target="_blank" rel="noopener" data-share-url="{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}">
                 <i class="fa-solid fa-share-nodes me-1"></i> Share
             </a>
         </div>
