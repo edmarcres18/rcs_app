@@ -464,16 +464,15 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex flex-column gap-3">
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('wrapped.share', ['userSlug' => $shareSlug, 'year' => $selectedYear]) }}" target="_blank" class="btn btn-outline-primary w-50" id="modal-open-public">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('wrapped.share', ['userSlug' => $shareSlug, 'year' => $selectedYear]) }}" target="_blank" class="btn btn-outline-primary flex-fill" id="modal-open-public" rel="noopener">
                             <i class="fa-solid fa-up-right-from-square me-1"></i> Open public card
                         </a>
-                        <button class="btn btn-primary w-50" id="modal-copy-link">
-                        <i class="fa-solid fa-link me-1"></i> Copy Share Link
-                    </button>
-                    <a class="btn btn-outline-secondary" id="modal-open-public" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-up-right-from-square me-1"></i> Open Public Card
-                    </a>
+                        <button class="btn btn-primary flex-fill" id="modal-copy-link">
+                            <i class="fa-solid fa-link me-1"></i> Copy share link
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-0 text-center">Shareable card stays up-to-date — no downloads needed.</p>
                 </div>
             </div>
         </div>
