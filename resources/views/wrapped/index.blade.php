@@ -427,8 +427,9 @@
         });
 
         // Export PNG of hero
-        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png'));
-        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`));
+        const exportOpts = { width: 1920, height: 1080 };
+        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png', exportOpts));
+        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
 
         // Web share
         document.getElementById('btn-share').addEventListener('click', async () => {
@@ -445,10 +446,18 @@
         });
     });
 
-    function exportNodeAsPng(selector, filename) {
+    function exportNodeAsPng(selector, filename, size = { width: 1920, height: 1080 }) {
         const node = document.querySelector(selector);
         if (!node) return;
-        htmlToImage.toPng(node, { pixelRatio: 2 })
+        htmlToImage.toPng(node, {
+                pixelRatio: 1,
+                width: size.width,
+                height: size.height,
+                style: {
+                    width: `${size.width}px`,
+                    height: `${size.height}px`,
+                }
+            })
             .then(dataUrl => {
                 const link = document.createElement('a');
                 link.download = filename;
