@@ -2,71 +2,10 @@
 
 @push('styles')
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Pacifico&display=swap');
-
-    .wrapped-hero {
-        position: relative;
-        overflow: hidden;
-        border-radius: 22px;
-        background: radial-gradient(circle at 20% 20%, rgba(255, 76, 48, 0.08), transparent 35%),
-                    radial-gradient(circle at 80% 0%, rgba(255, 76, 48, 0.18), transparent 40%),
-                    #0b0d12;
-        color: #fefefe;
-        padding: 26px;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.3);
-        isolation: isolate;
-        border: 1px solid rgba(255,255,255,0.06);
-    }
-    .wrapped-hero::before, .wrapped-hero::after {
-        content: '';
-        position: absolute;
-        inset: 14px;
-        border-radius: 18px;
-        background-image: linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
-                          linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-        background-size: 28px 28px;
-        opacity: 0.4;
-        pointer-events: none;
-    }
-    .wrapped-hero::after {
-        inset: 0;
-        background: radial-gradient(circle at 15% 85%, rgba(255, 76, 48, 0.22), transparent 35%),
-                    radial-gradient(circle at 90% 30%, rgba(255, 115, 90, 0.18), transparent 38%);
-        z-index: 0;
-    }
-    .wrapped-hero .badge-ring {
-        position: absolute;
-        width: 140px;
-        height: 140px;
-        border: 1px dashed rgba(255,255,255,0.15);
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        color: #fefefe;
-        font-size: 12px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        z-index: 1;
-    }
-    .badge-ring.left { top: -20px; left: -20px; rotate: -8deg; }
-    .badge-ring.right { bottom: -10px; right: -10px; rotate: 12deg; color: #d1d5db; }
-    .badge-ring svg { width: 26px; height: 26px; }
-    .hero-title-script {
-        font-family: 'Pacifico', cursive;
-        font-size: 46px;
-        color: #ff4c30;
-        letter-spacing: 1px;
-    }
-    .hero-subtitle {
-        font-family: 'Manrope', sans-serif;
-        font-size: 42px;
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
-    .hero-tagline {
-        color: #cbd5e1;
-        font-size: 14px;
-        letter-spacing: 0.6px;
+    :root {
+        --laravel-red: #f55247;
+        --ink: #101828;
+        --muted: #6b7280;
     }
     .wrapped-card {
         background: #fff;
@@ -79,99 +18,127 @@
         transform: translateY(-4px);
         box-shadow: 0 16px 40px rgba(0,0,0,0.10);
     }
-    .stat-badge {
-        background: #fff4f2;
-        color: #d92d20;
-        border-radius: 12px;
-        padding: 8px 12px;
-        font-weight: 700;
-        font-size: 0.95rem;
+    .count-up { font-variant-numeric: tabular-nums; }
+    .chart-container { position: relative; min-height: 260px; }
+    .milestone-item { border-left: 3px solid var(--laravel-red); padding-left: 12px; margin-bottom: 12px; }
+
+    /* Laravel Wrapped inspired export card */
+    .wrapped-export-card {
+        position: relative;
+        overflow: hidden;
+        background: #fafafa;
+        border-radius: 20px;
+        border: 1px dashed #e5e7eb;
+        padding: 32px;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+        isolation: isolate;
+    }
+    .wrapped-export-card::before,
+    .wrapped-export-card::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid #e5e7eb;
+        inset: 10px;
+        opacity: 0.8;
+        z-index: 0;
+    }
+    .wrapped-export-card::after {
+        inset: 24px;
+        opacity: 0.5;
+    }
+    .wrapped-pill {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 600;
+        color: var(--laravel-red);
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        border: 1px solid rgba(217, 45, 32, 0.12);
-        box-shadow: 0 6px 14px rgba(217, 45, 32, 0.12);
-    }
-    .milestone-item {
-        border-left: 3px solid #ff4c30;
-        padding-left: 12px;
-        margin-bottom: 12px;
-        background: #fff7f5;
-        border-radius: 8px;
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-    .chart-container {
-        position: relative;
-        min-height: 260px;
-    }
-    .year-pill {
-        background: rgba(255,76,48,0.18);
-        color: #ffe5df;
-        padding: 8px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.25);
-        backdrop-filter: blur(6px);
-        font-weight: 700;
-        letter-spacing: 0.6px;
-    }
-    .cta-btn {
-        background: linear-gradient(120deg, #ff4c30, #ff7a64);
-        color: #fff;
-        font-weight: 800;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 16px;
-        box-shadow: 0 10px 25px rgba(255, 76, 48, 0.28);
-    }
-    .cta-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 32px rgba(255, 76, 48, 0.32);
-    }
-    .count-up {
-        font-variant-numeric: tabular-nums;
-    }
-    .sticker {
-        position: absolute;
-        width: 120px;
-        border-radius: 18px;
-        filter: drop-shadow(0 14px 24px rgba(0,0,0,0.25));
         z-index: 2;
-        transition: transform .2s ease;
-        color: #fff;
-        font-family: 'Manrope', sans-serif;
+        position: relative;
+    }
+    .wrapped-stamp {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        border: 2px dashed #d1d5db;
+        color: #9ca3af;
+        font-weight: 700;
+        letter-spacing: 1px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border: 3px solid #fff;
-        padding: 12px 14px;
-    }
-    .sticker:hover { transform: scale(1.03) rotate(-2deg); }
-    .sticker-ship {
-        bottom: -12px; left: -6px;
-        background: linear-gradient(140deg, #f9322c, #ff6b4a);
-        rotate: -4deg;
-        text-align: left;
-    }
-    .sticker-ship .title { font-size: 20px; font-weight: 900; display: block; line-height: 1; }
-    .sticker-ship .subtitle { font-size: 11px; font-weight: 700; opacity: 0.92; }
-    .sticker-php {
-        top: -10px; right: -4px;
-        background: linear-gradient(145deg, #0f172a, #111827);
-        color: #ff4c30;
-        rotate: 6deg;
         display: grid;
         place-items: center;
-        font-weight: 900;
-        font-size: 22px;
+        z-index: 1;
     }
-    .wrapped-grid-title {
-        font-family: 'Manrope', sans-serif;
+    .wrapped-stamp.left { top: -40px; left: -40px; }
+    .wrapped-stamp.right { bottom: -40px; right: -40px; }
+    .wrapped-stamp .icon {
+        font-size: 42px;
+        color: #9ca3af;
+    }
+    .wrapped-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        z-index: 2;
+        position: relative;
+    }
+    .wrapped-title {
+        font-size: clamp(28px, 5vw, 44px);
+        font-weight: 800;
+        color: var(--laravel-red);
+        text-align: center;
+        margin: 12px 0 6px;
+    }
+    .wrapped-subtitle {
+        font-size: clamp(22px, 4vw, 34px);
+        font-weight: 800;
+        color: var(--ink);
+        text-align: center;
+        margin: 0;
+    }
+    .wrapped-tagline {
+        text-align: center;
+        color: var(--laravel-red);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+    }
+    .wrapped-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+    .wrapped-stat {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+    }
+    .wrapped-stat .label { color: var(--muted); font-size: 0.9rem; }
+    .wrapped-stat .value { font-size: 1.4rem; font-weight: 800; color: var(--ink); }
+    .wrapped-user {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-weight: 700;
     }
     @media (max-width: 768px) {
-        .wrapped-hero { padding: 18px; }
-        .wrapped-card { margin-bottom: 12px; }
-        .hero-title-script { font-size: 34px; }
-        .hero-subtitle { font-size: 32px; }
+        .wrapped-export-card { padding: 20px; }
+        .wrapped-stamp { display: none; }
+        .wrapped-grid { gap: 14px; }
     }
 </style>
 @endpush
@@ -208,38 +175,40 @@
         </div>
     </div>
 
-    <div class="wrapped-hero mb-4 position-relative" id="wrapped-hero">
-        <div class="badge-ring left">
-            <div class="text-center">
-                <div>Laravel Wrapped</div>
-                <div>{{ $selectedYear }}</div>
+    <div class="wrapped-export-card mb-4" id="wrapped-card">
+        <div class="wrapped-stamp left">Laravel Wrapped</div>
+        <div class="wrapped-stamp right"><i class="fa-solid fa-cube icon"></i></div>
+        <div class="wrapped-grid">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="wrapped-pill"><i class="fa-regular fa-calendar"></i> {{ $selectedYear }} RCS Wrapped</span>
+                <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $user->full_name ?? $user->email }}</span>
             </div>
-        </div>
-        <div class="badge-ring right">
             <div class="text-center">
-                <div>RCS Edition</div>
-                <div>{{ $selectedYear }}</div>
+                <div class="text-muted small mb-1">wrapped.rcs</div>
+                <div class="wrapped-title">Wrapped</div>
+                <p class="wrapped-subtitle">Made for {{ config('app.name', 'RCS') }}</p>
+                <div class="wrapped-tagline">Laravel · Team · Productivity</div>
             </div>
-        </div>
-        <img class="sticker sticker ship" alt="Ship it" src="https://dummyimage.com/220x420/f9322c/fefefe&text=Ship" />
-        <img class="sticker sticker php" alt="PHP cap" src="https://dummyimage.com/200x200/0b0d12/f9322c&text=$PHP" />
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative" style="z-index:3;">
-            <div>
-                <div class="hero-tagline">wrapped.rcs</div>
-                <div class="hero-title-script">Wrapped</div>
-                <div class="hero-subtitle">Made for Laravel</div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="year-pill"><i class="fa-regular fa-calendar me-2"></i>{{ $selectedYear }}</span>
-                    <span class="stat-badge"><i class="fa-solid fa-bolt"></i> {{ $summary['total_activities'] }} activities</span>
-                    @if($summary['top_activity_type'])
-                        <span class="stat-badge"><i class="fa-solid fa-star"></i> Top: {{ ucfirst($summary['top_activity_type']['label']) }} ({{ $summary['top_activity_type']['count'] }})</span>
-                    @endif
+            <div class="wrapped-stats">
+                <div class="wrapped-stat">
+                    <div class="label">Total Activities</div>
+                    <div class="value">{{ number_format($summary['total_activities']) }}</div>
                 </div>
-            </div>
-            <div class="text-end">
-                <button class="cta-btn btn btn-lg" id="btn-download-card">
-                    <i class="fa-solid fa-arrow-down me-1"></i> Download Card
-                </button>
+                <div class="wrapped-stat">
+                    <div class="label">Top Activity</div>
+                    <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
+                    <div class="text-muted small">{{ $summary['top_activity_type']['count'] ?? '' }}</div>
+                </div>
+                <div class="wrapped-stat">
+                    <div class="label">Peak Day</div>
+                    <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
+                    <div class="text-muted small">{{ $summary['peak_day']['count'] ?? '' }}</div>
+                </div>
+                <div class="wrapped-stat">
+                    <div class="label">Peak Month</div>
+                    <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
+                    <div class="text-muted small">{{ $summary['peak_month']['count'] ?? '' }}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -458,8 +427,8 @@
         });
 
         // Export PNG of hero
-        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-hero', 'rcs-wrapped-hero.png'));
-        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('body', `rcs-wrapped-{{ $selectedYear }}.png`));
+        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png'));
+        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`));
 
         // Web share
         document.getElementById('btn-share').addEventListener('click', async () => {
