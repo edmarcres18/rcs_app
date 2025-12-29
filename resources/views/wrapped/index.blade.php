@@ -23,20 +23,26 @@
     .milestone-item { border-left: 3px solid var(--laravel-red); padding-left: 12px; margin-bottom: 12px; }
 
     /* Laravel Wrapped inspired export card */
+    .wrapped-stage {
+        background: #f7f9fb;
+        padding: 18px;
+        border-radius: 26px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        max-width: 1380px;
+        margin: 0 auto;
+    }
     .wrapped-export-card {
         position: relative;
         overflow: hidden;
-        background: radial-gradient(circle at 20% 20%, rgba(245,82,71,0.08), transparent 38%),
-                    radial-gradient(circle at 80% 30%, rgba(16,185,129,0.08), transparent 34%),
-                    radial-gradient(circle at 70% 80%, rgba(37,99,235,0.07), transparent 40%),
+        background: radial-gradient(circle at 18% 22%, rgba(245,82,71,0.10), transparent 40%),
+                    radial-gradient(circle at 82% 28%, rgba(16,185,129,0.09), transparent 36%),
+                    radial-gradient(circle at 72% 82%, rgba(37,99,235,0.07), transparent 44%),
                     #f9fafb;
         border-radius: 24px;
         border: 1px solid #e5e7eb;
-        padding: 40px 44px;
+        padding: 36px 40px 46px;
         box-shadow: 0 18px 50px rgba(0,0,0,0.10);
         isolation: isolate;
-        max-width: 1280px;
-        margin: 0 auto;
         animation: bgShift 12s ease-in-out infinite alternate;
     }
     .wrapped-export-card::before,
@@ -246,58 +252,60 @@
         </div>
     </div>
 
-    <div class="wrapped-export-card mb-4" id="wrapped-card">
-        <div class="floater one"></div>
-        <div class="floater two"></div>
-        <div class="floater three"></div>
-        <div class="sparkle s1"></div>
-        <div class="sparkle s2"></div>
-        <div class="sparkle s3"></div>
-        <div class="sparkle s4"></div>
-        <div class="wrapped-stamp left">Laravel Wrapped</div>
-        <div class="wrapped-stamp right"><i class="fa-solid fa-cube icon"></i></div>
-        <div class="wrapped-grid">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span class="wrapped-pill"><i class="fa-regular fa-calendar"></i> {{ $selectedYear }} RCS Wrapped</span>
-                <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $user->full_name ?? $user->email }}</span>
-            </div>
-            <div class="text-center">
-                <div class="text-muted small mb-1">wrapped.rcs</div>
-                <div class="wrapped-title">Wrapped</div>
-                <p class="wrapped-subtitle">Made for {{ config('app.name', 'RCS') }}</p>
-                <div class="wrapped-tagline">Laravel · Team · Productivity</div>
-            </div>
-            <div class="wrapped-stats">
-                <div class="wrapped-stat">
-                    <div class="icon"><i class="fa-solid fa-bolt"></i></div>
-                    <div class="text">
-                        <div class="label">Total Activities</div>
-                        <div class="value">{{ number_format($summary['total_activities']) }}</div>
-                        <div class="hint">{{ count($summary['activity_types']) }} activity types</div>
-                    </div>
+    <div class="wrapped-stage mb-4">
+        <div class="wrapped-export-card" id="wrapped-card">
+            <div class="floater one"></div>
+            <div class="floater two"></div>
+            <div class="floater three"></div>
+            <div class="sparkle s1"></div>
+            <div class="sparkle s2"></div>
+            <div class="sparkle s3"></div>
+            <div class="sparkle s4"></div>
+            <div class="wrapped-stamp left">Laravel Wrapped</div>
+            <div class="wrapped-stamp right"><i class="fa-solid fa-cube icon"></i></div>
+            <div class="wrapped-grid">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="wrapped-pill"><i class="fa-regular fa-calendar"></i> {{ $selectedYear }} RCS Wrapped</span>
+                    <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $user->full_name ?? $user->email }}</span>
                 </div>
-                <div class="wrapped-stat">
-                    <div class="icon" style="background:rgba(16,185,129,0.15); color:#0f766e;"><i class="fa-solid fa-star"></i></div>
-                    <div class="text">
-                        <div class="label">Top Activity</div>
-                        <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
-                        <div class="hint">{{ $summary['top_activity_type']['count'] ?? '' }} times</div>
-                    </div>
+                <div class="text-center">
+                    <div class="text-muted small mb-1">wrapped.rcs</div>
+                    <div class="wrapped-title">Wrapped</div>
+                    <p class="wrapped-subtitle">Made for {{ config('app.name', 'RCS') }}</p>
+                    <div class="wrapped-tagline">Laravel · Team · Productivity</div>
                 </div>
-                <div class="wrapped-stat">
-                    <div class="icon" style="background:rgba(37,99,235,0.15); color:#1d4ed8;"><i class="fa-regular fa-calendar"></i></div>
-                    <div class="text">
-                        <div class="label">Peak Day</div>
-                        <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
-                        <div class="hint">{{ $summary['peak_day']['count'] ?? '' }} actions</div>
+                <div class="wrapped-stats">
+                    <div class="wrapped-stat">
+                        <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="text">
+                            <div class="label">Total Activities</div>
+                            <div class="value">{{ number_format($summary['total_activities']) }}</div>
+                            <div class="hint">{{ count($summary['activity_types']) }} activity types</div>
+                        </div>
                     </div>
-                </div>
-                <div class="wrapped-stat">
-                    <div class="icon" style="background:rgba(249,115,22,0.18); color:#c2410c;"><i class="fa-solid fa-chart-line"></i></div>
-                    <div class="text">
-                        <div class="label">Peak Month</div>
-                        <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
-                        <div class="hint">{{ $summary['peak_month']['count'] ?? '' }} actions</div>
+                    <div class="wrapped-stat">
+                        <div class="icon" style="background:rgba(16,185,129,0.15); color:#0f766e;"><i class="fa-solid fa-star"></i></div>
+                        <div class="text">
+                            <div class="label">Top Activity</div>
+                            <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
+                            <div class="hint">{{ $summary['top_activity_type']['count'] ?? '' }} times</div>
+                        </div>
+                    </div>
+                    <div class="wrapped-stat">
+                        <div class="icon" style="background:rgba(37,99,235,0.15); color:#1d4ed8;"><i class="fa-regular fa-calendar"></i></div>
+                        <div class="text">
+                            <div class="label">Peak Day</div>
+                            <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
+                            <div class="hint">{{ $summary['peak_day']['count'] ?? '' }} actions</div>
+                        </div>
+                    </div>
+                    <div class="wrapped-stat">
+                        <div class="icon" style="background:rgba(249,115,22,0.18); color:#c2410c;"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="text">
+                            <div class="label">Peak Month</div>
+                            <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
+                            <div class="hint">{{ $summary['peak_month']['count'] ?? '' }} actions</div>
+                        </div>
                     </div>
                 </div>
             </div>
