@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class WrappedController extends Controller
 {
@@ -38,6 +39,7 @@ class WrappedController extends Controller
         }
 
         $displayName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: $user->email;
+        $shareSlug = $this->buildShareSlug($user);
         $summary = $service->generateWrappedSummary($user->id, $selectedYear);
 
         if (!View::exists('wrapped.index')) {
@@ -50,19 +52,16 @@ class WrappedController extends Controller
             'availableYears' => $availableYears,
             'user' => $user,
             'displayName' => $displayName,
+            'shareSlug' => $shareSlug,
         ]);
     }
 
     /**
      * Publicly shareable view of a user's wrapped card (card-only).
      */
-    public function share(Request $request, UserActivityWrappedService $service, int $userId, ?int $year = null)
+    public function share(Request $request, UserActivityWrappedService $service, string $userSlugOrId, ?int $year = null)
     {
-        try {
-            $user = User::select('id', 'first_name', 'last_name', 'email')->findOrFail($userId);
-        } catch (ModelNotFoundException $e) {
-            abort(404);
-        }
+        $user = $this->findUserBySlugOrId($userSlugOrId);
 
         $availableYears = UserActivity::query()
             ->where('user_id', $user->id)
@@ -91,5 +90,49 @@ class WrappedController extends Controller
             'user' => $user,
             'displayName' => $displayName,
         ]);
+    }
+
+    /**
+     * Resolve user by slug (first-last) or numeric id (backwards compatible).
+     */
+    protected function findUserBySlugOrId(string $slugOrId): User
+    {
+        $baseQuery = User::select('id', 'first_name', 'last_name', 'email');
+
+        if (ctype_digit($slugOrId)) {
+            return $baseQuery->findOrFail((int) $slugOrId);
+        }
+
+        $slug = Str::lower($slugOrId);
+
+        $user = (clone $baseQuery)
+            ->whereRaw("LOWER(REPLACE(CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')),' ','-')) = ?", [$slug])
+            ->first();
+
+        if (! $user) {
+            $user = (clone $baseQuery)
+                ->whereRaw("LOWER(REPLACE(SUBSTRING_INDEX(email,'@',1),' ','-')) = ?", [$slug])
+                ->first();
+        }
+
+        if (! $user) {
+            abort(404);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Build share slug from user name or email local part.
+     */
+    protected function buildShareSlug(User $user): string
+    {
+        $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        if ($name !== '') {
+            return Str::slug($name);
+        }
+
+        $emailLocal = Str::before($user->email ?? '', '@');
+        return Str::slug($emailLocal ?: (string) $user->id);
     }
 }
