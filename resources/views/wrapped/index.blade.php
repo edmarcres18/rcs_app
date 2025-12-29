@@ -587,25 +587,35 @@
 
         // Export PNG of hero
         const exportOpts = sizeMap.landscape;
-        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', 'rcs-wrapped-card.png', exportOpts));
-        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
+        const btnExport = document.getElementById('btn-export-png');
+        const btnDownload = document.getElementById('btn-download-card');
+        if (btnExport) btnExport.addEventListener('click', () => exportNodeAsPng('#wrapped-stage', 'rcs-wrapped-card.png', exportOpts));
+        if (btnDownload) btnDownload.addEventListener('click', () => exportNodeAsPng('#wrapped-stage', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
 
         // Share modal buttons
-        document.getElementById('modal-open-public').href = shareUrl;
-        document.getElementById('modal-copy-link').addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(shareUrl);
-                alert('Share link copied to clipboard');
-            } catch (err) {
-                alert('Copy failed. Opening link instead.');
-                window.open(shareUrl, '_blank', 'noopener');
-            }
-        });
-        document.getElementById('modal-download-png').addEventListener('click', () => {
-            const selected = document.querySelector('input[name="exportSize"]:checked')?.value || 'landscape';
-            const chosen = sizeMap[selected] || sizeMap.landscape;
-            exportNodeAsPng('#wrapped-stage', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
-        });
+        const modalOpen = document.getElementById('modal-open-public');
+        const modalCopy = document.getElementById('modal-copy-link');
+        const modalDownload = document.getElementById('modal-download-png');
+
+        if (modalOpen) modalOpen.href = shareUrl;
+        if (modalCopy) {
+            modalCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    alert('Share link copied to clipboard');
+                } catch (err) {
+                    alert('Copy failed. Opening link instead.');
+                    window.open(shareUrl, '_blank', 'noopener');
+                }
+            });
+        }
+        if (modalDownload) {
+            modalDownload.addEventListener('click', () => {
+                const selected = document.querySelector('input[name="exportSize"]:checked')?.value || 'landscape';
+                const chosen = sizeMap[selected] || sizeMap.landscape;
+                exportNodeAsPng('#wrapped-stage', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
+            });
+        }
     });
 
     function exportNodeAsPng(selector, filename, size = { width: 1920, height: 1080 }) {
