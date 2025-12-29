@@ -600,8 +600,8 @@
             }, 20);
         });
 
-        // Export PNG of hero (card only, natural size)
-        const exportOpts = null;
+        // Export PNG of hero (card only), defaulting to 1920x1080 for parity with on-screen card
+        const exportOpts = sizeMap.landscape;
         const btnExport = document.getElementById('btn-export-png');
         const btnDownload = document.getElementById('btn-download-card');
         if (btnExport) btnExport.addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png', exportOpts));
@@ -638,8 +638,14 @@
         if (!node) return;
 
         const rect = node.getBoundingClientRect();
-        const width = size?.width ?? Math.round(rect.width);
-        const height = size?.height ?? Math.round(rect.height);
+        const target = size ?? { width: Math.round(rect.width), height: Math.round(rect.height) };
+        const width = Math.round(target.width);
+        const height = Math.round(target.height);
+
+        // Scale to fit target while centering the card on the canvas
+        const scale = Math.min(width / rect.width, height / rect.height);
+        const xOffset = (width - rect.width * scale) / 2;
+        const yOffset = (height - rect.height * scale) / 2;
 
         htmlToImage.toPng(node, {
                 pixelRatio: 2,
@@ -647,9 +653,9 @@
                 width,
                 height,
                 style: {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    transform: 'scale(1)',
+                    width: `${rect.width}px`,
+                    height: `${rect.height}px`,
+                    transform: `translate(${xOffset / scale}px, ${yOffset / scale}px) scale(${scale})`,
                     transformOrigin: 'top left',
                 }
             })
