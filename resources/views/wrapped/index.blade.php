@@ -278,7 +278,7 @@
             <div class="wrapped-grid">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <span class="wrapped-pill"><i class="fa-regular fa-calendar"></i> {{ $selectedYear }} RCS Wrapped</span>
-                    <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $user->full_name ?? $user->email }}</span>
+                    <span class="wrapped-user"><i class="fa-regular fa-user"></i> {{ $displayName ?? ($user->full_name ?? $user->email) }}</span>
                 </div>
                 <div class="text-center">
                     <div class="text-muted small mb-1">wrapped.rcs</div>

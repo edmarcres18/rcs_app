@@ -37,6 +37,7 @@ class WrappedController extends Controller
             $selectedYear = $availableYears->first();
         }
 
+        $displayName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: $user->email;
         $summary = $service->generateWrappedSummary($user->id, $selectedYear);
 
         if (!View::exists('wrapped.index')) {
@@ -48,6 +49,7 @@ class WrappedController extends Controller
             'selectedYear' => $selectedYear,
             'availableYears' => $availableYears,
             'user' => $user,
+            'displayName' => $displayName,
         ]);
     }
 
@@ -57,7 +59,7 @@ class WrappedController extends Controller
     public function share(Request $request, UserActivityWrappedService $service, int $userId, ?int $year = null)
     {
         try {
-            $user = User::select('id', 'full_name', 'email')->findOrFail($userId);
+            $user = User::select('id', 'first_name', 'last_name', 'email')->findOrFail($userId);
         } catch (ModelNotFoundException $e) {
             abort(404);
         }
@@ -75,6 +77,7 @@ class WrappedController extends Controller
             $selectedYear = $availableYears->first();
         }
 
+        $displayName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: $user->email;
         $summary = $service->generateWrappedSummary($user->id, $selectedYear);
 
         if (!View::exists('wrapped.share')) {
@@ -86,6 +89,7 @@ class WrappedController extends Controller
             'selectedYear' => $selectedYear,
             'availableYears' => $availableYears,
             'user' => $user,
+            'displayName' => $displayName,
         ]);
     }
 }
