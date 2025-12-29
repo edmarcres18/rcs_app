@@ -36,12 +36,17 @@
     /* Laravel Wrapped inspired export card */
     .wrapped-stage {
         background: #f7f9fb;
-        padding: 18px;
+        padding: 28px;
         border-radius: 26px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-        max-width: 1380px;
-        width: 100%;
+        width: 1920px;
+        height: 1080px;
+        max-width: 100%;
+        max-height: 100%;
         margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .wrapped-export-card {
         position: relative;
@@ -52,9 +57,13 @@
                     #f9fafb;
         border-radius: 24px;
         border: 1px solid #e5e7eb;
-        padding: 36px 40px 46px;
+        padding: 40px 44px 46px;
         box-shadow: 0 18px 50px rgba(0,0,0,0.10);
         isolation: isolate;
+        width: 100%;
+        max-width: 1600px;
+    }
+    .wrapped-export-card {
         animation: bgShift 12s ease-in-out infinite alternate;
     }
     .wrapped-export-card::before,
