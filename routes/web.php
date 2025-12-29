@@ -69,7 +69,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Public share route (card-only)
-Route::get('wrapped/share/{user}/{year?}', [WrappedController::class, 'share'])->name('wrapped.share');
+Route::get('wrapped/share/{slug}/{year?}', [WrappedController::class, 'share'])->name('wrapped.share');
 
 // Pending Updates Routes for SYSTEM_ADMIN
 Route::middleware(['auth', 'role:SYSTEM_ADMIN'])->prefix('admin')->name('admin.')->group(function () {
