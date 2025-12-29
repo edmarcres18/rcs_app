@@ -193,7 +193,7 @@ class UserActivityWrappedService
         (clone $baseQuery)
             ->select('details')
             ->whereNotNull('details')
-            ->chunk(1000, function ($chunk) use ($milestones) {
+            ->chunk(1000, function ($chunk) use (&$milestones) {
                 foreach ($chunk as $row) {
                     if (!is_array($row->details)) {
                         continue;

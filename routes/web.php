@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
 
     // RCS Wrapped
     Route::get('wrapped/{year?}', [WrappedController::class, 'index'])->name('wrapped.index');
+    Route::get('wrapped/year/{year}', [WrappedController::class, 'index'])->name('wrapped.year');
 });
 
 // Public share route (card-only, signed)
