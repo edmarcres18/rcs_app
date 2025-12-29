@@ -8,7 +8,6 @@ use App\Models\PendingUpdate;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\UserActivityService;
-use App\Services\UserActivityWrappedService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -24,23 +23,9 @@ class UserController extends Controller
     {
         // Only ADMIN and SYSTEM_ADMIN can access all user management functions
         $this->middleware(function ($request, $next) {
-            $action = $request->route()->getActionMethod();
-            $selfAllowed = ['wrapped'];
-
-            if (in_array($action, $selfAllowed, true)) {
-                // Allow any authenticated user to view their own Wrapped
-                $routeUser = $request->route('user');
-                $authUser = Auth::user();
-
-                if ($authUser && $routeUser && (int)$routeUser->id === (int)$authUser->id) {
-                    return $next($request);
-                }
-            }
-
             if (!Auth::check() || !in_array(Auth::user()->roles, [UserRole::ADMIN, UserRole::SYSTEM_ADMIN])) {
                 return response()->view('errors.403', ['message' => 'Unauthorized action.'], 403);
             }
-
             return $next($request);
         });
     }
@@ -137,18 +122,6 @@ class UserController extends Controller
             ->get();
 
         return view('users.show', compact('user', 'activities'));
-    }
-
-    /**
-     * Display the yearly "Wrapped" summary for a user.
-     */
-    public function wrapped(User $user, Request $request)
-    {
-        $year = (int) ($request->query('year') ?? now()->year);
-
-        $wrapped = UserActivityWrappedService::generate($user, $year);
-
-        return view('users.wrapped', compact('user', 'wrapped', 'year'));
     }
 
     /**

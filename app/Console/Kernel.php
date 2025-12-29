@@ -22,7 +22,6 @@ class Kernel extends ConsoleKernel
         Commands\TelegramWebhookInfo::class,
         Commands\DeleteTelegramWebhook::class,
         Commands\VerifyAndRepairTelegramWebhook::class,
-        Commands\GenerateUserActivityWrapped::class,
     ];
 
     /**
@@ -39,11 +38,6 @@ class Kernel extends ConsoleKernel
         // Dispatch due system notifications (email/telegram)
         $schedule->command('system-notifications:dispatch-due')
             ->everyMinute()
-            ->timezone('Asia/Manila');
-
-        // Yearly user activity Wrapped (Jan 2 01:00, Manila) to avoid Jan 1 peak load
-        $schedule->command('user-activity:wrapped')
-            ->yearlyOn(1, 2, '01:00')
             ->timezone('Asia/Manila');
     }
 

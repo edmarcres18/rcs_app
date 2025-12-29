@@ -209,12 +209,6 @@
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
-                    <a href="{{ route('users.wrapped', Auth::id()) }}" class="sidebar-nav-link {{ Request::routeIs('users.wrapped') ? 'active' : '' }}" data-title="My {{ now()->year }} Wrapped">
-                        <i class="fas fa-magic"></i>
-                        <span>My Wrapped</span>
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
                     <a href="{{ route('logout') }}"
                        onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();"
                        class="sidebar-nav-link" data-title="Logout">

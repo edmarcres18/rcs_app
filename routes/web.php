@@ -62,7 +62,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/activities', [UserController::class, 'activities'])->name('users.activities');
     Route::get('activities', [UserController::class, 'allActivities'])->name('users.all-activities');
-    Route::get('users/{user}/wrapped', [UserController::class, 'wrapped'])->name('users.wrapped');
 });
 
 // Pending Updates Routes for SYSTEM_ADMIN
