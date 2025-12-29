@@ -26,11 +26,14 @@
     .wrapped-export-card {
         position: relative;
         overflow: hidden;
-        background: #fafafa;
-        border-radius: 20px;
-        border: 1px dashed #e5e7eb;
-        padding: 32px;
-        box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+        background: radial-gradient(circle at 20% 20%, rgba(245,82,71,0.08), transparent 38%),
+                    radial-gradient(circle at 80% 30%, rgba(16,185,129,0.08), transparent 34%),
+                    radial-gradient(circle at 70% 80%, rgba(37,99,235,0.07), transparent 40%),
+                    #f9fafb;
+        border-radius: 24px;
+        border: 1px solid #e5e7eb;
+        padding: 40px 44px;
+        box-shadow: 0 18px 50px rgba(0,0,0,0.10);
         isolation: isolate;
     }
     .wrapped-export-card::before,
@@ -38,27 +41,28 @@
         content: '';
         position: absolute;
         border-radius: 50%;
-        border: 1px solid #e5e7eb;
-        inset: 10px;
-        opacity: 0.8;
+        border: 1px dashed #e5e7eb;
+        inset: 14px;
+        opacity: 0.7;
         z-index: 0;
     }
     .wrapped-export-card::after {
-        inset: 24px;
-        opacity: 0.5;
+        inset: 30px;
+        opacity: 0.45;
     }
     .wrapped-pill {
         background: #fff;
         border: 1px solid #e5e7eb;
         border-radius: 999px;
-        padding: 6px 14px;
-        font-weight: 600;
-        color: var(--laravel-red);
+        padding: 8px 16px;
+        font-weight: 700;
+        color: var(--ink);
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         z-index: 2;
         position: relative;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
     }
     .wrapped-stamp {
         position: absolute;
@@ -88,11 +92,12 @@
         position: relative;
     }
     .wrapped-title {
-        font-size: clamp(28px, 5vw, 44px);
-        font-weight: 800;
+        font-size: clamp(30px, 5vw, 48px);
+        font-weight: 900;
         color: var(--laravel-red);
         text-align: center;
-        margin: 12px 0 6px;
+        letter-spacing: -0.5px;
+        margin: 14px 0 6px;
     }
     .wrapped-subtitle {
         font-size: clamp(22px, 4vw, 34px);
@@ -110,21 +115,22 @@
     }
     .wrapped-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
     }
     .wrapped-stat {
         background: #fff;
         border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 12px 14px;
+        border-radius: 16px;
+        padding: 14px 16px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+        gap: 8px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
     }
-    .wrapped-stat .label { color: var(--muted); font-size: 0.9rem; }
-    .wrapped-stat .value { font-size: 1.4rem; font-weight: 800; color: var(--ink); }
+    .wrapped-stat .label { color: var(--muted); font-size: 0.95rem; letter-spacing: 0.1px; }
+    .wrapped-stat .value { font-size: 1.5rem; font-weight: 900; color: var(--ink); }
+    .wrapped-stat .hint { color: #9ca3af; font-size: 0.9rem; }
     .wrapped-user {
         display: inline-flex;
         align-items: center;
@@ -193,21 +199,22 @@
                 <div class="wrapped-stat">
                     <div class="label">Total Activities</div>
                     <div class="value">{{ number_format($summary['total_activities']) }}</div>
+                    <div class="hint">{{ count($summary['activity_types']) }} activity types</div>
                 </div>
                 <div class="wrapped-stat">
                     <div class="label">Top Activity</div>
                     <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
-                    <div class="text-muted small">{{ $summary['top_activity_type']['count'] ?? '' }}</div>
+                    <div class="hint">{{ $summary['top_activity_type']['count'] ?? '' }} times</div>
                 </div>
                 <div class="wrapped-stat">
                     <div class="label">Peak Day</div>
                     <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
-                    <div class="text-muted small">{{ $summary['peak_day']['count'] ?? '' }}</div>
+                    <div class="hint">{{ $summary['peak_day']['count'] ?? '' }} actions</div>
                 </div>
                 <div class="wrapped-stat">
                     <div class="label">Peak Month</div>
                     <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
-                    <div class="text-muted small">{{ $summary['peak_month']['count'] ?? '' }}</div>
+                    <div class="hint">{{ $summary['peak_month']['count'] ?? '' }} actions</div>
                 </div>
             </div>
         </div>
