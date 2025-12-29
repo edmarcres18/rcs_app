@@ -466,6 +466,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
+
         // Activities bar
         new Chart(document.getElementById('chart-activities'), {
             type: 'bar',
@@ -537,11 +539,11 @@
                 await navigator.share({
                     title: `My {{ $selectedYear }} RCS Wrapped`,
                     text: 'Check out my yearly RCS Wrapped summary!',
-                    url: window.location.href
+                    url: shareUrl
                 });
             } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert('Link copied to clipboard');
+                navigator.clipboard.writeText(shareUrl);
+                alert('Share link copied to clipboard');
             }
         });
     });

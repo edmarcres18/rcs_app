@@ -189,7 +189,7 @@ class UserActivityWrappedService
         $label = $counts->keys()->first();
 
         return [
-            'label' => $label,
+            'label' => $this->humanizeLabel($label),
             'count' => $counts->first(),
         ];
     }
@@ -210,13 +210,22 @@ class UserActivityWrappedService
         return $collection
             ->map(function ($count, $label) use ($total) {
                 return [
-                    'label' => $label ?: 'Unknown',
+                    'label' => $this->humanizeLabel($label ?: 'Unknown'),
                     'count' => $count,
                     'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0,
                 ];
             })
             ->values()
             ->toArray();
+    }
+
+    /**
+     * Humanize labels (e.g., login -> Login, instructions_replied -> Instructions Replied).
+     */
+    protected function humanizeLabel(?string $value): string
+    {
+        $label = str_replace(['_', '-'], ' ', strtolower($value ?? ''));
+        return ucwords(trim($label));
     }
 
     /**
