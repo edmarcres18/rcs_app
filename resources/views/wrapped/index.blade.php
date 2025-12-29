@@ -29,6 +29,7 @@
         border-radius: 26px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.08);
         max-width: 1380px;
+        width: 100%;
         margin: 0 auto;
     }
     .wrapped-export-card {
@@ -252,7 +253,7 @@
         </div>
     </div>
 
-    <div class="wrapped-stage mb-4">
+    <div class="wrapped-stage mb-4" id="wrapped-stage">
         <div class="wrapped-export-card" id="wrapped-card">
             <div class="floater one"></div>
             <div class="floater two"></div>
@@ -527,8 +528,8 @@
 
         // Export PNG of hero
         const exportOpts = { width: 1920, height: 1080 };
-        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png', exportOpts));
-        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
+        document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', 'rcs-wrapped-card.png', exportOpts));
+        document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
 
         // Web share
         document.getElementById('btn-share').addEventListener('click', async () => {
