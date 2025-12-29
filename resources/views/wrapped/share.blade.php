@@ -199,7 +199,7 @@
                     <div class="text-muted small mb-1">wrapped.rcs</div>
                     <div class="wrapped-title">Wrapped</div>
                     <p class="wrapped-subtitle">Made for {{ config('app.name', 'RCS') }}</p>
-                    <div class="wrapped-tagline">Laravel · Team · Productivity</div>
+                    <div class="wrapped-tagline">MHRPCI · MHRHCI · RCS</div>
                 </div>
                 <div class="wrapped-stats">
                     <div class="wrapped-stat">

@@ -13,6 +13,7 @@
                 <a href="{{ route('wrapped.index') }}" class="sidebar-nav-link {{ Request::routeIs('wrapped.index') ? 'active' : '' }}" data-title="RCS Wrapped">
                     <i class="fas fa-magic"></i>
                     <span>RCS Wrapped</span>
+                    <span class="badge bg-primary rounded-pill ms-auto">1</span>
                 </a>
             </li>
         </ul>
@@ -41,7 +42,7 @@
                 <div class="sidebar-section-title">Task Management</div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.*') ? 'active' : '' }}" data-title="Task Priorities">
+                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.index') ? 'active' : '' }}" data-title="Task Priorities">
                             <i class="fas fa-flag"></i>
                             <span>Task Priorities</span>
                         </a>
@@ -67,7 +68,7 @@
                 <div class="sidebar-section-title">Task Management</div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.*') ? 'active' : '' }}" data-title="Task Priorities">
+                        <a href="{{ route('task-priorities.index') }}" class="sidebar-nav-link {{ Request::routeIs('task-priorities.index') ? 'active' : '' }}" data-title="Task Priorities">
                             <i class="fas fa-flag"></i>
                             <span>Task Priorities</span>
                         </a>
@@ -87,7 +88,7 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="Instruction Monitoring">
+                        <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor') ? 'active' : '' }}" data-title="Instruction Monitoring">
                             <i class="fas fa-eye"></i>
                             <span>Instruction Monitoring</span>
                         </a>
@@ -138,7 +139,7 @@
                 <div class="sidebar-section-title">System</div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor*') ? 'active' : '' }}" data-title="System Logs">
+                        <a href="{{ route('instructions.monitor') }}" class="sidebar-nav-link {{ Request::routeIs('instructions.monitor') ? 'active' : '' }}" data-title="System Logs">
                             <i class="fas fa-clipboard-list"></i>
                             <span>System Logs</span>
                         </a>
@@ -189,13 +190,13 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('database.backups') }}" class="sidebar-nav-link {{ Request::routeIs('database.*') ? 'active' : '' }}" data-title="Database Backups">
+                        <a href="{{ route('database.backups') }}" class="sidebar-nav-link {{ Request::routeIs('database.backups') ? 'active' : '' }}" data-title="Database Backups">
                             <i class="fas fa-database"></i>
                             <span>Database Backups</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('admin.system-notifications.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.system-notifications.*') ? 'active' : '' }}" data-title="System Notifications">
+                        <a href="{{ route('admin.system-notifications.index') }}" class="sidebar-nav-link {{ Request::routeIs('admin.system-notifications.index') ? 'active' : '' }}" data-title="System Notifications">
                             <i class="fas fa-bell"></i>
                             <span>System Notifications</span>
                         </a>
@@ -209,7 +210,7 @@
             <div class="sidebar-section-title">User</div>
             <ul class="sidebar-nav">
                 <li class="sidebar-nav-item">
-                    <a href="{{ route('profile.show') }}" class="sidebar-nav-link {{ Request::routeIs('profile.*') ? 'active' : '' }}" data-title="My Profile">
+                    <a href="{{ route('profile.show') }}" class="sidebar-nav-link {{ Request::routeIs('profile.show') ? 'active' : '' }}" data-title="My Profile">
                         <i class="fas fa-user-circle"></i>
                         <span>My Profile</span>
                     </a>
