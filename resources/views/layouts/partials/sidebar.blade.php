@@ -9,6 +9,12 @@
                     <span>Dashboard</span>
                 </a>
             </li>
+            <li class="sidebar-nav-item">
+                <a href="{{ route('wrapped.index') }}" class="sidebar-nav-link {{ Request::routeIs('wrapped.index') ? 'active' : '' }}" data-title="RCS Wrapped">
+                    <i class="fas fa-magic"></i>
+                    <span>RCS Wrapped</span>
+                </a>
+            </li>
         </ul>
     </div>
 

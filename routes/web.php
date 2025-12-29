@@ -10,6 +10,7 @@ use App\Http\Controllers\InstructionMonitorController;
 use App\Http\Controllers\PendingUpdateController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WrappedController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\File;
@@ -62,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/activities', [UserController::class, 'activities'])->name('users.activities');
     Route::get('activities', [UserController::class, 'allActivities'])->name('users.all-activities');
+
+    // RCS Wrapped
+    Route::get('wrapped/{year?}', [WrappedController::class, 'index'])->name('wrapped.index');
 });
 
 // Pending Updates Routes for SYSTEM_ADMIN
