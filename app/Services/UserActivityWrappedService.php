@@ -5,79 +5,112 @@ namespace App\Services;
 use App\Models\UserActivity;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class UserActivityWrappedService
 {
     /**
     * Generate a yearly wrapped summary for a user.
     *
-    * @param  int  $userId
-    * @param  int  $year
-    * @return array<string, mixed>
+    * Cached for 2 hours to reduce load; cache key is user/year specific.
     */
     public function generateWrappedSummary(int $userId, int $year): array
     {
-        $activities = UserActivity::query()
-            ->where('user_id', $userId)
-            ->whereYear('created_at', $year)
-            ->get([
-                'activity_type',
-                'activity_description',
-                'details',
-                'device',
-                'browser',
-                'platform',
-                'created_at',
-            ]);
+        $cacheKey = "wrapped:summary:{$userId}:{$year}";
 
-        if ($activities->isEmpty()) {
-            return $this->emptySummary($year);
-        }
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $year) {
+            $base = UserActivity::query()
+                ->where('user_id', $userId)
+                ->whereYear('created_at', $year);
 
-        $total = $activities->count();
+            $total = (clone $base)->count();
+            if ($total === 0) {
+                return $this->emptySummary($year);
+            }
 
-        $activityTypeCounts = $activities
-            ->groupBy('activity_type')
-            ->map->count()
-            ->sortDesc();
+            $activityTypeCounts = $this->countCollection(
+                (clone $base)
+                    ->select('activity_type', DB::raw('count(*) as aggregate_count'))
+                    ->groupBy('activity_type')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'activity_type'
+            );
 
-        $topDescriptions = $activities
-            ->groupBy('activity_description')
-            ->map->count()
-            ->sortDesc();
+            $topDescriptions = $this->countCollection(
+                (clone $base)
+                    ->select('activity_description', DB::raw('count(*) as aggregate_count'))
+                    ->groupBy('activity_description')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'activity_description'
+            );
 
-        $peakDayGroup = $activities
-            ->groupBy(fn ($activity) => $activity->created_at->toDateString())
-            ->map->count()
-            ->sortDesc();
+            $peakDayGroup = $this->countCollection(
+                (clone $base)
+                    ->selectRaw('DATE(created_at) as bucket, count(*) as aggregate_count')
+                    ->groupBy('bucket')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'bucket'
+            );
 
-        $peakMonthGroup = $activities
-            ->groupBy(fn ($activity) => $activity->created_at->format('Y-m'))
-            ->map->count()
-            ->sortDesc();
+            $peakMonthGroup = $this->countCollection(
+                (clone $base)
+                    ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as bucket, count(*) as aggregate_count")
+                    ->groupBy('bucket')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'bucket'
+            );
 
-        $deviceCounts = $this->countByField($activities, 'device', $total);
-        $platformCounts = $this->countByField($activities, 'platform', $total);
-        $browserCounts = $this->countByField($activities, 'browser', $total);
+            $deviceCounts = $this->countCollection(
+                (clone $base)
+                    ->select('device', DB::raw('count(*) as aggregate_count'))
+                    ->groupBy('device')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'device'
+            );
 
-        $monthlyData = $this->buildMonthlyData($activities, $year);
+            $platformCounts = $this->countCollection(
+                (clone $base)
+                    ->select('platform', DB::raw('count(*) as aggregate_count'))
+                    ->groupBy('platform')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'platform'
+            );
 
-        $milestones = $this->extractMilestones($activities);
+            $browserCounts = $this->countCollection(
+                (clone $base)
+                    ->select('browser', DB::raw('count(*) as aggregate_count'))
+                    ->groupBy('browser')
+                    ->orderByDesc('aggregate_count')
+                    ->get(),
+                'browser'
+            );
 
-        return [
-            'year' => $year,
-            'total_activities' => $total,
-            'top_activity_type' => $this->formatTopItem($activityTypeCounts),
-            'activity_types' => $this->formatCounts($activityTypeCounts, $total),
-            'top_activity_descriptions' => $this->formatCounts($topDescriptions, $total, 5),
-            'peak_day' => $this->formatPeak($peakDayGroup),
-            'peak_month' => $this->formatPeakMonth($peakMonthGroup),
-            'devices' => $deviceCounts,
-            'platforms' => $platformCounts,
-            'browsers' => $browserCounts,
-            'monthly_activity' => $monthlyData,
-            'milestones' => $milestones,
-        ];
+            $monthlyData = $this->buildMonthlyData($base, $year);
+
+            $milestones = $this->extractMilestones($base);
+
+            return [
+                'year' => $year,
+                'total_activities' => $total,
+                'top_activity_type' => $this->formatTopItem($activityTypeCounts),
+                'activity_types' => $this->formatCounts($activityTypeCounts, $total),
+                'top_activity_descriptions' => $this->formatCounts($topDescriptions, $total, 5),
+                'peak_day' => $this->formatPeak($peakDayGroup),
+                'peak_month' => $this->formatPeakMonth($peakMonthGroup),
+                'devices' => $this->formatCountTuples($deviceCounts, $total),
+                'platforms' => $this->formatCountTuples($platformCounts, $total),
+                'browsers' => $this->formatCountTuples($browserCounts, $total),
+                'monthly_activity' => $monthlyData,
+                'milestones' => $milestones,
+            ];
+        });
     }
 
     /**
@@ -128,18 +161,21 @@ class UserActivityWrappedService
     }
 
     /**
-     * Build monthly series data.
+     * Build monthly series data using aggregated query.
      */
-    protected function buildMonthlyData(Collection $activities, int $year): array
+    protected function buildMonthlyData($baseQuery, int $year): array
     {
         $labels = [];
         $data = [];
 
+        $monthly = (clone $baseQuery)
+            ->selectRaw('MONTH(created_at) as month_num, count(*) as aggregate_count')
+            ->groupBy('month_num')
+            ->pluck('aggregate_count', 'month_num');
+
         foreach (range(1, 12) as $month) {
             $labels[] = Carbon::create()->month($month)->format('M');
-            $data[] = $activities->filter(
-                fn ($activity) => $activity->created_at->year == $year && $activity->created_at->month == $month
-            )->count();
+            $data[] = (int) ($monthly[$month] ?? 0);
         }
 
         return compact('labels', 'data');
@@ -150,26 +186,35 @@ class UserActivityWrappedService
      *
      * @return array<int, string>
      */
-    protected function extractMilestones(Collection $activities): array
+    protected function extractMilestones($baseQuery): array
     {
-        return $activities
-            ->pluck('details')
-            ->filter(fn ($details) => is_array($details))
-            ->flatMap(function ($details) {
-                $candidates = collect($details)->only([
-                    'milestone',
-                    'milestones',
-                    'achievement',
-                    'achievements',
-                    'highlight',
-                    'highlights',
-                    'note',
-                    'notes',
-                    'title',
-                ])->flatten();
+        $milestones = collect();
 
-                return $candidates->filter()->map(fn ($item) => (string) $item);
-            })
+        (clone $baseQuery)
+            ->select('details')
+            ->whereNotNull('details')
+            ->chunk(1000, function ($chunk) use ($milestones) {
+                foreach ($chunk as $row) {
+                    if (!is_array($row->details)) {
+                        continue;
+                    }
+                    $candidates = collect($row->details)->only([
+                        'milestone',
+                        'milestones',
+                        'achievement',
+                        'achievements',
+                        'highlight',
+                        'highlights',
+                        'note',
+                        'notes',
+                        'title',
+                    ])->flatten();
+
+                    $milestones->push(...$candidates->filter()->map(fn ($item) => (string) $item));
+                }
+            });
+
+        return $milestones
             ->filter()
             ->unique()
             ->values()
@@ -226,6 +271,38 @@ class UserActivityWrappedService
     {
         $label = str_replace(['_', '-'], ' ', strtolower($value ?? ''));
         return ucwords(trim($label));
+    }
+
+    /**
+     * Convert aggregated rows to keyed counts.
+     */
+    protected function countCollection(Collection $rows, string $labelKey): Collection
+    {
+        return $rows
+            ->mapWithKeys(function ($row) use ($labelKey) {
+                $label = $this->humanizeLabel($row->{$labelKey} ?? 'Unknown');
+                return [$label => (int) $row->aggregate_count];
+            })
+            ->sortDesc();
+    }
+
+    /**
+     * Convert keyed count collection to array of tuples with percentages.
+     *
+     * @return array<int, array{label:string,count:int,percentage:float}>
+     */
+    protected function formatCountTuples(Collection $counts, int $total): array
+    {
+        return $counts
+            ->map(function ($count, $label) use ($total) {
+                return [
+                    'label' => $label ?: 'Unknown',
+                    'count' => $count,
+                    'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0,
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     /**
