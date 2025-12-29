@@ -35,6 +35,9 @@
         padding: 40px 44px;
         box-shadow: 0 18px 50px rgba(0,0,0,0.10);
         isolation: isolate;
+        max-width: 1280px;
+        margin: 0 auto;
+        animation: bgShift 12s ease-in-out infinite alternate;
     }
     .wrapped-export-card::before,
     .wrapped-export-card::after {
@@ -50,6 +53,32 @@
         inset: 30px;
         opacity: 0.45;
     }
+    .wrapped-export-card .floater {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px dashed rgba(0,0,0,0.08);
+        animation: float 8s ease-in-out infinite;
+        z-index: 0;
+        pointer-events: none;
+    }
+    .floater.one { width: 140px; height: 140px; top: 14%; left: -50px; }
+    .floater.two { width: 110px; height: 110px; bottom: 10%; right: -40px; animation-duration: 10s; }
+    .floater.three { width: 80px; height: 80px; top: 50%; right: 18%; animation-duration: 9s; }
+    .sparkle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: radial-gradient(circle, #f97316 0%, #f55247 40%, transparent 60%);
+        border-radius: 50%;
+        box-shadow: 0 0 12px rgba(245,82,71,0.55);
+        animation: sparkle 2.6s ease-in-out infinite;
+        z-index: 1;
+        pointer-events: none;
+    }
+    .sparkle.s1 { top: 20%; left: 18%; animation-delay: 0.1s; }
+    .sparkle.s2 { top: 36%; right: 22%; animation-delay: 0.5s; }
+    .sparkle.s3 { bottom: 18%; left: 32%; animation-delay: 0.9s; }
+    .sparkle.s4 { bottom: 26%; right: 30%; animation-delay: 1.2s; }
     .wrapped-pill {
         background: #fff;
         border: 1px solid #e5e7eb;
@@ -123,11 +152,26 @@
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         padding: 14px 16px;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        align-items: center;
         gap: 8px;
         box-shadow: 0 10px 24px rgba(0,0,0,0.06);
     }
+    .wrapped-stat .icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(245,82,71,0.12);
+        color: var(--laravel-red);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        font-weight: 800;
+        box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+        animation: iconPulse 3.4s ease-in-out infinite;
+    }
+    .wrapped-stat .text { display: flex; flex-direction: column; gap: 2px; }
     .wrapped-stat .label { color: var(--muted); font-size: 0.95rem; letter-spacing: 0.1px; }
     .wrapped-stat .value { font-size: 1.5rem; font-weight: 900; color: var(--ink); }
     .wrapped-stat .hint { color: #9ca3af; font-size: 0.9rem; }
@@ -145,6 +189,27 @@
         .wrapped-export-card { padding: 20px; }
         .wrapped-stamp { display: none; }
         .wrapped-grid { gap: 14px; }
+        .wrapped-stat { grid-template-columns: 1fr; align-items: flex-start; }
+    }
+
+    @keyframes bgShift {
+        0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+        100% { background-position: 20px 10px, -18px 12px, 16px -10px, 0 0; }
+    }
+    @keyframes float {
+        0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-10px) translateX(6px) rotate(3deg); opacity: 0.9; }
+        100% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.7; }
+    }
+    @keyframes iconPulse {
+        0% { transform: translateY(0); box-shadow: 0 6px 14px rgba(0,0,0,0.06); }
+        50% { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(0,0,0,0.10); }
+        100% { transform: translateY(0); box-shadow: 0 6px 14px rgba(0,0,0,0.06); }
+    }
+    @keyframes sparkle {
+        0% { transform: scale(0.8); opacity: 0.7; }
+        50% { transform: scale(1.3); opacity: 1; }
+        100% { transform: scale(0.8); opacity: 0.6; }
     }
 </style>
 @endpush
@@ -182,6 +247,13 @@
     </div>
 
     <div class="wrapped-export-card mb-4" id="wrapped-card">
+        <div class="floater one"></div>
+        <div class="floater two"></div>
+        <div class="floater three"></div>
+        <div class="sparkle s1"></div>
+        <div class="sparkle s2"></div>
+        <div class="sparkle s3"></div>
+        <div class="sparkle s4"></div>
         <div class="wrapped-stamp left">Laravel Wrapped</div>
         <div class="wrapped-stamp right"><i class="fa-solid fa-cube icon"></i></div>
         <div class="wrapped-grid">
@@ -197,24 +269,36 @@
             </div>
             <div class="wrapped-stats">
                 <div class="wrapped-stat">
-                    <div class="label">Total Activities</div>
-                    <div class="value">{{ number_format($summary['total_activities']) }}</div>
-                    <div class="hint">{{ count($summary['activity_types']) }} activity types</div>
+                    <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="text">
+                        <div class="label">Total Activities</div>
+                        <div class="value">{{ number_format($summary['total_activities']) }}</div>
+                        <div class="hint">{{ count($summary['activity_types']) }} activity types</div>
+                    </div>
                 </div>
                 <div class="wrapped-stat">
-                    <div class="label">Top Activity</div>
-                    <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
-                    <div class="hint">{{ $summary['top_activity_type']['count'] ?? '' }} times</div>
+                    <div class="icon" style="background:rgba(16,185,129,0.15); color:#0f766e;"><i class="fa-solid fa-star"></i></div>
+                    <div class="text">
+                        <div class="label">Top Activity</div>
+                        <div class="value">{{ $summary['top_activity_type']['label'] ?? '—' }}</div>
+                        <div class="hint">{{ $summary['top_activity_type']['count'] ?? '' }} times</div>
+                    </div>
                 </div>
                 <div class="wrapped-stat">
-                    <div class="label">Peak Day</div>
-                    <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
-                    <div class="hint">{{ $summary['peak_day']['count'] ?? '' }} actions</div>
+                    <div class="icon" style="background:rgba(37,99,235,0.15); color:#1d4ed8;"><i class="fa-regular fa-calendar"></i></div>
+                    <div class="text">
+                        <div class="label">Peak Day</div>
+                        <div class="value">{{ $summary['peak_day']['date'] ?? '—' }}</div>
+                        <div class="hint">{{ $summary['peak_day']['count'] ?? '' }} actions</div>
+                    </div>
                 </div>
                 <div class="wrapped-stat">
-                    <div class="label">Peak Month</div>
-                    <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
-                    <div class="hint">{{ $summary['peak_month']['count'] ?? '' }} actions</div>
+                    <div class="icon" style="background:rgba(249,115,22,0.18); color:#c2410c;"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="text">
+                        <div class="label">Peak Month</div>
+                        <div class="value">{{ $summary['peak_month']['label'] ?? '—' }}</div>
+                        <div class="hint">{{ $summary['peak_month']['count'] ?? '' }} actions</div>
+                    </div>
                 </div>
             </div>
         </div>
