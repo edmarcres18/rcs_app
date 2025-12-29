@@ -601,10 +601,11 @@
         });
 
         // Export PNG of hero
+        const exportOpts = sizeMap.landscape;
         const btnExport = document.getElementById('btn-export-png');
         const btnDownload = document.getElementById('btn-download-card');
-        if (btnExport) btnExport.addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png'));
-        if (btnDownload) btnDownload.addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`));
+        if (btnExport) btnExport.addEventListener('click', () => exportNodeAsPng('#wrapped-stage', 'rcs-wrapped-card.png', exportOpts));
+        if (btnDownload) btnDownload.addEventListener('click', () => exportNodeAsPng('#wrapped-stage', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
 
         // Share modal buttons
         const modalOpen = document.getElementById('modal-open-public');
@@ -626,27 +627,22 @@
         if (modalDownload) {
             modalDownload.addEventListener('click', () => {
                 const selected = document.querySelector('input[name="exportSize"]:checked')?.value || 'landscape';
-                const chosen = sizeMap[selected] || null;
-                exportNodeAsPng('#wrapped-card', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
+                const chosen = sizeMap[selected] || sizeMap.landscape;
+                exportNodeAsPng('#wrapped-stage', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
             });
         }
     });
 
-    function exportNodeAsPng(selector, filename, size = null) {
+    function exportNodeAsPng(selector, filename, size = { width: 1920, height: 1080 }) {
         const node = document.querySelector(selector);
         if (!node) return;
-        const rect = node.getBoundingClientRect();
-        const targetSize = size || {
-            width: Math.round(rect.width),
-            height: Math.round(rect.height),
-        };
         htmlToImage.toPng(node, {
                 pixelRatio: 1,
-                width: targetSize.width,
-                height: targetSize.height,
+                width: size.width,
+                height: size.height,
                 style: {
-                    width: `${targetSize.width}px`,
-                    height: `${targetSize.height}px`,
+                    width: `${size.width}px`,
+                    height: `${size.height}px`,
                 }
             })
             .then(dataUrl => {
