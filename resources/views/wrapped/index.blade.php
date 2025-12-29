@@ -270,11 +270,8 @@
                     @endif
                 </select>
             </form>
-            <button class="btn btn-outline-secondary btn-sm" id="btn-export-png">
-                <i class="fa-solid fa-image me-1"></i> Export PNG
-            </button>
             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
-                <i class="fa-solid fa-share-nodes me-1"></i> Share & Export
+                <i class="fa-solid fa-share-nodes me-1"></i> Share
             </button>
         </div>
     </div>
@@ -457,37 +454,21 @@
     </div>
 </div>
 
-<!-- Share & Export Modal -->
+<!-- Share Modal -->
 <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="shareModalLabel">Share & Export</h5>
+                <h5 class="modal-title" id="shareModalLabel">Share</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Export size</label>
-                    <div class="d-flex flex-wrap gap-2">
-                        <label class="pill">
-                            <input type="radio" name="exportSize" value="landscape" class="form-check-input me-1" checked>
-                            1920 × 1080
-                        </label>
-                        <label class="pill">
-                            <input type="radio" name="exportSize" value="portrait" class="form-check-input me-1">
-                            1080 × 1920 (Story)
-                        </label>
-                        <label class="pill">
-                            <input type="radio" name="exportSize" value="square" class="form-check-input me-1">
-                            1080 × 1080 (Square)
-                        </label>
-                    </div>
-                </div>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-primary" id="modal-download-png">
-                        <i class="fa-solid fa-download me-1"></i> Download PNG
-                    </button>
-                    <button class="btn btn-outline-primary" id="modal-copy-link">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('wrapped.share', ['userSlug' => $shareSlug, 'year' => $selectedYear]) }}" target="_blank" class="btn btn-outline-primary w-50" id="modal-open-public">
+                            <i class="fa-solid fa-up-right-from-square me-1"></i> Open public card
+                        </a>
+                        <button class="btn btn-primary w-50" id="modal-copy-link">
                         <i class="fa-solid fa-link me-1"></i> Copy Share Link
                     </button>
                     <a class="btn btn-outline-secondary" id="modal-open-public" target="_blank" rel="noopener">
@@ -502,17 +483,11 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
 <script>
     const summary = @json($summary);
 
     const palette = ['#2563eb','#22c55e','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#14b8a6','#f97316'];
     const shareUrl = "{{ route('wrapped.share', ['userSlug' => $shareSlug ?? ($user->id ?? '') , 'year' => $selectedYear]) }}";
-    const sizeMap = {
-        landscape: { width: 1920, height: 1080 },
-        portrait: { width: 1080, height: 1920 },
-        square: { width: 1080, height: 1080 },
-    };
 
     function donutChart(ctxId, items) {
         const ctx = document.getElementById(ctxId);
@@ -600,17 +575,9 @@
             }, 20);
         });
 
-        // Export PNG of hero (card only), defaulting to 1920x1080 for parity with on-screen card
-        const exportOpts = sizeMap.landscape;
-        const btnExport = document.getElementById('btn-export-png');
-        const btnDownload = document.getElementById('btn-download-card');
-        if (btnExport) btnExport.addEventListener('click', () => exportNodeAsPng('#wrapped-card', 'rcs-wrapped-card.png', exportOpts));
-        if (btnDownload) btnDownload.addEventListener('click', () => exportNodeAsPng('#wrapped-card', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
-
         // Share modal buttons
         const modalOpen = document.getElementById('modal-open-public');
         const modalCopy = document.getElementById('modal-copy-link');
-        const modalDownload = document.getElementById('modal-download-png');
 
         if (modalOpen) modalOpen.href = shareUrl;
         if (modalCopy) {
@@ -624,48 +591,6 @@
                 }
             });
         }
-        if (modalDownload) {
-            modalDownload.addEventListener('click', () => {
-                const selected = document.querySelector('input[name="exportSize"]:checked')?.value || 'landscape';
-                const chosen = sizeMap[selected] || sizeMap.landscape;
-                exportNodeAsPng('#wrapped-card', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
-            });
-        }
     });
-
-    function exportNodeAsPng(selector, filename, size = null) {
-        const node = document.querySelector(selector);
-        if (!node) return;
-
-        const rect = node.getBoundingClientRect();
-        const target = size ?? { width: Math.round(rect.width), height: Math.round(rect.height) };
-        const width = Math.round(target.width);
-        const height = Math.round(target.height);
-
-        // Scale to fit target while centering the card on the canvas
-        const scale = Math.min(width / rect.width, height / rect.height);
-        const xOffset = (width - rect.width * scale) / 2;
-        const yOffset = (height - rect.height * scale) / 2;
-
-        htmlToImage.toPng(node, {
-                pixelRatio: 2,
-                cacheBust: true,
-                width,
-                height,
-                style: {
-                    width: `${rect.width}px`,
-                    height: `${rect.height}px`,
-                    transform: `translate(${xOffset / scale}px, ${yOffset / scale}px) scale(${scale})`,
-                    transformOrigin: 'top left',
-                }
-            })
-            .then(dataUrl => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = dataUrl;
-                link.click();
-            })
-            .catch(console.error);
-    }
 </script>
 @endpush
