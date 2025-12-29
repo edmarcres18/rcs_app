@@ -2,33 +2,71 @@
 
 @push('styles')
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Pacifico&display=swap');
+
     .wrapped-hero {
-        background: linear-gradient(135deg, #0f172a, #1e3a8a, #2563eb);
-        color: #fff;
-        border-radius: 20px;
-        padding: 24px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 15px 40px rgba(37, 99, 235, 0.25);
+        border-radius: 22px;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 76, 48, 0.08), transparent 35%),
+                    radial-gradient(circle at 80% 0%, rgba(255, 76, 48, 0.18), transparent 40%),
+                    #0b0d12;
+        color: #fefefe;
+        padding: 26px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+        isolation: isolate;
+        border: 1px solid rgba(255,255,255,0.06);
     }
-    .wrapped-hero::after, .wrapped-hero::before {
+    .wrapped-hero::before, .wrapped-hero::after {
         content: '';
         position: absolute;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.1);
-        filter: blur(30px);
+        inset: 14px;
+        border-radius: 18px;
+        background-image: linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+                          linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.4;
+        pointer-events: none;
     }
     .wrapped-hero::after {
-        width: 240px;
-        height: 240px;
-        top: -80px;
-        right: -60px;
+        inset: 0;
+        background: radial-gradient(circle at 15% 85%, rgba(255, 76, 48, 0.22), transparent 35%),
+                    radial-gradient(circle at 90% 30%, rgba(255, 115, 90, 0.18), transparent 38%);
+        z-index: 0;
     }
-    .wrapped-hero::before {
-        width: 180px;
-        height: 180px;
-        bottom: -60px;
-        left: -40px;
+    .wrapped-hero .badge-ring {
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border: 1px dashed rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fefefe;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        z-index: 1;
+    }
+    .badge-ring.left { top: -20px; left: -20px; rotate: -8deg; }
+    .badge-ring.right { bottom: -10px; right: -10px; rotate: 12deg; color: #d1d5db; }
+    .badge-ring svg { width: 26px; height: 26px; }
+    .hero-title-script {
+        font-family: 'Pacifico', cursive;
+        font-size: 46px;
+        color: #ff4c30;
+        letter-spacing: 1px;
+    }
+    .hero-subtitle {
+        font-family: 'Manrope', sans-serif;
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .hero-tagline {
+        color: #cbd5e1;
+        font-size: 14px;
+        letter-spacing: 0.6px;
     }
     .wrapped-card {
         background: #fff;
@@ -42,52 +80,98 @@
         box-shadow: 0 16px 40px rgba(0,0,0,0.10);
     }
     .stat-badge {
-        background: #eef2ff;
-        color: #4338ca;
+        background: #fff4f2;
+        color: #d92d20;
         border-radius: 12px;
         padding: 8px 12px;
-        font-weight: 600;
-        font-size: 0.9rem;
+        font-weight: 700;
+        font-size: 0.95rem;
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        border: 1px solid rgba(217, 45, 32, 0.12);
+        box-shadow: 0 6px 14px rgba(217, 45, 32, 0.12);
     }
     .milestone-item {
-        border-left: 3px solid #2563eb;
+        border-left: 3px solid #ff4c30;
         padding-left: 12px;
         margin-bottom: 12px;
+        background: #fff7f5;
+        border-radius: 8px;
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
     .chart-container {
         position: relative;
         min-height: 260px;
     }
     .year-pill {
-        background: rgba(255,255,255,0.18);
-        color: #fff;
+        background: rgba(255,76,48,0.18);
+        color: #ffe5df;
         padding: 8px 14px;
         border-radius: 999px;
         border: 1px solid rgba(255,255,255,0.25);
         backdrop-filter: blur(6px);
+        font-weight: 700;
+        letter-spacing: 0.6px;
     }
     .cta-btn {
-        background: linear-gradient(120deg, #10b981, #22d3ee);
-        color: #0f172a;
-        font-weight: 700;
+        background: linear-gradient(120deg, #ff4c30, #ff7a64);
+        color: #fff;
+        font-weight: 800;
         border: none;
         border-radius: 12px;
         padding: 12px 16px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 10px 25px rgba(255, 76, 48, 0.28);
     }
     .cta-btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 14px 32px rgba(16, 185, 129, 0.28);
+        box-shadow: 0 14px 32px rgba(255, 76, 48, 0.32);
     }
     .count-up {
         font-variant-numeric: tabular-nums;
     }
+    .sticker {
+        position: absolute;
+        width: 120px;
+        border-radius: 18px;
+        filter: drop-shadow(0 14px 24px rgba(0,0,0,0.25));
+        z-index: 2;
+        transition: transform .2s ease;
+        color: #fff;
+        font-family: 'Manrope', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 3px solid #fff;
+        padding: 12px 14px;
+    }
+    .sticker:hover { transform: scale(1.03) rotate(-2deg); }
+    .sticker-ship {
+        bottom: -12px; left: -6px;
+        background: linear-gradient(140deg, #f9322c, #ff6b4a);
+        rotate: -4deg;
+        text-align: left;
+    }
+    .sticker-ship .title { font-size: 20px; font-weight: 900; display: block; line-height: 1; }
+    .sticker-ship .subtitle { font-size: 11px; font-weight: 700; opacity: 0.92; }
+    .sticker-php {
+        top: -10px; right: -4px;
+        background: linear-gradient(145deg, #0f172a, #111827);
+        color: #ff4c30;
+        rotate: 6deg;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        font-size: 22px;
+    }
+    .wrapped-grid-title {
+        font-family: 'Manrope', sans-serif;
+    }
     @media (max-width: 768px) {
         .wrapped-hero { padding: 18px; }
         .wrapped-card { margin-bottom: 12px; }
+        .hero-title-script { font-size: 34px; }
+        .hero-subtitle { font-size: 32px; }
     }
 </style>
 @endpush
@@ -124,14 +208,29 @@
         </div>
     </div>
 
-    <div class="wrapped-hero mb-4" id="wrapped-hero">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="wrapped-hero mb-4 position-relative" id="wrapped-hero">
+        <div class="badge-ring left">
+            <div class="text-center">
+                <div>Laravel Wrapped</div>
+                <div>{{ $selectedYear }}</div>
+            </div>
+        </div>
+        <div class="badge-ring right">
+            <div class="text-center">
+                <div>RCS Edition</div>
+                <div>{{ $selectedYear }}</div>
+            </div>
+        </div>
+        <img class="sticker sticker ship" alt="Ship it" src="https://dummyimage.com/220x420/f9322c/fefefe&text=Ship" />
+        <img class="sticker sticker php" alt="PHP cap" src="https://dummyimage.com/200x200/0b0d12/f9322c&text=$PHP" />
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative" style="z-index:3;">
             <div>
-                <p class="mb-1 opacity-75">Your {{ $selectedYear }} story</p>
-                <h2 class="fw-bold display-6 mb-2">Your {{ $selectedYear }} RCS Wrapped 🎉</h2>
+                <div class="hero-tagline">wrapped.rcs</div>
+                <div class="hero-title-script">Wrapped</div>
+                <div class="hero-subtitle">Made for Laravel</div>
                 <div class="d-flex flex-wrap gap-2">
                     <span class="year-pill"><i class="fa-regular fa-calendar me-2"></i>{{ $selectedYear }}</span>
-                    <span class="stat-badge"><i class="fa-solid fa-bolt"></i> Total {{ $summary['total_activities'] }}</span>
+                    <span class="stat-badge"><i class="fa-solid fa-bolt"></i> {{ $summary['total_activities'] }} activities</span>
                     @if($summary['top_activity_type'])
                         <span class="stat-badge"><i class="fa-solid fa-star"></i> Top: {{ ucfirst($summary['top_activity_type']['label']) }} ({{ $summary['top_activity_type']['count'] }})</span>
                     @endif
