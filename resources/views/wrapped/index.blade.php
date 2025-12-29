@@ -636,21 +636,6 @@
     function exportNodeAsPng(selector, filename, size = { width: 1920, height: 1080 }) {
         const node = document.querySelector(selector);
         if (!node) return;
-
-        const original = {
-            width: node.style.width,
-            height: node.style.height,
-            maxWidth: node.style.maxWidth,
-            borderRadius: node.style.borderRadius,
-            boxShadow: node.style.boxShadow,
-        };
-
-        node.style.width = `${size.width}px`;
-        node.style.height = `${size.height}px`;
-        node.style.maxWidth = `${size.width}px`;
-        node.style.borderRadius = '24px';
-        node.style.boxShadow = 'none';
-
         htmlToImage.toPng(node, {
                 pixelRatio: 1,
                 width: size.width,
@@ -658,7 +643,6 @@
                 style: {
                     width: `${size.width}px`,
                     height: `${size.height}px`,
-                    maxWidth: `${size.width}px`,
                 }
             })
             .then(dataUrl => {
@@ -667,14 +651,7 @@
                 link.href = dataUrl;
                 link.click();
             })
-            .catch(console.error)
-            .finally(() => {
-                node.style.width = original.width;
-                node.style.height = original.height;
-                node.style.maxWidth = original.maxWidth;
-                node.style.borderRadius = original.borderRadius;
-                node.style.boxShadow = original.boxShadow;
-            });
+            .catch(console.error);
     }
 </script>
 @endpush
