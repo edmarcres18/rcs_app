@@ -7,6 +7,17 @@
         --ink: #101828;
         --muted: #6b7280;
     }
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: var(--ink);
+        font-weight: 700;
+        border: 1px solid #e2e8f0;
+    }
     .wrapped-card {
         background: #fff;
         border-radius: 18px;
@@ -247,8 +258,8 @@
             <button class="btn btn-outline-secondary btn-sm" id="btn-export-png">
                 <i class="fa-solid fa-image me-1"></i> Export PNG
             </button>
-            <button class="btn btn-outline-primary btn-sm" id="btn-share">
-                <i class="fa-solid fa-share-nodes me-1"></i> Share
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
+                <i class="fa-solid fa-share-nodes me-1"></i> Share & Export
             </button>
         </div>
     </div>
@@ -430,6 +441,48 @@
         </div>
     </div>
 </div>
+
+<!-- Share & Export Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">Share & Export</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Export size</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <label class="pill">
+                            <input type="radio" name="exportSize" value="landscape" class="form-check-input me-1" checked>
+                            1920 × 1080
+                        </label>
+                        <label class="pill">
+                            <input type="radio" name="exportSize" value="portrait" class="form-check-input me-1">
+                            1080 × 1920 (Story)
+                        </label>
+                        <label class="pill">
+                            <input type="radio" name="exportSize" value="square" class="form-check-input me-1">
+                            1080 × 1080 (Square)
+                        </label>
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" id="modal-download-png">
+                        <i class="fa-solid fa-download me-1"></i> Download PNG
+                    </button>
+                    <button class="btn btn-outline-primary" id="modal-copy-link">
+                        <i class="fa-solid fa-link me-1"></i> Copy Share Link
+                    </button>
+                    <a class="btn btn-outline-secondary" id="modal-open-public" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-up-right-from-square me-1"></i> Open Public Card
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -439,6 +492,12 @@
     const summary = @json($summary);
 
     const palette = ['#2563eb','#22c55e','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#14b8a6','#f97316'];
+    const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
+    const sizeMap = {
+        landscape: { width: 1920, height: 1080 },
+        portrait: { width: 1080, height: 1920 },
+        square: { width: 1080, height: 1080 },
+    };
 
     function donutChart(ctxId, items) {
         const ctx = document.getElementById(ctxId);
@@ -466,8 +525,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const shareUrl = "{{ route('wrapped.share', ['user' => $user->id, 'year' => $selectedYear]) }}";
-
         // Activities bar
         new Chart(document.getElementById('chart-activities'), {
             type: 'bar',
@@ -529,31 +586,25 @@
         });
 
         // Export PNG of hero
-        const exportOpts = { width: 1920, height: 1080 };
+        const exportOpts = sizeMap.landscape;
         document.getElementById('btn-export-png').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', 'rcs-wrapped-card.png', exportOpts));
         document.getElementById('btn-download-card').addEventListener('click', () => exportNodeAsPng('#wrapped-stage', `rcs-wrapped-{{ $selectedYear }}.png`, exportOpts));
 
-        // Web share
-        document.getElementById('btn-share').addEventListener('click', async () => {
-            try {
-                if (navigator.share) {
-                    await navigator.share({
-                        title: `My {{ $selectedYear }} RCS Wrapped`,
-                        text: 'Check out my yearly RCS Wrapped summary!',
-                        url: shareUrl
-                    });
-                    return;
-                }
-            } catch (err) {
-                // fall through to fallback
-            }
-
+        // Share modal buttons
+        document.getElementById('modal-open-public').href = shareUrl;
+        document.getElementById('modal-copy-link').addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(shareUrl);
                 alert('Share link copied to clipboard');
             } catch (err) {
+                alert('Copy failed. Opening link instead.');
                 window.open(shareUrl, '_blank', 'noopener');
             }
+        });
+        document.getElementById('modal-download-png').addEventListener('click', () => {
+            const selected = document.querySelector('input[name="exportSize"]:checked')?.value || 'landscape';
+            const chosen = sizeMap[selected] || sizeMap.landscape;
+            exportNodeAsPng('#wrapped-stage', `rcs-wrapped-${selected}-{{ $selectedYear }}.png`, chosen);
         });
     });
 

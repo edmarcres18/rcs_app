@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UserActivity;
 use App\Services\UserActivityWrappedService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,7 +12,7 @@ class WrappedController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except('share');
     }
 
     /**
@@ -49,7 +50,11 @@ class WrappedController extends Controller
      */
     public function share(Request $request, UserActivityWrappedService $service, int $userId, ?int $year = null)
     {
-        $user = User::findOrFail($userId);
+        try {
+            $user = User::select('id', 'full_name', 'email')->findOrFail($userId);
+        } catch (ModelNotFoundException $e) {
+            abort(404);
+        }
 
         $availableYears = UserActivity::query()
             ->where('user_id', $user->id)
