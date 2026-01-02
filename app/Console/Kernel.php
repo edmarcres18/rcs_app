@@ -33,8 +33,10 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('instructions:send-reminders')->daily();
         $schedule->command('telegram:verify-webhook')->everyFifteenMinutes();
-        // Daily database backup
-        $schedule->command('database:backup')->dailyAt('04:00')->timezone('Asia/Manila');
+        // Daily database backup at 02:00 Asia/Manila
+        $schedule->command('database:backup')
+            ->dailyAt('02:00')
+            ->timezone('Asia/Manila');
 
         // Dispatch due system notifications (email/telegram)
         $schedule->command('system-notifications:dispatch-due')

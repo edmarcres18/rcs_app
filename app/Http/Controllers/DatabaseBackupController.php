@@ -114,6 +114,23 @@ class DatabaseBackupController extends Controller
             // Attempt to upload to Google Drive (if disk is configured) with retry + optional retention
             $uploadResult = $this->uploadBackupToDrive($backupContent, $filename);
 
+            // Enforce local retention (defaults to 30 days, configurable via BACKUP_KEEP_DAYS)
+            $keepDays = (int) env('BACKUP_KEEP_DAYS', 30);
+            if ($keepDays > 0) {
+                try {
+                    $deleted = $this->enforceLocalRetention($keepDays);
+                    Log::info('Local backup retention enforced', [
+                        'keep_days' => $keepDays,
+                        'deleted' => $deleted,
+                    ]);
+                } catch (\Throwable $t) {
+                    Log::error('Failed to enforce local backup retention', [
+                        'keep_days' => $keepDays,
+                        'exception' => $t->getMessage(),
+                    ]);
+                }
+            }
+
             $flashMessage = 'Database backup created successfully.';
             if ($uploadResult === true) {
                 $flashMessage .= ' Backup was also uploaded to Google Drive.';
@@ -135,6 +152,45 @@ class DatabaseBackupController extends Controller
             return redirect()->route('database.backups')
                 ->with('error', 'An error occurred while creating the backup. Please check the logs for details.');
         }
+    }
+
+    /**
+     * Delete local backups older than the given number of days (applies to backups/ and backups/trash).
+     *
+     * @param int $days
+     * @return array<string,int> counts deleted per directory
+     */
+    private function enforceLocalRetention(int $days): array
+    {
+        $deleted = ['backups' => 0, 'trash' => 0];
+        $cutoff = Carbon::now()->subDays($days);
+        $directories = ['backups', 'backups/trash'];
+
+        foreach ($directories as $dir) {
+            if (!Storage::exists($dir)) {
+                continue;
+            }
+
+            foreach (Storage::files($dir) as $file) {
+                if (!Str::endsWith($file, '.sql')) {
+                    continue;
+                }
+
+                $lastModified = Storage::lastModified($file);
+                if ($lastModified === false) {
+                    continue;
+                }
+
+                if (Carbon::createFromTimestamp($lastModified)->lt($cutoff)) {
+                    if (Storage::delete($file)) {
+                        $key = $dir === 'backups' ? 'backups' : 'trash';
+                        $deleted[$key]++;
+                    }
+                }
+            }
+        }
+
+        return $deleted;
     }
 
     /**
