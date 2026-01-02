@@ -9,13 +9,15 @@
                     <span>Dashboard</span>
                 </a>
             </li>
-            <li class="sidebar-nav-item">
-                <a href="{{ route('wrapped.index') }}" class="sidebar-nav-link {{ Request::routeIs('wrapped.index') ? 'active' : '' }}" data-title="RCS Wrapped">
-                    <i class="fas fa-magic"></i>
-                    <span>RCS Wrapped</span>
-                    <span class="badge bg-primary rounded-pill ms-auto">1</span>
-                </a>
-            </li>
+            @if(config('app.wrapped_enabled'))
+                <li class="sidebar-nav-item">
+                    <a href="{{ route('wrapped.index') }}" class="sidebar-nav-link {{ Request::routeIs('wrapped.index') ? 'active' : '' }}" data-title="RCS Wrapped">
+                        <i class="fas fa-magic"></i>
+                        <span>RCS Wrapped</span>
+                        <span class="badge bg-primary rounded-pill ms-auto">1</span>
+                    </a>
+                </li>
+            @endif
         </ul>
     </div>
 

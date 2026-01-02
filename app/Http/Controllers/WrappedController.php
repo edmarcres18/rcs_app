@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Config;
 
 class WrappedController extends Controller
 {
@@ -23,6 +24,10 @@ class WrappedController extends Controller
      */
     public function index(Request $request, UserActivityWrappedService $service, ?int $year = null)
     {
+        if (! Config::get('app.wrapped_enabled', true)) {
+            abort(404);
+        }
+
         $user = Auth::user();
 
         $availableYears = UserActivity::query()
@@ -61,6 +66,10 @@ class WrappedController extends Controller
      */
     public function share(Request $request, UserActivityWrappedService $service, string $userSlugOrId, ?int $year = null)
     {
+        if (! Config::get('app.wrapped_enabled', true)) {
+            abort(404);
+        }
+
         $user = $this->findUserBySlugOrId($userSlugOrId);
 
         $availableYears = UserActivity::query()

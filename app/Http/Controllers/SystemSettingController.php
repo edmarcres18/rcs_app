@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Config;
 
 class SystemSettingController extends Controller
 {
@@ -18,7 +19,11 @@ class SystemSettingController extends Controller
      */
     public function index()
     {
-        return view('system-settings.index');
+        return view('system-settings.index', [
+            'settings' => [
+                'wrapped_enabled' => (bool) config('app.wrapped_enabled', true),
+            ],
+        ]);
     }
 
     /**
@@ -96,6 +101,7 @@ class SystemSettingController extends Controller
                 'app_name' => 'sometimes|required|string|max:255',
                 'app_logo' => 'nullable|image|mimes:png,jpg,jpeg',
                 'auth_logo' => 'nullable|image|mimes:png,jpg,jpeg',
+                'wrapped_enabled' => 'nullable|boolean',
             ]);
 
             // Ensure the public storage symlink exists (public/storage) - best effort
@@ -128,6 +134,13 @@ class SystemSettingController extends Controller
                     $this->updateEnvVariable('APP_NAME', $incomingName);
                 }
                 $newAppName = $incomingName;
+            }
+
+            // Wrapped toggle
+            if ($request->has('wrapped_enabled')) {
+                $wrappedEnabled = $request->boolean('wrapped_enabled');
+                $this->updateEnvVariable('APP_WRAPPED_ENABLED', $wrappedEnabled ? 'true' : 'false');
+                Config::set('app.wrapped_enabled', $wrappedEnabled);
             }
 
             $appLogoPath = null;

@@ -77,6 +77,13 @@
                             </div>
                         </div>
 
+                        <div class="form-check form-switch mb-3">
+                            <input type="hidden" name="wrapped_enabled" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="wrapped_enabled" name="wrapped_enabled" value="1" {{ ($settings['wrapped_enabled'] ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="wrapped_enabled">Enable RCS Wrapped</label>
+                            <div class="form-text">Controls visibility and access to RCS Wrapped (public share included).</div>
+                        </div>
+
                         <div class="mt-3 text-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>{{ __('Update Settings') }}
